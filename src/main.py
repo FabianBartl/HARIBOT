@@ -4,7 +4,7 @@ import nextcord
 from nextcord.ext import commands
 from nextcord import slash_command, SlashOption, File, ButtonStyle, Embed
 
-import time, logging
+import time, logging, sys
 
 from structs import TOKEN, COLOR, CONFIG
 from functions import updateGuildData, updateUserData, getGuildData, getUserData
@@ -14,11 +14,14 @@ from functions import updateGuildData, updateUserData, getGuildData, getUserData
 #-------#
 
 logging.basicConfig(
-	filename = CONFIG.LOG_FILE
+	level = CONFIG.LOG_LEVEL
 	, encoding = "utf-8"
-	, level = CONFIG.LOG_LEVEL
 	, format = r"%(asctime)s - [%(levelname)s]: %(message)s"
-	, datefmt=r"%d.%m.%Y %H:%M:%S"
+	, datefmt = r"%d.%m.%Y %H:%M:%S"
+	, handlers = [
+		logging.FileHandler(CONFIG.LOG_FILE)
+		, logging.StreamHandler(sys.stdout)
+	]
 )
 
 bot = commands.Bot(
