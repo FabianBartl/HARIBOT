@@ -1,2 +1,3 @@
 *.token
-data/*
+data*
+__pycache__*

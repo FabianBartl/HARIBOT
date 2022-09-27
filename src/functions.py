@@ -4,7 +4,7 @@ from  structs import *
 
 
 def updateDataFile(newData, dataPath, fileID):
-	filePath = os.path.abspath(f"{CONFIG.DATA}/{dataPath}/{fileID}.json")
+	filePath = os.path.abspath(f"{CONFIG.DATA_DIR}/{dataPath}/{fileID}.json")
 
 	if not os.path.exists(filePath):
 		with open(filePath, "w+") as fobj:

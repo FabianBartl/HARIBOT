@@ -67,6 +67,15 @@ class Client(discord.Client):
 		
 		if content.startswith("!"): executeCommand(self, message)
 
+	# event: message edit
+	async def on_message_edit(self, before, after):
+		print(f"[edited before] {before.channel.name} - {before.author.name}: '{before.content}'")
+		print(f"[edited after]  {after.channel.name} - {after.author.name}: '{after.content}'")
+
+	# event: message delete
+	async def on_message_delete(self, message):
+		print(f"[deleted] {message.channel.name} - {message.author.name}: '{message.content}'")
+
 
 # run
 client = Client(intents=discord.Intents.all())
