@@ -1,2 +1,4 @@
+
 # HARIBOT
-A Discord Bot specialized for the "Dr. Hans Riegel - Stiftung" Community Discord Server.
+
+A discord bot specialized for the "Dr. Hans Riegel - Stiftung" community discord server.
