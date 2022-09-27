@@ -1,5 +1,5 @@
 
-import os, json
+import os, json, logging
 from  structs import *
 
 
@@ -29,6 +29,8 @@ def updateDataFile(newData, dataPath, fileID):
 	
 	with open(filePath, "w") as fobj:
 		json.dump(oldData, fobj)
+	
+	logging.debug(f"{dataPath} data updated")
 
 def updateGuildData(newData, fileID): updateDataFile(newData, "guilds", fileID)
 def updateUserData (newData, fileID): updateDataFile(newData, "users",  fileID)
