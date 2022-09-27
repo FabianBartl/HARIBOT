@@ -2,7 +2,7 @@
 # libs
 import nextcord
 from nextcord.ext import commands
-from nextcord import slash_command
+from nextcord import slash_command, SlashOption, File, ButtonStyle, Embed
 
 import time, logging
 
@@ -18,7 +18,7 @@ logging.basicConfig(
 	, encoding = "utf-8"
 	, level = CONFIG.LOG_LEVEL
 	, format = r"%(asctime)s - [%(levelname)s]: %(message)s"
-	, datefmt=r"%d.%m.%Y %I:%M:%S %p"
+	, datefmt=r"%d.%m.%Y %H:%M:%S"
 )
 
 bot = commands.Bot(
@@ -109,15 +109,17 @@ async def on_message_delete(message: nextcord.Message):
 async def command_ping(interaction: nextcord.Interaction):
 	await interaction.response.send_message(f"pong with {bot.latency:.2f} ms latency")
 
-@bot.slash_command(
-	name = "user-info"
-	, description = "Get information about a user."
-	, options = [
+@bot.slash_command(name="user-info", description="Get information about a user.")
+async def command_user_info(interaction: nextcord.Interaction, user: nextcord.Member):
+	embed = Embed(color=COLOR.PRIMARY, title=("Bot" if user.bot else "User")+" Info")
+	embed.set_thumbnail(url=user.display_avatar.url)
+	embed.add_field(name="Username", value=f"{user.name}#{user.discriminator}")
+	embed.add_field(name="Nickname", value=user.display_name)
+	embed.add_field(name="Joined at", value=user.joined_at.strftime("%d.%m.%Y %H:%M"))
+	embed.add_field(name="Roles", value=", ".join([ role.name for role in user.roles[1:] ]))
+	embed.set_footer(text=("Bot" if user.bot else "User")+f" ID: {user.id}")
 
-	]
-)
-async def command_user_info(interaction: nextcord.Interaction):
-	await interaction.response.send_message("hi")
+	await interaction.response.send_message(embed=embed)
 
 #---------#
 # execute #
