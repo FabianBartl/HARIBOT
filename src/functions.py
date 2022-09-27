@@ -41,6 +41,7 @@ def getDataFile(dataPath: str, fileID: int):
 
 	logging.debug(f"{dataPath}/{fileID} data read")
 	with open(filePath, "r") as fobj: fileData = json.load(fobj)
+	
 
-def getGuildData(fileID: int): getDataFile("guilds", fileID)
-def getUserData (fileID: int): getDataFile("users",  fileID)
+def getGuildData(fileID): getDataFile("guilds", fileID)
+def getUserData (fileID): getDataFile("users",  fileID)
