@@ -36,34 +36,34 @@ async def on_ready():
 	logging.info("ready")
 	# sync slash commands 
 	try:
-		synced = await bot.tree.sync()
-		logging.info(f"synced {len(synced)} command(s)")
+		synced = await bot.sync_all_application_commands()
+		logging.info(f"synced all application commands")
 	except Exception as e:
 		logging.error(e)
 
 @bot.event
 async def on_member_join(member: nextcord.Member):
 	logging.info("member joined")
-	updateGuildData({"bots_count" if member.bot else "members_count": [1, "add"]}, member.guild.id)
+	updateGuildData({"bots_count" if member.bot else "users_count": [1, "add"]}, member.guild.id)
 
 @bot.event
 async def on_member_remove(member: nextcord.Member):
 	logging.info("member removed")
-	updateGuildData({"bots_count" if member.bot else "members_count": [1, "add"]}, member.guild.id)
+	updateGuildData({"bots_count" if member.bot else "users_count": [1, "add"]}, member.guild.id)
 	updateUserData({"leave_timestamp": [time.time()]}, member.id)
 
 @bot.event
 async def on_guild_join(guild: nextcord.Guild):
 	logging.info("guild joined")
 
-	bots_count, members_count = 0, 0
+	bots_count, users_count = 0, 0
 	for member in guild.members:
 		if member.bot: bots_count += 1
-		else:          members_count += 1
+		else:          users_count += 1
 	
 	updateGuildData({
 		"bots_count": [bots_count, "add"]
-		, "members_count": [members_count, "add"]
+		, "users_count": [users_count, "add"]
 	}, guild.id)
 
 @bot.event
@@ -118,6 +118,22 @@ async def command_user_info(interaction: nextcord.Interaction, user: nextcord.Me
 	embed.add_field(name="Joined at", value=user.joined_at.strftime("%d.%m.%Y %H:%M"))
 	embed.add_field(name="Roles", value=", ".join([ role.name for role in user.roles[1:] ]))
 	embed.set_footer(text=("Bot" if user.bot else "User")+f" ID: {user.id}")
+
+	await interaction.response.send_message(embed=embed)
+
+@bot.slash_command(name="server-info", description="Get information about this server.")
+async def command_server_info(interaction: nextcord.Interaction):
+	guild = interaction.guild
+	guildData = getGuildData(guild.id)
+	# nextcord.Interaction.guild.
+
+	embed = Embed(color=COLOR.PRIMARY, title="Server Info", description=guild.description)
+	embed.set_thumbnail(url=guild.icon.url)
+	embed.add_field(name="Name", value=guild.name, inline=False)
+	embed.add_field(name="Users", value=guildData["users_count"])
+	embed.add_field(name="Bots", value=guildData["bots_count"])
+	embed.add_field(name="Messages", value=guildData["messages_count"])
+	embed.set_footer(text=f"Server ID: {guild.id}")
 
 	await interaction.response.send_message(embed=embed)
 

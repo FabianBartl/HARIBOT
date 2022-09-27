@@ -6,7 +6,7 @@ from structs import CONFIG
 # update data #
 #-------------#
 
-def updateDataFile(newData: dict, dataPath: str, fileID: int):
+def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 	filePath = os.path.abspath(f"{CONFIG.DATA_DIR}/{dataPath}/{fileID}.json")
 
 	if not os.path.exists(filePath): fileData = {}
@@ -28,20 +28,20 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int):
 	with open(filePath, "w+") as fobj: json.dump(fileData, fobj)
 	logging.debug(f"{dataPath}/{fileID} data updated: {fileData}")
 
-def updateGuildData(newData: dict, fileID: int): updateDataFile(newData, "guilds", fileID)
-def updateUserData (newData: dict, fileID: int): updateDataFile(newData, "users",  fileID)
+def updateGuildData(newData: dict, fileID: int) -> None: updateDataFile(newData, "guilds", fileID)
+def updateUserData (newData: dict, fileID: int) -> None: updateDataFile(newData, "users",  fileID)
 
 #----------#
 # get data #
 #----------#
 
-def getDataFile(dataPath: str, fileID: int):
+def getDataFile(dataPath: str, fileID: int) -> dict:
 	filePath = os.path.abspath(f"{CONFIG.DATA_DIR}/{dataPath}/{fileID}.json")
 	if not os.path.exists(filePath): return dict()
 
 	logging.debug(f"{dataPath}/{fileID} data read")
-	with open(filePath, "r") as fobj: fileData = json.load(fobj)
+	with open(filePath, "r") as fobj: return json.load(fobj)
 	
 
-def getGuildData(fileID): getDataFile("guilds", fileID)
-def getUserData (fileID): getDataFile("users",  fileID)
+def getGuildData(fileID: int) -> dict: return getDataFile("guilds", fileID)
+def getUserData (fileID: int) -> dict: return getDataFile("users",  fileID)
