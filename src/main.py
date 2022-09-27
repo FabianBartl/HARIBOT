@@ -83,6 +83,8 @@ async def on_message(message: nextcord.Message):
 	# update guild data
 	updateGuildData({
 		"messages_count": [1, "add"]
+		, "words_count": [len(content.split(" ")), "add"]
+		, "letters_count": [len(content), "add"]
 	}, guild.id)
 	
 	# update user data
@@ -129,7 +131,6 @@ async def command_user_info(interaction: nextcord.Interaction, user: nextcord.Me
 async def command_server_info(interaction: nextcord.Interaction):
 	guild = interaction.guild
 	guildData = getGuildData(guild.id)
-	# nextcord.Interaction.guild.
 
 	embed = Embed(color=COLOR.PRIMARY, title="Server Info", description=guild.description)
 	embed.set_thumbnail(url=guild.icon.url)
@@ -140,6 +141,10 @@ async def command_server_info(interaction: nextcord.Interaction):
 	embed.set_footer(text=f"Server ID: {guild.id}")
 
 	await interaction.response.send_message(embed=embed)
+
+@bot.slash_command(name="reaction-role", description="Add reaction role to message.")
+async def command_reaction_role(interaction: nextcord.Interaction, message_id: int, emoji: int, role: int):
+	await interaction.response.send_message(f"{message_id=}, {emoji=}, {role=}")
 
 #---------#
 # execute #
