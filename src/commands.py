@@ -3,8 +3,6 @@ import logging, shlex
 from structs import *
 from functions import *
 
-# https://stackoverflow.com/questions/49723047/parsing-a-string-as-a-python-argument-list
-
 class EXECUTE:
 	async def unknownCommand(self, message, command, content):
 		logging.debug("unknownCommand")
