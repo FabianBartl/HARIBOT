@@ -82,13 +82,13 @@ async def on_message(message: discord.Message):
 
 	# update guild data
 	updateGuildData({
-		"messages_count" if content.startswith(CONFIG.PREFIX) else "commands_count": [1, "add"]
+		"messages_count": [1, "add"]
 	}, guild.id)
 	
 	# update user data
 	updateUserData({
-		"messages_count" if content.startswith(CONFIG.PREFIX) else "commands_count":  [1, "add"]
-		, "words_count":   [len(content.split(" ")), "add"]
+		"messages_count": [1, "add"]
+		, "words_count": [len(content.split(" ")), "add"]
 		, "letters_count": [len(content), "add"]
 	}, author.id)
 

@@ -28,7 +28,7 @@ class COLOR:
 	DARK      = 0x343A40
 
 class CONFIG:
-	PREFIX    = "!"
+	PREFIX    = "/"
 	INVITE    = "https://discord.com/oauth2/authorize?client_id=1024235031037759500&permissions=8&scope=bot"
 	DATA_DIR  = "../data"
 	LOG_FILE  = "../log.dat"

@@ -26,7 +26,7 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int):
 		elif mode == "new": fileData[key]  = value
 	
 	with open(filePath, "w+") as fobj: json.dump(fileData, fobj)
-	logging.debug(f"{dataPath}/{fileID} data updated")
+	logging.debug(f"{dataPath}/{fileID} data updated: {fileData}")
 
 def updateGuildData(newData: dict, fileID: int): updateDataFile(newData, "guilds", fileID)
 def updateUserData (newData: dict, fileID: int): updateDataFile(newData, "users",  fileID)
@@ -41,7 +41,6 @@ def getDataFile(dataPath: str, fileID: int):
 
 	logging.debug(f"{dataPath}/{fileID} data read")
 	with open(filePath, "r") as fobj: fileData = json.load(fobj)
-	
 
 def getGuildData(fileID: int): getDataFile("guilds", fileID)
 def getUserData (fileID: int): getDataFile("users",  fileID)
