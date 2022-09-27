@@ -5,6 +5,7 @@ import time, logging
 
 from functions import *
 from structs import *
+from commands import *
 
 
 # setup logging
@@ -66,12 +67,12 @@ class Client(discord.Client):
 
 		# update guild data
 		updateGuildData({
-			"messages_count": [1, "add"]
+			"messages_count" if content.startswith(COMMAND.PREFIX) else "commands_count": [1, "add"]
 		}, guild.id)
 		
 		# update user data
 		updateUserData({
-			"messages_count":  [1, "add"]
+			"messages_count" if content.startswith(COMMAND.PREFIX) else "commands_count":  [1, "add"]
 			, "words_count":   [len(content.split(" ")), "add"]
 			, "letters_count": [len(content), "add"]
 		}, author.id)
@@ -80,7 +81,7 @@ class Client(discord.Client):
 		if author.id == client.user.id: return
 		# elif message.channel.id != 1024250906499354655: return
 		
-		if content.startswith("!"): executeCommand(self, message)
+		if content.startswith(COMMAND.PREFIX): await executeCommand(message)
 
 	# event: message edit
 	async def on_message_edit(self, before, after):
