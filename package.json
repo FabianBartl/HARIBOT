@@ -1,0 +1,9 @@
+{
+	"name": "HARIBOT",
+	"author": "Fabian Bartl",
+	"main": "src/main.py",
+	"version": "0.1",
+	"dependencies": {
+		"discord.py": "2.0.1"
+	}
+}
