@@ -4,6 +4,6 @@
 	"main": "src/main.py",
 	"version": "0.5",
 	"dependencies": {
-		"discord.py": "2.0.1"
+		"nextcord": "2.2.0"
 	}
 }
