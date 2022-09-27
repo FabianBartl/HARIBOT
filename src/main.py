@@ -111,12 +111,16 @@ async def command_ping(interaction: nextcord.Interaction):
 
 @bot.slash_command(name="user-info", description="Get information about a user.")
 async def command_user_info(interaction: nextcord.Interaction, user: nextcord.Member):
+	userData = getUserData(user.id)
+
 	embed = Embed(color=COLOR.PRIMARY, title=("Bot" if user.bot else "User")+" Info")
 	embed.set_thumbnail(url=user.display_avatar.url)
 	embed.add_field(name="Username", value=f"{user.name}#{user.discriminator}")
 	embed.add_field(name="Nickname", value=user.display_name)
 	embed.add_field(name="Joined at", value=user.joined_at.strftime("%d.%m.%Y %H:%M"))
-	embed.add_field(name="Roles", value=", ".join([ role.name for role in user.roles[1:] ]))
+	embed.add_field(name="Messages", value=userData["messages_count"])
+	embed.add_field(name="Avr. Words/Message", value=round(userData["words_count"]/userData["messages_count"], 2))
+	embed.add_field(name="Roles", value=", ".join([ role.name for role in user.roles[1:] ]), inline=False)
 	embed.set_footer(text=("Bot" if user.bot else "User")+f" ID: {user.id}")
 
 	await interaction.response.send_message(embed=embed)
