@@ -1,7 +1,5 @@
 
 # libs
-from code import interact
-from email import message
 import nextcord
 from nextcord.ext import commands
 from nextcord import slash_command, SlashOption, File, ButtonStyle, Embed
