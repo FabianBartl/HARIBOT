@@ -1,7 +1,7 @@
 
 # libs
 import nextcord
-from nextcord.ext import commands, help_commands
+from nextcord.ext import commands
 from nextcord import SlashOption, File, Embed
 
 import time, logging, sys, sqlite3
@@ -27,7 +27,6 @@ logging.basicConfig(
 bot = commands.Bot(
 	command_prefix = CONFIG.PREFIX
 	, intents = nextcord.Intents.all()
-	, help_command = help_commands.PaginatedHelpCommand()
 )
 
 #--------#
@@ -120,6 +119,19 @@ async def on_message_delete(message: nextcord.Message):
 # commands #
 #----------#
 
+@bot.slash_command(name="help", description="Overview of all commands.")
+async def sc_help(interaction: nextcord.Interaction):
+	prefix = CONFIG.PREFIX
+	
+	embed = Embed(color=COLOR.INFO, title="Command Overview")
+	for command in bot.walk_commands():
+		description = command.description
+		if not description or description is None or description == "": description = "*no description provided*"
+		embed.add_field(name=f"`{prefix}{command.name}{command.signature if command.signature is not None else ''}`", value=description)
+	
+	await interaction.response.send_message(embed=embed)
+
+
 @bot.slash_command(name="ping", description="Test bot response.")
 async def sc_ping(interaction: nextcord.Interaction):
 	await interaction.response.send_message(f"pong with {bot.latency*1000:.0f} ms latency")
@@ -128,15 +140,15 @@ async def sc_ping(interaction: nextcord.Interaction):
 async def sc_member_info(interaction: nextcord.Interaction, member: nextcord.Member):
 	userData = getUserData(member.id)
 
-	embed = Embed(color=COLOR.PRIMARY, title="Member Info")
+	embed = Embed(color=COLOR.SUCCESS, title="Member Info")
 	embed.set_thumbnail(url=member.display_avatar.url)
 	embed.add_field(name="Username", value=f"{member.name}#{member.discriminator}")
 	embed.add_field(name="Nickname", value=member.display_name)
-	embed.add_field(name="Is Bot", value=str(member.bot))
+	embed.add_field(name="Is a Bot", value="Yes" if member.bot else "No")
 
 	embed.add_field(name="Joined at", value=member.joined_at.strftime("%d.%m.%Y %H:%M"))
 	embed.add_field(name="Messages", value=userData["messages_count"])
-	embed.add_field(name="Avr. Words/Message", value=round(userData["words_count"]/userData["messages_count"], 2))
+	embed.add_field(name="Words/Message", value=round(userData["words_count"]/userData["messages_count"], 2))
 
 	embed.add_field(name="Roles", value=", ".join([ role.name for role in member.roles[1:] ]), inline=False)
 	embed.set_footer(text=f"Member ID: {member.id}")
@@ -148,7 +160,7 @@ async def sc_server_info(interaction: nextcord.Interaction):
 	guild = interaction.guild
 	guildData = getGuildData(guild.id)
 
-	embed = Embed(color=COLOR.PRIMARY, title="Server Info", description=guild.description)
+	embed = Embed(color=COLOR.SUCCESS, title="Server Info", description=guild.description)
 	embed.set_thumbnail(url=guild.icon.url)
 	embed.add_field(name="Name", value=guild.name, inline=False)
 
@@ -161,16 +173,15 @@ async def sc_server_info(interaction: nextcord.Interaction):
 
 @bot.slash_command(name="bot-info", description="Get information about this bot.")
 async def sc_bot_info(interaction: nextcord.Interaction):
-	app = nextcord.Object(1024235031037759500)
+	app = await interaction.guild.fetch_member(1024235031037759500)
 
-	embed = Embed(color=COLOR.PRIMARY, title="Bot Info", description=guild.description)
-	embed.set_thumbnail(url=app.icon.url)
+	embed = Embed(color=COLOR.SUCCESS, title="Bot Info", description='A discord bot specialized for the "Dr. Hans Riegel - Stiftung" community discord server.')
+	embed.set_thumbnail(url=app.display_avatar.url)
 	embed.add_field(name="Name", value=app.name)
-	embed.add_field(name="Description", value=app.description)
 	embed.add_field(name="Creator", value="InformaticFreak#7378")
 
-	embed.add_field(name="GitHub", value="https://github.com/FabianBartl/HARIBOT")
-	embed.add_field(name="Invite", value="https://discord.com/oauth2/authorize?client_id=1024235031037759500&permissions=8&scope=bot")
+	embed.add_field(name="Source Code", value="https://github.com/FabianBartl/HARIBOT", inline=False)
+	embed.add_field(name="Invite", value="https://discord.com/oauth2/authorize?client_id=1024235031037759500&permissions=8&scope=bot", inline=False)
 	embed.set_footer(text=f"Bot ID: {app.id}")
 
 	await interaction.response.send_message(embed=embed)
