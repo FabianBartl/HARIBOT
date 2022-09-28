@@ -18,7 +18,7 @@ from functions import *
 logging.basicConfig(
 	level = CONFIG.LOG_LEVEL
 	, encoding = "utf-8"
-	, format = "%(asctime)s\t\t[%(levelname)s]\t\t%(message)s"
+	, format = "%(asctime)s  [%(levelname)s]\t%(message)s"
 	, datefmt = "%Y-%m-%d %H:%M:%S"
 	, handlers = [
 		logging.FileHandler(CONFIG.LOG_FILE)

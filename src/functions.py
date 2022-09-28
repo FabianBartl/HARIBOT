@@ -53,7 +53,7 @@ def getReactionsData(fileID: int) -> dict: return getDataFile("reactions", fileI
 # manage logging file #
 #---------------------#
 
-def getLogFile(srcPath: str=CONFIG.LOG_FILE, rows: int=20) -> str:
+def getLogFile(srcPath: str=CONFIG.LOG_FILE, rows: int=21) -> str:
 	with open(CONFIG.LOG_FILE, "r") as fobj: lines = fobj.readlines()
 	
 	length = 2000 // rows
@@ -62,11 +62,11 @@ def getLogFile(srcPath: str=CONFIG.LOG_FILE, rows: int=20) -> str:
 	for line in lines[len(lines)-rows:]:
 
 		line = re.sub("(\t|\n)+", " ", line[11:])
-		line = line.replace("[DEBUG]",    "D")
-		line = line.replace("[INFO]",     "I")
-		line = line.replace("[WARNING]",  "W")
-		line = line.replace("[CRITICAL]", "C")
-		line = line.replace("[ERROR]",    "E")
+		line = line.replace(" [DEBUG]",    "D")
+		line = line.replace(" [INFO]",     "I")
+		line = line.replace(" [WARNING]",  "W")
+		line = line.replace(" [CRITICAL]", "C")
+		line = line.replace(" [ERROR]",    "E")
 
 		if len(line) <= length: log_data.append(f"{line}\n")
 		else:                   log_data.append(f"{line[:length-3]}...\n")
