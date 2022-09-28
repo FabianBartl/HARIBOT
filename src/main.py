@@ -167,22 +167,22 @@ async def sc_log(interaction: Interaction, mode: int=SlashOption(required=True, 
 		await sc_log(interaction, mode=2)
 		await sc_log(interaction, mode=1)
 		await sc_log(interaction, mode=3)
-		await interaction.response.send_message(f"backuped log file", ephemeral=CONFIG.EPHEMERAL)
+		await interaction.response.send_message(f"backuped log file", ephemeral=True)
 		logging.debug(f"backuped log file")
 
 	elif mode == 1: #save
 		dstSize = saveLogFile(dstPath)
-		await interaction.response.send_message(f"log of size `{dstSize/1000:.2f} KB` saved as: `{dstFile}`", ephemeral=CONFIG.EPHEMERAL)
+		await interaction.response.send_message(f"log of size `{dstSize/1000:.2f} KB` saved as: `{dstFile}`", ephemeral=True)
 		logging.info(f"saved log file at {dstPath}")
 
 	elif mode == 2: #get
 		log_code = getLogFile().replace("`", "'")
-		await interaction.response.send_message(f"```js\n...\n{log_code}\n```", file=File(CONFIG.LOG_FILE, filename=dstFile), ephemeral=CONFIG.EPHEMERAL)
+		await interaction.response.send_message(f"```js\n...\n{log_code}\n```", file=File(CONFIG.LOG_FILE, filename=dstFile), ephemeral=True)
 		logging.debug(f"sent log file part")
 	
 	elif mode == 3: #clear
 		clearLogFile()
-		await interaction.response.send_message(f"cleared log file", ephemeral=CONFIG.EPHEMERAL)
+		await interaction.response.send_message(f"cleared log file", ephemeral=True)
 		logging.info(f"cleared log file")
 
 	logging.debug(f"(command sent) log: {mode=}")

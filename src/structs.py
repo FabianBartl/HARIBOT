@@ -33,7 +33,7 @@ class CONFIG:
 	EPHEMERAL = False
 	LOG_DIR   = os.path.abspath("../log")
 	LOG_FILE  = os.path.abspath(f"{LOG_DIR}/log.dat")
-	LOG_LEVEL = logging.INFO
+	LOG_LEVEL = logging.DEBUG
 
 class DATABASE:
 	DB_FILE    = "../data/data.db"
