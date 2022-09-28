@@ -1,15 +1,15 @@
 
 # libs
-from datetime import datetime
 import nextcord
 from nextcord.ext import commands
-from nextcord import Member, Guild, Message, Interaction, SlashOption, File, Embed
+from nextcord import Member, Guild, Message, Interaction, SlashOption, File, Embed, Permissions
 
-import time, logging, sys, sqlite3, json, re, shutil, os
+import time, logging, sys, sqlite3, json, os
+from datetime import datetime
 from urllib.request import urlopen
 
 from structs import BOTINFO, TOKEN, COLOR, CONFIG, DATABASE
-from functions import updateGuildData, updateUserData, getGuildData, getUserData
+from functions import *
 
 #-------#
 # setup #
@@ -154,38 +154,37 @@ async def sc_help(interaction: Interaction):
 
 @bot.slash_command(name="ping", description="Test bot response.")
 async def sc_ping(interaction: Interaction):
-	await interaction.response.send_message(f"pong with {bot.latency*1000:.0f} ms latency", ephemeral=CONFIG.EPHEMERAL)
+	await interaction.response.send_message(f"pong with `{bot.latency*1000:.0f} ms` latency", ephemeral=CONFIG.EPHEMERAL)
 	logging.debug(f"(command sent) ping")
 
 
-@bot.slash_command(name="log", description="Manage logging file.")
+@bot.slash_command(name="log", description="Manage logging file.", default_member_permissions=Permissions(administrator=True))
 async def sc_log(interaction: Interaction, mode: int=SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3})):
+	dstFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.dat"
+	dstPath = os.path.abspath(f"{CONFIG.LOG_DIR}/{dstFile}")
 
 	if mode == 0: #backup: get, save, clear
-		pass
+		await sc_log(interaction, mode=2)
+		await sc_log(interaction, mode=1)
+		await sc_log(interaction, mode=3)
+		await interaction.response.send_message(f"backuped log file", ephemeral=CONFIG.EPHEMERAL)
+		logging.debug(f"backuped log file")
 
 	elif mode == 1: #save
-		destFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H:%M:%S')}.dat"
-		destPath = os.path.abspath(f"{CONFIG.LOG_DIR}/{destFile}")
-		shutil.move(CONFIG.LOG_FILE, destPath, copy_function=shutil.copy)
-		await interaction.response.send_message(f"log of size {os.path.getsize(destPath)} saved as: {destFile}", ephemeral=CONFIG.EPHEMERAL)
+		dstSize = saveLogFile(dstPath)
+		await interaction.response.send_message(f"log of size `{dstSize/1000:.2f} KB` saved as: `{dstFile}`", ephemeral=CONFIG.EPHEMERAL)
+		logging.info(f"saved log file at {dstPath}")
 
 	elif mode == 2: #get
-		with open(CONFIG.LOG_FILE, "r") as fobj: lines = fobj.readlines()
-		
-		log_data = list()
-		for line in lines[len(lines)-20:]:
-			re.sub("(\t|\n)+", "\t", line)
-			if len(line) < 100: log_data.append(line)
-			else:               log_data.append(f"{line[:100]}...")
-		log_code = "".join(log_data)
-
-		await interaction.response.send_message(f"```js\n{log_code}...\n```", ephemeral=CONFIG.EPHEMERAL)
+		log_code = getLogFile().replace("`", "'")
+		await interaction.response.send_message(f"```js\n...\n{log_code}\n```", file=File(CONFIG.LOG_FILE, filename=dstFile), ephemeral=CONFIG.EPHEMERAL)
+		logging.debug(f"sent log file part")
 	
 	elif mode == 3: #clear
-		with open(CONFIG.LOG_FILE, "w+") as fobj: pass
+		clearLogFile()
+		await interaction.response.send_message(f"cleared log file", ephemeral=CONFIG.EPHEMERAL)
+		logging.info(f"cleared log file")
 
-	await interaction.response.send_message(f"log: {mode=}", ephemeral=CONFIG.EPHEMERAL)
 	logging.debug(f"(command sent) log: {mode=}")
 
 #-----#

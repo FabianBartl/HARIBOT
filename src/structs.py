@@ -30,10 +30,10 @@ class COLOR:
 class CONFIG:
 	PREFIX    = "/"
 	DATA_DIR  = os.path.abspath("../data")
-	EPHEMERAL = True
+	EPHEMERAL = False
 	LOG_DIR   = os.path.abspath("../log")
 	LOG_FILE  = os.path.abspath(f"{LOG_DIR}/log.dat")
-	LOG_LEVEL = logging.DEBUG
+	LOG_LEVEL = logging.INFO
 
 class DATABASE:
 	DB_FILE    = "../data/data.db"

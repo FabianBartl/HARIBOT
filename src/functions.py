@@ -1,5 +1,5 @@
 
-import os, json, logging
+import os, json, logging, re
 from structs import CONFIG, DATABASE
 
 #-------------#
@@ -48,3 +48,31 @@ def getDataFile(dataPath: str, fileID: int) -> dict:
 def getGuildData    (fileID: int) -> dict: return getDataFile("guilds",    fileID)
 def getUserData     (fileID: int) -> dict: return getDataFile("users",     fileID)
 def getReactionsData(fileID: int) -> dict: return getDataFile("reactions", fileID)
+
+#---------------------#
+# manage logging file #
+#---------------------#
+
+def getLogFile(srcPath: str=CONFIG.LOG_FILE, length: int=20) -> str:
+	with open(CONFIG.LOG_FILE, "r") as fobj: lines = fobj.readlines()
+	
+	log_data = list()
+	for line in lines[len(lines)-length:]:
+		re.sub("(\t|\n)+", "\t", line)
+		if len(line) < 100: log_data.append(line)
+		else:               log_data.append(f"{line[:100]}...")
+	
+	return "".join(log_data)
+
+
+def saveLogFile(dstPAth: str, srcPath: str=CONFIG.LOG_FILE) -> int:
+	with open(srcPath, "r") as fsrc:
+		with open(dstPAth, "w+") as fdst:
+			destLines = fsrc.readlines()
+			destSize = len(destLines)
+			fdst.writelines(destLines)
+	return destSize
+
+
+def clearLogFile(srcPath: str=CONFIG.LOG_FILE) -> None:
+	with open(CONFIG.LOG_FILE, "w+") as fobj: pass
