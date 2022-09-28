@@ -159,7 +159,7 @@ async def sc_ping(interaction: Interaction):
 
 
 @bot.slash_command(name="log", description="Manage logging file.", default_member_permissions=Permissions(administrator=True))
-async def sc_log(interaction: Interaction, mode: int=SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3})):
+async def sc_log(interaction: Interaction, mode: int=SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3}), arg: int=-1):
 	dstFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.dat"
 	dstPath = os.path.abspath(f"{CONFIG.LOG_DIR}/{dstFile}")
 
@@ -176,7 +176,7 @@ async def sc_log(interaction: Interaction, mode: int=SlashOption(required=True, 
 		logging.info(f"saved log file at {dstPath}")
 
 	elif mode == 2: #get
-		log_code = getLogFile().replace("`", "'")
+		log_code = getLogFile(rows=20 if arg < 1 else arg).replace("`", "'")
 		await interaction.response.send_message(f"```js\n...\n{log_code}\n```", file=File(CONFIG.LOG_FILE, filename=dstFile), ephemeral=True)
 		logging.debug(f"sent log file part")
 	
