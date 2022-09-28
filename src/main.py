@@ -186,14 +186,22 @@ async def sc_log(
 		logging.debug(f"sent end of log file")
 	
 	elif mode == 3: #clear
-		clearLogFile()
-		msg = f"log file cleared"
+		if checkOwner(interaction.user.id):
+			clearLogFile()
+			msg = f"log file cleared"
+		else:
+			msg = f"no permission to use"
+		
 		await interaction.response.send_message(msg, ephemeral=True)
 		logging.info(msg)
 
 	elif mode == 4: #reset
-		logFiles = resetLogFiles()
-		msg = f"all {len(logFiles)} log file(s) deleted"
+		if checkOwner(interaction.user.id):
+			logFiles = resetLogFiles()
+			msg = f"all {len(logFiles)} log file(s) deleted / cleared"
+		else:
+			msg = f"no permission to use"
+		
 		await interaction.response.send_message(msg, ephemeral=True)
 		logging.warning(msg)
 

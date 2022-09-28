@@ -1,6 +1,6 @@
 
 import os, json, logging, re
-from structs import CONFIG, DATABASE
+from structs import CONFIG, DATABASE, TOKEN
 
 #-------------#
 # update data #
@@ -49,6 +49,12 @@ def getGuildData    (fileID: int) -> dict: return getDataFile("guilds",    fileI
 def getUserData     (fileID: int) -> dict: return getDataFile("users",     fileID)
 def getReactionsData(fileID: int) -> dict: return getDataFile("reactions", fileID)
 
+#------------------#
+# check permissons #
+#------------------#
+
+def checkOwner(checkID: int) -> bool: return checkID == TOKEN.OWNER_ID
+
 #---------------------#
 # manage logging file #
 #---------------------#
@@ -84,12 +90,19 @@ def saveLogFile(dstPAth: str, srcPath: str=CONFIG.LOG_FILE) -> int:
 def clearLogFile(srcPath: str=CONFIG.LOG_FILE) -> None:
 	with open(CONFIG.LOG_FILE, "w+") as fobj: pass
 
-def resetLogFiles(logDir: str=f"{CONFIG.LOG_DIR}/") -> list:
+def resetLogFiles(logDir: str=CONFIG.LOG_DIR, logFile: str=CONFIG.LOG_FILE) -> list:
 	logFiles = os.listdir(os.path.abspath(logDir))
+
 	for file in logFiles:
-		file = os.path.join(logDir, file)
-		os.remove(file)
-		logging.warning(f"file `{file}` deleted")
+		filePath = os.path.join(logDir, file)
+
+		if filePath == logFile:
+			clearLogFile(logFile)
+			logging.info(f"file `{filePath}` cleared")
+		else:
+			os.remove(filePath)
+			logging.warning(f"file `{filePath}` deleted")
+	
 	return logFiles
 
 def backupLogFile(dstPath: str, srcPath: str=CONFIG.LOG_FILE, *args) -> tuple:

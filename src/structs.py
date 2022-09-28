@@ -2,7 +2,8 @@
 import os, logging
 
 class TOKEN:
-	DISCORD = open(os.path.abspath(r"../discord.token"), "r").readlines()[0].strip()
+	DISCORD  = open(os.path.abspath(r"../discord.token"), "r").readlines()[0].strip()
+	OWNER_ID = 386249332711620608
 
 class COLOR:
 	BLUE      = 0x007BFF
@@ -32,7 +33,7 @@ class CONFIG:
 	DATA_DIR  = os.path.abspath("../data")
 	EPHEMERAL = False
 	LOG_DIR   = os.path.abspath("../log")
-	LOG_FILE  = os.path.abspath(f"{LOG_DIR}/log.dat")
+	LOG_FILE  = os.path.abspath(os.path.join(LOG_DIR, "log.dat"))
 	LOG_LEVEL = logging.DEBUG
 
 class DATABASE:
