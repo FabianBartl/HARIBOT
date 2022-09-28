@@ -25,9 +25,9 @@ logging.basicConfig(
 )
 
 bot = commands.Bot(
-	sc_prefix = CONFIG.PREFIX
+	command_prefix = CONFIG.PREFIX
 	, intents = nextcord.Intents.all()
-	, help_command = help_commands.EmbeddedHelpCommand()
+	, help_command = help_commands.PaginatedHelpCommand()
 )
 
 #--------#
@@ -120,11 +120,11 @@ async def on_message_delete(message: nextcord.Message):
 # commands #
 #----------#
 
-@bot.slasc_command(name="ping", description="Test bot response.")
+@bot.slash_command(name="ping", description="Test bot response.")
 async def sc_ping(interaction: nextcord.Interaction):
-	await interaction.response.send_message(f"pong with {bot.latency//1000} ms latency")
+	await interaction.response.send_message(f"pong with {bot.latency*1000:.0f} ms latency")
 
-@bot.slasc_command(name="member-info", description="Get information about a mentioned member.")
+@bot.slash_command(name="member-info", description="Get information about a mentioned member.")
 async def sc_member_info(interaction: nextcord.Interaction, member: nextcord.Member):
 	userData = getUserData(member.id)
 
@@ -143,7 +143,7 @@ async def sc_member_info(interaction: nextcord.Interaction, member: nextcord.Mem
 
 	await interaction.response.send_message(embed=embed)
 
-@bot.slasc_command(name="server-info", description="Get information about this server.")
+@bot.slash_command(name="server-info", description="Get information about this server.")
 async def sc_server_info(interaction: nextcord.Interaction):
 	guild = interaction.guild
 	guildData = getGuildData(guild.id)
@@ -159,7 +159,7 @@ async def sc_server_info(interaction: nextcord.Interaction):
 
 	await interaction.response.send_message(embed=embed)
 
-@bot.slasc_command(name="bot-info", description="Get information about this bot.")
+@bot.slash_command(name="bot-info", description="Get information about this bot.")
 async def sc_bot_info(interaction: nextcord.Interaction):
 	app = nextcord.Object(1024235031037759500)
 
@@ -175,7 +175,7 @@ async def sc_bot_info(interaction: nextcord.Interaction):
 
 	await interaction.response.send_message(embed=embed)
 
-@bot.slasc_command(name="reaction-role", description="Add reaction role to message.")
+@bot.slash_command(name="reaction-role", description="Add reaction role to message.")
 async def sc_reaction_role(interaction: nextcord.Interaction, message_id: int, emoji: int, role: int):
 	await interaction.response.send_message(f"{message_id=}, {emoji=}, {role=}")
 
