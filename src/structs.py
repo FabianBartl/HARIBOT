@@ -2,7 +2,7 @@
 import os, logging
 
 class TOKEN:
-	DISCORD   = open(os.path.abspath(r"../discord.token"), "r").readlines()[0].strip()
+	DISCORD = open(os.path.abspath(r"../discord.token"), "r").readlines()[0].strip()
 
 class COLOR:
 	BLUE      = 0x007BFF
@@ -29,11 +29,21 @@ class COLOR:
 
 class CONFIG:
 	PREFIX    = "/"
-	DATA_DIR  = "../data"
-	LOG_FILE  = "../log.dat"
-	LOG_LEVEL = logging.INFO
+	DATA_DIR  = os.path.abspath("../data")
+	EPHEMERAL = True
+	LOG_DIR   = os.path.abspath("../log")
+	LOG_FILE  = os.path.abspath(f"{LOG_DIR}/log.dat")
+	LOG_LEVEL = logging.DEBUG
 
 class DATABASE:
 	DB_FILE    = "../data/data.db"
 	CONNECTION = None
 	CURSOR     = None
+
+class BOTINFO:
+	ID          = 1024235031037759500
+	NAME        = "HARIBOT"
+	DESCRIPTION = 'A discord bot specialized for the "Dr. Hans Riegel - Stiftung" community discord server.'
+	INVITE      = f"https://discord.com/oauth2/authorize?client_id={ID}&permissions=8&scope=bot"
+	REPOSITORY  = "FabianBartl/HARIBOT"
+	CREATOR     = "Fabian Bartl"

@@ -2,7 +2,7 @@
 	"name": "HARIBOT"
 	, "author": "Fabian Bartl"
 	, "main": "src/main.py"
-	, "version": "0.6"
+	, "version": "0.7"
 	, "dependencies": {
 		"nextcord": "2.2.0"
 	}

@@ -1,12 +1,14 @@
 
 # libs
+from datetime import datetime
 import nextcord
 from nextcord.ext import commands
-from nextcord import SlashOption, File, Embed
+from nextcord import Member, Guild, Message, Interaction, SlashOption, File, Embed
 
-import time, logging, sys, sqlite3
+import time, logging, sys, sqlite3, json, re, shutil, os
+from urllib.request import urlopen
 
-from structs import TOKEN, COLOR, CONFIG, DATABASE
+from structs import BOTINFO, TOKEN, COLOR, CONFIG, DATABASE
 from functions import updateGuildData, updateUserData, getGuildData, getUserData
 
 #-------#
@@ -16,8 +18,8 @@ from functions import updateGuildData, updateUserData, getGuildData, getUserData
 logging.basicConfig(
 	level = CONFIG.LOG_LEVEL
 	, encoding = "utf-8"
-	, format = r"%(asctime)s - [%(levelname)s]: %(message)s"
-	, datefmt = r"%d.%m.%Y %H:%M:%S"
+	, format = "%(asctime)s\t\t[%(levelname)s]\t\t%(message)s"
+	, datefmt = "%Y-%m-%d %H:%M:%S"
 	, handlers = [
 		logging.FileHandler(CONFIG.LOG_FILE)
 		, logging.StreamHandler(sys.stdout)
@@ -34,17 +36,18 @@ bot = commands.Bot(
 #--------#
 
 @bot.event
-async def on_ready():
+async def on_connect():
 	DATABASE.CONNECTION = sqlite3.connect(DATABASE.DB_FILE)
 	DATABASE.CURSOR = DATABASE.CONNECTION.cursor()
 	logging.info("connection to database established")
 	
+@bot.event
+async def on_ready():
 	try:
 		await bot.sync_all_application_commands()
 		logging.info(f"synced all application commands")
 	except Exception as e:
 		logging.error(e)
-	
 	logging.info("bot is ready")
 
 @bot.event
@@ -54,18 +57,27 @@ async def on_close():
 	logging.info("bot was shut down")
 
 @bot.event
-async def on_member_join(member: nextcord.Member):
+async def on_disconnect():
+	logging.info("bot was disconnected")
+	await time.sleep(3)
+	await bot.connect(reconnect=True)
+	logging.info("reconnected after 3 seconds")
+
+#-----#
+
+@bot.event
+async def on_member_join(member: Member):
 	logging.info("member joined")
 	updateGuildData({"bots_count" if member.bot else "users_count": [1, "add"]}, member.guild.id)
 
 @bot.event
-async def on_member_remove(member: nextcord.Member):
+async def on_member_remove(member: Member):
 	logging.info("member removed")
 	updateGuildData({"bots_count" if member.bot else "users_count": [1, "add"]}, member.guild.id)
 	updateUserData({"leave_timestamp": [time.time()]}, member.id)
 
 @bot.event
-async def on_guild_join(guild: nextcord.Guild):
+async def on_guild_join(guild: Guild):
 	logging.info("guild joined")
 
 	bots_count, users_count = 0, 0
@@ -79,12 +91,14 @@ async def on_guild_join(guild: nextcord.Guild):
 	}, guild.id)
 
 @bot.event
-async def on_guild_remove(guild: nextcord.Guild):
+async def on_guild_remove(guild: Guild):
 	logging.info("guild removed")
 	updateGuildData({"leave_timestamp": [time.time()]}, guild.id)
 
+#-----#
+
 @bot.event
-async def on_message(message: nextcord.Message):
+async def on_message(message: Message):
 	content = message.content
 	channel = message.channel
 	author  = message.author
@@ -107,12 +121,12 @@ async def on_message(message: nextcord.Message):
 	}, author.id)
 
 @bot.event
-async def on_message_edit(before: nextcord.Message, after: nextcord.Message):
+async def on_message_edit(before: Message, after: Message):
 	logging.debug(f"(msg edited before) {before.channel.name} - {before.author.display_name}: '{before.content}'")
 	logging.debug(f"(msg edited after)  {after.channel.name} - {after.author.display_name}: '{after.content}'")
 
 @bot.event
-async def on_message_delete(message: nextcord.Message):
+async def on_message_delete(message: Message):
 	logging.debug(f"(msg deleted) {message.channel.name} - {message.author.display_name}: '{message.content}'")
 
 #----------#
@@ -120,24 +134,64 @@ async def on_message_delete(message: nextcord.Message):
 #----------#
 
 @bot.slash_command(name="help", description="Overview of all commands.")
-async def sc_help(interaction: nextcord.Interaction):
+async def sc_help(interaction: Interaction):
 	prefix = CONFIG.PREFIX
 	
 	embed = Embed(color=COLOR.INFO, title="Command Overview")
 	for command in bot.walk_commands():
+		name        = command.name
 		description = command.description
-		if not description or description is None or description == "": description = "*no description provided*"
-		embed.add_field(name=f"`{prefix}{command.name}{command.signature if command.signature is not None else ''}`", value=description)
-	
-	await interaction.response.send_message(embed=embed)
+		signature   = command.signature
 
+		if not description or description is None or description == "": description = "*no description provided*"
+		
+		embed.add_field(name=f"`{prefix}{name}{signature if signature is not None else ''}`", value=description)
+	
+	await interaction.response.send_message(embed=embed, ephemeral=CONFIG.EPHEMERAL)
+	logging.debug(f"(command sent) help")
+
+#-----#
 
 @bot.slash_command(name="ping", description="Test bot response.")
-async def sc_ping(interaction: nextcord.Interaction):
-	await interaction.response.send_message(f"pong with {bot.latency*1000:.0f} ms latency")
+async def sc_ping(interaction: Interaction):
+	await interaction.response.send_message(f"pong with {bot.latency*1000:.0f} ms latency", ephemeral=CONFIG.EPHEMERAL)
+	logging.debug(f"(command sent) ping")
+
+
+@bot.slash_command(name="log", description="Manage logging file.")
+async def sc_log(interaction: Interaction, mode: int=SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3})):
+
+	if mode == 0: #backup: get, save, clear
+		pass
+
+	elif mode == 1: #save
+		destFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H:%M:%S')}.dat"
+		destPath = os.path.abspath(f"{CONFIG.LOG_DIR}/{destFile}")
+		shutil.move(CONFIG.LOG_FILE, destPath, copy_function=shutil.copy)
+		await interaction.response.send_message(f"log of size {os.path.getsize(destPath)} saved as: {destFile}", ephemeral=CONFIG.EPHEMERAL)
+
+	elif mode == 2: #get
+		with open(CONFIG.LOG_FILE, "r") as fobj: lines = fobj.readlines()
+		
+		log_data = list()
+		for line in lines[len(lines)-20:]:
+			re.sub("(\t|\n)+", "\t", line)
+			if len(line) < 100: log_data.append(line)
+			else:               log_data.append(f"{line[:100]}...")
+		log_code = "".join(log_data)
+
+		await interaction.response.send_message(f"```js\n{log_code}...\n```", ephemeral=CONFIG.EPHEMERAL)
+	
+	elif mode == 3: #clear
+		with open(CONFIG.LOG_FILE, "w+") as fobj: pass
+
+	await interaction.response.send_message(f"log: {mode=}", ephemeral=CONFIG.EPHEMERAL)
+	logging.debug(f"(command sent) log: {mode=}")
+
+#-----#
 
 @bot.slash_command(name="member-info", description="Get information about a mentioned member.")
-async def sc_member_info(interaction: nextcord.Interaction, member: nextcord.Member):
+async def sc_member_info(interaction: Interaction, member: Member):
 	userData = getUserData(member.id)
 
 	embed = Embed(color=COLOR.SUCCESS, title="Member Info")
@@ -147,16 +201,19 @@ async def sc_member_info(interaction: nextcord.Interaction, member: nextcord.Mem
 	embed.add_field(name="Is a Bot", value="Yes" if member.bot else "No")
 
 	embed.add_field(name="Joined at", value=member.joined_at.strftime("%d.%m.%Y %H:%M"))
-	embed.add_field(name="Messages", value=userData["messages_count"])
-	embed.add_field(name="Words/Message", value=round(userData["words_count"]/userData["messages_count"], 2))
+	embed.add_field(name="Messages", value=userData.get("messages_count", 0))
+	embed.add_field(name="Words/Message", value=round(userData.get("words_count", 0) / userData.get("messages_count", 1), 2))
 
 	embed.add_field(name="Roles", value=", ".join([ role.name for role in member.roles[1:] ]), inline=False)
+
 	embed.set_footer(text=f"Member ID: {member.id}")
 
-	await interaction.response.send_message(embed=embed)
+	await interaction.response.send_message(embed=embed, ephemeral=CONFIG.EPHEMERAL)
+	logging.debug(f"(command sent) member-info: {member=}")
+
 
 @bot.slash_command(name="server-info", description="Get information about this server.")
-async def sc_server_info(interaction: nextcord.Interaction):
+async def sc_server_info(interaction: Interaction):
 	guild = interaction.guild
 	guildData = getGuildData(guild.id)
 
@@ -164,35 +221,62 @@ async def sc_server_info(interaction: nextcord.Interaction):
 	embed.set_thumbnail(url=guild.icon.url)
 	embed.add_field(name="Name", value=guild.name, inline=False)
 
-	embed.add_field(name="Users", value=guildData["users_count"])
-	embed.add_field(name="Bots", value=guildData["bots_count"])
-	embed.add_field(name="Messages", value=guildData["messages_count"])
+	embed.add_field(name="Users", value=guildData.get("users_count", 0))
+	embed.add_field(name="Bots", value=guildData.get("bots_count", 0))
+	embed.add_field(name="Messages", value=guildData.get("messages_count", 0))
+
+	embed.add_field(name="Invite", value=f"[open](https://discord.gg/GVs3hmCmmJ) or copy invite:\n```\nhttps://discord.gg/GVs3hmCmmJ\n```", inline=False)
+
 	embed.set_footer(text=f"Server ID: {guild.id}")
 
-	await interaction.response.send_message(embed=embed)
+	await interaction.response.send_message(embed=embed, ephemeral=CONFIG.EPHEMERAL)
+	logging.debug(f"(command sent) server-info")
+
 
 @bot.slash_command(name="bot-info", description="Get information about this bot.")
-async def sc_bot_info(interaction: nextcord.Interaction):
-	app = await interaction.guild.fetch_member(1024235031037759500)
+async def sc_bot_info(interaction: Interaction):
+	app = await interaction.guild.fetch_member(BOTINFO.ID)
 
-	embed = Embed(color=COLOR.SUCCESS, title="Bot Info", description='A discord bot specialized for the "Dr. Hans Riegel - Stiftung" community discord server.')
+	embed = Embed(color=COLOR.SUCCESS, title="Bot Info", description=BOTINFO.DESCRIPTION)
 	embed.set_thumbnail(url=app.display_avatar.url)
-	embed.add_field(name="Name", value=app.name)
-	embed.add_field(name="Creator", value="InformaticFreak#7378")
+	embed.add_field(name="Name", value=f"{app.name}")
+	embed.add_field(name="Creator", value=BOTINFO.CREATOR)
+	embed.add_field(name="Joined at", value=app.joined_at.strftime("%d.%m.%Y %H:%M"))
 
-	embed.add_field(name="Source Code", value="https://github.com/FabianBartl/HARIBOT", inline=False)
-	embed.add_field(name="Invite", value="https://discord.com/oauth2/authorize?client_id=1024235031037759500&permissions=8&scope=bot", inline=False)
+	try:
+		request = urlopen("https://api.github.com/repos/FabianBartl/HARIBOT/issues").read()
+		issues_list = json.loads(request)
+		logging.debug(f"(successfully requested issues) {issues_list}")
+
+		labels_dict = dict()
+		for issue in issues_list:
+			for label in issue["labels"]:
+				num = labels_dict.get(label["name"], 0)
+				labels_dict[label["name"]] = num + 1
+		
+		issues_value = ", ".join([ f"{label}: {labels_dict[label]}" for label in labels_dict ]).title()
+		embed.add_field(name=f"Issue Tracker", value=f"{issues_value}, [see all](https://github.com/{BOTINFO.REPOSITORY}/issues)", inline=False)
+	
+	except Exception as e:
+		logging.error(e)
+
+	embed.add_field(name="GitHub", value=f"[{BOTINFO.REPOSITORY}](https://github.com/{BOTINFO.REPOSITORY})")
+	embed.add_field(name="Invite", value=f"[private invite]({BOTINFO.INVITE})")
+
 	embed.set_footer(text=f"Bot ID: {app.id}")
 
-	await interaction.response.send_message(embed=embed)
+	await interaction.response.send_message(embed=embed, ephemeral=CONFIG.EPHEMERAL)
+	logging.debug(f"(command sent) bot-info")
+
+#-----#
 
 @bot.slash_command(name="reaction-role", description="Add reaction role to message.")
-async def sc_reaction_role(interaction: nextcord.Interaction, message_id: int, emoji: int, role: int):
-	await interaction.response.send_message(f"{message_id=}, {emoji=}, {role=}")
+async def sc_reaction_role(interaction: Interaction, message_id: int, emoji: int, role: int):
+	await interaction.response.send_message(f"{message_id=}, {emoji=}, {role=}", ephemeral=CONFIG.EPHEMERAL)
+	logging.debug(f"(command sent) reaction-role: {message_id=}, {emoji=}, {role=}")
 
 #---------#
 # execute #
 #---------#
 
-if __name__ == "__main__":
-	bot.run(TOKEN.DISCORD)
+if __name__ == "__main__": bot.run(TOKEN.DISCORD)

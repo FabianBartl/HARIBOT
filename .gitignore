@@ -1,4 +1,4 @@
 *.token
 data*
 __pycache__*
-log.dat
+log*
