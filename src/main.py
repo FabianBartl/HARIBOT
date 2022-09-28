@@ -4,9 +4,9 @@ import nextcord
 from nextcord.ext import commands
 from nextcord import slash_command, SlashOption, File, ButtonStyle, Embed
 
-import time, logging, sys
+import time, logging, sys, sqlite3
 
-from structs import TOKEN, COLOR, CONFIG
+from structs import TOKEN, COLOR, CONFIG, DATABASE
 from functions import updateGuildData, updateUserData, getGuildData, getUserData
 
 #-------#
@@ -35,14 +35,26 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
-	print("ready")
-	logging.info("ready")
-	# sync slash commands 
+	DATABASE.CONNECTION = sqlite3.connect(DATABASE.DB_FILE)
+	DATABASE.CURSOR = DATABASE.CONNECTION.cursor()
+	logging.info("connection to database established")
+	
 	try:
-		synced = await bot.sync_all_application_commands()
+		await bot.sync_all_application_commands()
 		logging.info(f"synced all application commands")
 	except Exception as e:
 		logging.error(e)
+	
+	print("bot is ready")
+	logging.info("bot is ready")
+
+@bot.event
+async def on_close():
+	DATABASE.CONNECTION.close()
+	logging.info("connection to database closed")
+
+	print("bot was shut down")
+	logging.info("bot was shut down")
 
 @bot.event
 async def on_member_join(member: nextcord.Member):

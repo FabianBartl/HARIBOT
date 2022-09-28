@@ -1,6 +1,6 @@
 
-import os, json, logging
-from structs import CONFIG
+import os, json, logging, sqlite3
+from structs import CONFIG, DATABASE
 
 #-------------#
 # update data #
@@ -36,6 +36,8 @@ def updateUserData (newData: dict, fileID: int) -> None: updateDataFile(newData,
 #----------#
 
 def getDataFile(dataPath: str, fileID: int) -> dict:
+	cursor = DATABASE.CURSOR
+
 	filePath = os.path.abspath(f"{CONFIG.DATA_DIR}/{dataPath}/{fileID}.json")
 	if not os.path.exists(filePath): return dict()
 

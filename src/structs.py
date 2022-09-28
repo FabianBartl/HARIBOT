@@ -33,3 +33,8 @@ class CONFIG:
 	DATA_DIR  = "../data"
 	LOG_FILE  = "../log.dat"
 	LOG_LEVEL = logging.INFO
+
+class DATABASE:
+	DB_FILE    = "../data/data.db"
+	CONNECTION = None
+	CURSOR     = None
