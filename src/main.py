@@ -157,33 +157,45 @@ async def sc_ping(interaction: Interaction):
 	await interaction.response.send_message(f"pong with `{bot.latency*1000:.0f} ms` latency", ephemeral=CONFIG.EPHEMERAL)
 	logging.debug(f"(command sent) ping")
 
+#-----#
 
-@bot.slash_command(name="log", description="Manage logging file.", default_member_permissions=Permissions(administrator=True))
-async def sc_log(interaction: Interaction, mode: int=SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3}), arg: int=-1):
+@bot.slash_command(name="log", description="Manage logging files.", default_member_permissions=Permissions(administrator=True))
+async def sc_log(
+	interaction: Interaction,
+	mode: int = SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3, "reset": 4})
+):
 	dstFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.dat"
-	dstPath = os.path.abspath(f"{CONFIG.LOG_DIR}/{dstFile}")
+	dstPath = os.path.abspath(os.path.join(CONFIG.LOG_DIR, dstFile))
 
-	if mode == 0: #backup: get, save, clear
-		await sc_log(interaction, mode=2)
-		await sc_log(interaction, mode=1)
-		await sc_log(interaction, mode=3)
-		await interaction.response.send_message(f"backuped log file", ephemeral=True)
-		logging.debug(f"backuped log file")
+	if mode == 0: #backup: save, get, clear
+		log_code, dstSize = backupLogFile(dstPath)
+		msg = f"log of size `{dstSize/1000:.2f} KB` backuped as `{dstFile}`"
+		await interaction.response.send_message(msg, file=File(dstPath, filename=dstFile), ephemeral=True)
+		logging.info(f"log file backuped at {dstPath}")
 
 	elif mode == 1: #save
 		dstSize = saveLogFile(dstPath)
-		await interaction.response.send_message(f"log of size `{dstSize/1000:.2f} KB` saved as: `{dstFile}`", ephemeral=True)
-		logging.info(f"saved log file at {dstPath}")
+		msg = f"log of size `{dstSize/1000:.2f} KB` saved as `{dstFile}`"
+		await interaction.response.send_message(msg, ephemeral=True)
+		logging.info(f"log file saved at {dstPath}")
 
 	elif mode == 2: #get
-		log_code = getLogFile(rows=20 if arg < 1 else arg).replace("`", "'")
-		await interaction.response.send_message(f"```js\n...\n{log_code}\n```", file=File(CONFIG.LOG_FILE, filename=dstFile), ephemeral=True)
-		logging.debug(f"sent log file part")
+		log_code = getLogFile()
+		msg = f"```js\n...\n{log_code}\n```"
+		await interaction.response.send_message(msg, file=File(CONFIG.LOG_FILE, filename=dstFile), ephemeral=True)
+		logging.debug(f"sent end of log file")
 	
 	elif mode == 3: #clear
 		clearLogFile()
-		await interaction.response.send_message(f"cleared log file", ephemeral=True)
-		logging.info(f"cleared log file")
+		msg = f"log file cleared"
+		await interaction.response.send_message(msg, ephemeral=True)
+		logging.info(msg)
+
+	elif mode == 4: #reset
+		logFiles = resetLogFiles()
+		msg = f"all {len(logFiles)} log file(s) deleted"
+		await interaction.response.send_message(msg, ephemeral=True)
+		logging.warning(msg)
 
 	logging.debug(f"(command sent) log: {mode=}")
 

@@ -7,7 +7,7 @@ from structs import CONFIG, DATABASE
 #-------------#
 
 def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
-	filePath = os.path.abspath(f"{CONFIG.DATA_DIR}/{dataPath}/{fileID}.json")
+	filePath = os.path.abspath(os.path.join(CONFIG.DATA_DIR, dataPath, f"{fileID}.json"))
 
 	if not os.path.exists(filePath): fileData = {}
 	else:
@@ -39,7 +39,7 @@ def updateReactionsData(newData: dict, fileID: int) -> None: updateDataFile(newD
 def getDataFile(dataPath: str, fileID: int) -> dict:
 	cursor = DATABASE.CURSOR
 
-	filePath = os.path.abspath(f"{CONFIG.DATA_DIR}/{dataPath}/{fileID}.json")
+	filePath = os.path.abspath(os.path.join(CONFIG.DATA_DIR, dataPath, f"{fileID}.json"))
 	if not os.path.exists(filePath): return dict()
 
 	logging.debug(f"{dataPath}/{fileID} data read")
@@ -73,7 +73,6 @@ def getLogFile(srcPath: str=CONFIG.LOG_FILE, rows: int=21) -> str:
 	
 	return "".join(log_data)[:2000-10]
 
-
 def saveLogFile(dstPAth: str, srcPath: str=CONFIG.LOG_FILE) -> int:
 	with open(srcPath, "r") as fsrc:
 		with open(dstPAth, "w+") as fdst:
@@ -82,6 +81,19 @@ def saveLogFile(dstPAth: str, srcPath: str=CONFIG.LOG_FILE) -> int:
 			fdst.writelines(destLines)
 	return destSize
 
-
 def clearLogFile(srcPath: str=CONFIG.LOG_FILE) -> None:
 	with open(CONFIG.LOG_FILE, "w+") as fobj: pass
+
+def resetLogFiles(logDir: str=f"{CONFIG.LOG_DIR}/") -> list:
+	logFiles = os.listdir(os.path.abspath(logDir))
+	for file in logFiles:
+		file = os.path.join(logDir, file)
+		os.remove(file)
+		logging.warning(f"file `{file}` deleted")
+	return logFiles
+
+def backupLogFile(dstPath: str, srcPath: str=CONFIG.LOG_FILE, *args) -> tuple:
+	log_code = getLogFile(srcPath, *args)
+	destSize = saveLogFile(dstPath, srcPath)
+	clearLogFile(srcPath)
+	return log_code, destSize
