@@ -1,9 +1,11 @@
 {
-	"name": "HARIBOT",
-	"author": "Fabian Bartl",
-	"main": "src/main.py",
-	"version": "0.5",
-	"dependencies": {
+	"name": "HARIBOT"
+	, "author": "Fabian Bartl"
+	, "main": "src/main.py"
+	, "version": "0.6"
+	, "dependencies": {
 		"nextcord": "2.2.0"
+		, "nextcord-ext-help-commands": "0.0.1"
+		, "nextcord-ext-help-commands[menus]": "1.5.5"
 	}
 }

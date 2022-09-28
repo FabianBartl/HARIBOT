@@ -2,7 +2,7 @@
 import os, logging
 
 class TOKEN:
-	DISCORD = open(os.path.abspath(r"../discord.token"), "r").readlines()[0].strip()
+	DISCORD   = open(os.path.abspath(r"../discord.token"), "r").readlines()[0].strip()
 
 class COLOR:
 	BLUE      = 0x007BFF
@@ -29,7 +29,6 @@ class COLOR:
 
 class CONFIG:
 	PREFIX    = "/"
-	INVITE    = "https://discord.com/oauth2/authorize?client_id=1024235031037759500&permissions=8&scope=bot"
 	DATA_DIR  = "../data"
 	LOG_FILE  = "../log.dat"
 	LOG_LEVEL = logging.INFO
