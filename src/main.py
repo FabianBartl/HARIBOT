@@ -210,7 +210,11 @@ async def sc_log(
 #-----#
 
 @bot.slash_command(name="member-info", description="Get information about a mentioned member.")
-async def sc_memberInfo(interaction: Interaction, member: Member):
+async def sc_memberInfo(
+	interaction: Interaction
+	, member: Member = SlashOption(required=False)
+):
+	if type(member) is not Member: member = interaction.user
 	userData = getUserData(member.id)
 
 	embed = Embed(color=COLOR.SUCCESS, title="Member Info")
