@@ -2,7 +2,7 @@
 # libs
 import nextcord
 from nextcord.ext import commands
-from nextcord import Member, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Emoji
+from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji
 
 import time, json, os
 from datetime import datetime
@@ -85,22 +85,61 @@ async def on_guild_remove(guild: Guild):
 #-----#
 
 @bot.event
+async def on_reaction_add(reaction: Reaction, user: Member):
+	guild   = reaction.message.guild
+	message = reaction.message
+	emoji   = reaction.emoji
+	LOG.LOGGER.info(f"(reaction added) {message.id}: '{user.display_name}: {emoji}'")
+
+	updateGuildData({"reactions_count": [1, "add"]}, guild.id)
+	updateUserData ({"reactions_count": [1, "add"]}, user.id)
+
+@bot.event
+async def on_reaction_remove(reaction: Reaction, user: User):
+	guild   = reaction.message.guild
+	message = reaction.message
+	emoji   = reaction.emoji
+	LOG.LOGGER.debug(f"(reaction removed) {message.id}: '{user.display_name}: {emoji}'")
+
+	updateGuildData({"reactions_count": [1, "sub"]}, guild.id)
+	updateUserData ({"reactions_count": [1, "sub"]}, user.id)
+
+@bot.event
+async def on_reaction_clear(message: Message, reactions: list[Reaction, ]):
+	emojis = ", ".join([ f"{reaction.message.author.display_name}: {reaction.emoji}" for reaction in reactions ])
+	LOG.LOGGER.debug(f"(reaction cleared) {message.id}: '{emojis}'")
+
+@bot.event
+async def on_reaction_clear_emoji(reaction: Reaction):
+	user  = reaction.message.author
+	message = reaction.message
+	emoji   = reaction.emoji
+	LOG.LOGGER.debug(f"(reaction cleared emoji) {message.id}: '{user.display_name}: {emoji}'")
+
+#-----#
+
+@bot.event
 async def on_message(message: Message):
-	content = message.content
-	channel = message.channel
-	author  = message.author
-	guild   = message.guild
-	LOG.LOGGER.debug(f"(msg sent) {channel.name} - {author.display_name}: '{content}'")
+	attachments = message.attachments
+	content     = message.content
+	channel     = message.channel
+	author      = message.author
+	guild       = message.guild
+	LOG.LOGGER.error(f"(msg sent) {channel.name} - {author.display_name}: {f'({len(attachments)} Attachments)' if len(attachments) > 0 else ''} '{content}'")
+	
+	words_count = len(re.sub(" +", " ", content).split(" "))
+	letters_count = len(content)
 
 	updateGuildData({
 		"messages_count": [1, "add"]
-		, "words_count": [len(content.split(" ")), "add"]
-		, "letters_count": [len(content), "add"]
+		, "words_count": [words_count, "add"]
+		, "letters_count": [letters_count, "add"]
+		, "attachments_count": [len(attachments), "add"]
 	}, guild.id)
 	updateUserData({
 		"messages_count": [1, "add"]
-		, "words_count": [len(content.split(" ")), "add"]
-		, "letters_count": [len(content), "add"]
+		, "words_count": [words_count, "add"]
+		, "letters_count": [letters_count, "add"]
 	}, author.id)
 
 @bot.event
@@ -243,7 +282,7 @@ async def sc_serverInfo(interaction: Interaction):
 
 	embed.set_footer(text=f"Server ID: {guild.id}")
 
-	await interaction.response.send_message(embed=embed, ephemeral=CONFIG.EPHEMERAL)
+	await interaction.response.send_message(embed=embed, ephemeral=True)
 
 
 @bot.slash_command(name="bot-info", description="Get information about this bot.")
@@ -282,7 +321,7 @@ async def sc_botInfo(interaction: Interaction):
 
 	embed.set_footer(text=f"Bot ID: {app.id}")
 
-	await interaction.response.send_message(embed=embed, ephemeral=CONFIG.EPHEMERAL)
+	await interaction.response.send_message(embed=embed, ephemeral=True)
 
 #-----#
 
