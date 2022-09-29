@@ -146,30 +146,31 @@ async def sc_ping(interaction: Interaction):
 
 #-----#
 
-@bot.slash_command(name="log", description="Manage logging files.", default_member_permissions=Permissions(administrator=True))
+@bot.slash_command(name="log", description="Manage logging files.")#, default_member_permissions=Permissions(administrator=True))
 async def sc_log(
 	interaction: Interaction
 	, action: int = SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3, "reset": 4, "list": 5})
 ):
 	LOG.LOGGER.debug(f"(command sent) log: {action=}")
 
+	ephemeral = True
 	dstFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.dat"
 	dstPath = os.path.abspath(os.path.join(LOG.DIR, dstFile))
 
 	if action == 0: #backup: save, get, clear
 		log_code, dstSize = backupLogFile(dstPath)
 		msg = f"log of size `{dstSize/1000:.2f} KB` backuped as `{dstFile}`"
-		await interaction.response.send_message(msg, file=File(dstPath, filename=dstFile), ephemeral=True)
+		await interaction.response.send_message(msg, file=File(dstPath, filename=dstFile), ephemeral=ephemeral)
 
 	elif action == 1: #save
 		dstSize = saveLogFile(dstPath)
 		msg = f"log of size `{dstSize/1000:.2f} KB` saved as `{dstFile}`"
-		await interaction.response.send_message(msg, ephemeral=True)
+		await interaction.response.send_message(msg, ephemeral=ephemeral)
 
 	elif action == 2: #get
 		log_code = getLogFile()
 		msg = f"```js\n...\n{log_code}\n```"
-		await interaction.response.send_message(msg, file=File(LOG.PATH, filename=dstFile), ephemeral=True)
+		await interaction.response.send_message(msg, file=File(LOG.PATH, filename=dstFile), ephemeral=ephemeral)
 	
 	elif action == 3: #clear
 		if checkOwner(interaction.user.id):
@@ -177,7 +178,7 @@ async def sc_log(
 			msg = f"log file cleared"
 		else:
 			msg = f"no permission to use"
-		await interaction.response.send_message(msg, ephemeral=True)
+		await interaction.response.send_message(msg, ephemeral=ephemeral)
 
 	elif action == 4: #reset
 		if checkOwner(interaction.user.id):
@@ -185,14 +186,14 @@ async def sc_log(
 			msg = f"all {len(logFiles)} log file(s) deleted / cleared"
 		else:
 			msg = f"no permission to use"
-		await interaction.response.send_message(msg, ephemeral=True)
+		await interaction.response.send_message(msg, ephemeral=ephemeral)
 	
 	elif action == 5: #list
 		logFiles = os.listdir(LOG.DIR)
 		msg  = "```\n"
 		msg += "\n".join([ f"{os.path.getsize(os.path.join(LOG.DIR, file))/1000:.2f} KB | {file}" for file in logFiles ])
 		msg += "```"
-		await interaction.response.send_message(msg, ephemeral=True)
+		await interaction.response.send_message(msg, ephemeral=ephemeral)
 
 #-----#
 
