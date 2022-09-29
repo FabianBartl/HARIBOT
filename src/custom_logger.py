@@ -10,7 +10,7 @@ from colorama import Fore, Back, Style
 # https://stackoverflow.com/a/56944256/3638629
 
 class CustomFormatter(logging.Formatter):
-    def __init__(self, fmt):
+    def __init__(self, fmt: str, colored: bool):
         self.debug_color    = Style.DIM
         self.info_color     = Fore.BLUE
         self.warning_color  = Fore.YELLOW
@@ -20,13 +20,16 @@ class CustomFormatter(logging.Formatter):
 
         super().__init__()
         self.fmt = fmt
-        self.FORMATS = {
-            logging.DEBUG:      f"{self.debug_color}{self.fmt}{self.reset_color}"
-            , logging.INFO:     f"{self.info_color}{self.fmt}{self.reset_color}"
-            , logging.WARNING:  f"{self.warning_color}{self.fmt}{self.reset_color}"
-            , logging.ERROR:    f"{self.error_color}{self.fmt}{self.reset_color}"
-            , logging.CRITICAL: f"{self.critical_color}{self.fmt}{self.reset_color}"
-        }
+        if colored:
+            self.FORMATS = {
+                logging.DEBUG:      f"{self.debug_color}{self.fmt}{self.reset_color}"
+                , logging.INFO:     f"{self.info_color}{self.fmt}{self.reset_color}"
+                , logging.WARNING:  f"{self.warning_color}{self.fmt}{self.reset_color}"
+                , logging.ERROR:    f"{self.error_color}{self.fmt}{self.reset_color}"
+                , logging.CRITICAL: f"{self.critical_color}{self.fmt}{self.reset_color}"
+            }
+        else:
+            self.FORMATS = {logging.DEBUG: f"{self.fmt}", logging.INFO: f"{self.fmt}", logging.WARNING: f"{self.fmt}", logging.ERROR: f"{self.fmt}", logging.CRITICAL: f"{self.fmt}"}
 
     def format(self, record):
         log_fmt = self.FORMATS.get(record.levelno)
@@ -34,11 +37,11 @@ class CustomFormatter(logging.Formatter):
         return formatter.format(record)
 
 
-def setBasicConfig(level, fmt, date_fmt, path):
+def setBasicConfig(level: int, fmt: str, date_fmt: str, path: str, colored: bool):
     # Create stdout handler for logging to the console
     stdout_handler = logging.StreamHandler()
     stdout_handler.setLevel(level)
-    stdout_handler.setFormatter(CustomFormatter(fmt))
+    stdout_handler.setFormatter(CustomFormatter(fmt, colored))
 
     # Create file handler for logging to a file
     file_handler = logging.FileHandler(path)
@@ -53,6 +56,6 @@ def setBasicConfig(level, fmt, date_fmt, path):
         , handlers = [file_handler, stdout_handler]
     )
 
-def getLogger(init=False, **kwargs):
+def getLogger(init: bool=False, **kwargs):
     if init: setBasicConfig(**kwargs)
     return logging.getLogger(__name__)

@@ -60,8 +60,8 @@ def checkOwner(checkID: int) -> bool: return checkID == TOKEN.OWNER_ID
 # manage logging (files) #
 #------------------------#
 
-def setupLogger():
-	LOG.LOGGER = custom_logger.getLogger(init=True, level=LOG.LEVEL, fmt=LOG.FMT, date_fmt=LOG.DATE_FMT, path=LOG.PATH)
+def setupLogger(colored: bool=False):
+	LOG.LOGGER = custom_logger.getLogger(init=True, level=LOG.LEVEL, fmt=LOG.FMT, date_fmt=LOG.DATE_FMT, path=LOG.PATH, colored=colored)
 	return LOG.LOGGER
 
 def getLogFile(srcPath: str=LOG.PATH, rows: int=21) -> str:

@@ -4,7 +4,7 @@ import nextcord
 from nextcord.ext import commands
 from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji
 
-import time, json, os
+import time, json, os, sys
 from datetime import datetime
 from urllib.request import urlopen
 
@@ -20,7 +20,8 @@ bot = commands.Bot(
 	, intents = nextcord.Intents.all()
 )
 
-setupLogger()
+colored = (len(sys.argv) == 2 and sys.argv[1] == "colored")
+setupLogger(colored)
 
 #--------#
 # events #
