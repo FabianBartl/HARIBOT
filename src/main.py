@@ -2,7 +2,7 @@
 # libs
 import nextcord
 from nextcord.ext import commands
-from nextcord import Member, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role
+from nextcord import Member, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Emoji
 
 import time, logging, sys, sqlite3, json, os
 from datetime import datetime
@@ -298,18 +298,39 @@ async def sc_botInfo(interaction: Interaction):
 @bot.slash_command(name="auto-role", description="Manage auto role.", default_member_permissions=Permissions(administrator=True))
 async def sc_autoRole(
 	interaction: Interaction
-	, action: int = SlashOption(required=True, choices={"add": 0, "remove": 1, "list": 2})
+	, action: int = SlashOption(required=True, choices={"add": 0, "list": 1, "remove": 2, "clear": 3})
 	, type: int = SlashOption(required=True, choices={"User": 0, "Bot": 1})
 	, role: Role = SlashOption(required=True)
 ):
+	member  = interaction.user
+	guild   = interaction.guild
+
+	if action == 0:
+		pass
+
+	elif action == 1:
+		pass
+
+	elif action == 2:
+		pass
+
+	elif action == 3:
+		pass
+
 	await interaction.response.send_message(f"`auto-role`: `{action=}`, `{role=}`, `{type=}`", ephemeral=CONFIG.EPHEMERAL)
 	logging.debug(f"(command sent) auto-role: {action=}, {role=}, {type=}")
 
 
 @bot.slash_command(name="reaction-role", description="Manage reaction role.")
-async def sc_reactionRole(interaction: Interaction, message_id: int, emoji: int, role: int):
-	await interaction.response.send_message(f"`reaction-role`: `{message_id=}`, `{emoji=}`, `{role=}`", ephemeral=CONFIG.EPHEMERAL)
-	logging.debug(f"(command sent) reaction-role add: {message_id=}, {emoji=}, {role=}")
+async def sc_reactionRole(
+	interaction: Interaction
+	, action: int = SlashOption(required=True, choices={"add": 0, "list": 1, "remove": 2, "clear": 3})
+	, messageID: int = SlashOption(required=True)
+	, emoji: Emoji = SlashOption(required=True)
+	, role: Role = SlashOption(required=True)
+):
+	await interaction.response.send_message(f"`reaction-role`: `{action=}`, `{messageID=}`, `{emoji=}`, `{role}`", ephemeral=CONFIG.EPHEMERAL)
+	logging.debug(f"(command sent) reaction-role add: {action=}, {messageID=}, {emoji=}, {role=}")
 
 #---------#
 # execute #

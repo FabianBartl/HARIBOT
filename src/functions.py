@@ -28,9 +28,9 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 	with open(filePath, "w+") as fobj: json.dump(fileData, fobj)
 	logging.debug(f"{dataPath}/{fileID} data updated: {fileData}")
 
-def updateGuildData    (newData: dict, fileID: int) -> None: updateDataFile(newData, "guilds",    fileID)
-def updateUserData     (newData: dict, fileID: int) -> None: updateDataFile(newData, "users",     fileID)
-def updateReactionsData(newData: dict, fileID: int) -> None: updateDataFile(newData, "reactions", fileID)
+def updateGuildData   (newData: dict, fileID: int) -> None: updateDataFile(newData, "guilds",    fileID)
+def updateUserData    (newData: dict, fileID: int) -> None: updateDataFile(newData, "users",     fileID)
+def updateReactionData(newData: dict, fileID: int) -> None: updateDataFile(newData, "reactions", fileID)
 
 #----------#
 # get data #
@@ -45,9 +45,9 @@ def getDataFile(dataPath: str, fileID: int) -> dict:
 	logging.debug(f"{dataPath}/{fileID} data read")
 	with open(filePath, "r") as fobj: return json.load(fobj)
 
-def getGuildData    (fileID: int) -> dict: return getDataFile("guilds",    fileID)
-def getUserData     (fileID: int) -> dict: return getDataFile("users",     fileID)
-def getReactionsData(fileID: int) -> dict: return getDataFile("reactions", fileID)
+def getGuildData   (fileID: int) -> dict: return getDataFile("guilds",    fileID)
+def getUserData    (fileID: int) -> dict: return getDataFile("users",     fileID)
+def getReactionData(fileID: int) -> dict: return getDataFile("reactions", fileID)
 
 #------------------#
 # check permissons #
