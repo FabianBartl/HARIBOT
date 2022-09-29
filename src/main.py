@@ -296,7 +296,7 @@ async def sc_autoRole(
 	interaction: Interaction
 	, action: int = SlashOption(required=True, choices={"add": 0, "remove": 1, "list": 2})
 	, type: int = SlashOption(required=True, choices={"User": 0, "Bot": 1})
-	, role: int=0
+	, role: Role = SlashOption(required=True)
 ):
 	await interaction.response.send_message(f"`auto-role`: `{action=}`, `{role=}`, `{type=}`", ephemeral=CONFIG.EPHEMERAL)
 	logging.debug(f"(command sent) auto-role: {action=}, {role=}, {type=}")
