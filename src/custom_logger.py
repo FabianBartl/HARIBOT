@@ -27,7 +27,6 @@ class CustomFormatter(logging.Formatter):
             , logging.ERROR:    f"{self.error_color}{self.fmt}{self.reset_color}"
             , logging.CRITICAL: f"{self.critical_color}{self.fmt}{self.reset_color}"
         }
-        # self.FORMATS = {logging.DEBUG: f"{self.fmt}", logging.INFO: f"{self.fmt}", logging.WARNING: f"{self.fmt}", logging.ERROR: f"{self.fmt}", logging.CRITICAL: f"{self.fmt}"}
 
     def format(self, record):
         log_fmt = self.FORMATS.get(record.levelno)

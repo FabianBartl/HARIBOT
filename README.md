@@ -16,7 +16,7 @@ A discord bot specialized for the "Dr. Hans Riegel - Stiftung" community discord
 
 - [x] `/log [action]` *(only for admins)* [#11](https://github.com/FabianBartl/HARIBOT/issues/11)
   - actions:
-    - [x] backup, save, get
+    - [x] backup, save, get, list
     - [x] clear, reset *(only for owner)*
 
 <br>
@@ -33,6 +33,15 @@ A discord bot specialized for the "Dr. Hans Riegel - Stiftung" community discord
 
 <br>
 
-- [ ] `/reaction-role [action] [message] [emoji] [role]` [#10](https://github.com/FabianBartl/HARIBOT/issues/10)
+- [ ] `/reaction-role [action] [messageID] [emoji] [role]` [#10](https://github.com/FabianBartl/HARIBOT/issues/10)
   - actions:
     - [ ] add, list, remove, clear
+
+<br>
+
+- [ ] `/pgp-get [member]` [#18](https://github.com/FabianBartl/HARIBOT/issues/18)
+- [ ] `/pgp-add [key] [email]`
+
+<br>
+
+- [ ] `/what-if` [#17](https://github.com/FabianBartl/HARIBOT/issues/17)
