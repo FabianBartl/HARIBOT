@@ -8,7 +8,7 @@ import time, logging, sys, sqlite3, json, os
 from datetime import datetime
 from urllib.request import urlopen
 
-from structs import BOTINFO, TOKEN, COLOR, CONFIG, DATABASE
+from structs import BOTINFO, TOKEN, COLOR, CONFIG, DATABASE, LOG
 from functions import *
 
 #-------#
@@ -16,12 +16,12 @@ from functions import *
 #-------#
 
 logging.basicConfig(
-	level = CONFIG.LOG_LEVEL
+	level = LOG.LEVEL
 	, encoding = "utf-8"
 	, format = "%(asctime)s  [%(levelname)s]\t%(message)s"
 	, datefmt = "%Y-%m-%d %H:%M:%S"
 	, handlers = [
-		logging.FileHandler(CONFIG.LOG_FILE)
+		logging.FileHandler(LOG.PATH)
 		, logging.StreamHandler(sys.stdout)
 	]
 )
@@ -37,7 +37,7 @@ bot = commands.Bot(
 
 @bot.event
 async def on_connect():
-	DATABASE.CONNECTION = sqlite3.connect(DATABASE.DB_FILE)
+	DATABASE.CONNECTION = sqlite3.connect(DATABASE.FILE)
 	DATABASE.CURSOR = DATABASE.CONNECTION.cursor()
 	logging.info("connection to database established")
 	
@@ -47,21 +47,21 @@ async def on_ready():
 		await bot.sync_all_application_commands()
 		logging.info(f"synced all application commands")
 	except Exception as e:
-		logging.error(e)
+		logging.critical(e)
 	logging.info("bot is ready")
 
 @bot.event
 async def on_close():
 	DATABASE.CONNECTION.close()
-	logging.info("connection to database closed")
-	logging.info("bot was shut down")
+	logging.warning("connection to database closed")
+	logging.warning("bot was shut down")
 
 @bot.event
 async def on_disconnect():
-	logging.info("bot was disconnected")
-	await time.sleep(3)
+	logging.warning("bot was disconnected")
+	time.sleep(1)
 	await bot.connect(reconnect=True)
-	logging.info("reconnected after 3 seconds")
+	logging.info("reconnected after 1 second (now with reconnect flag)")
 
 #-----#
 
@@ -165,7 +165,7 @@ async def sc_log(
 	mode: int = SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3, "reset": 4})
 ):
 	dstFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.dat"
-	dstPath = os.path.abspath(os.path.join(CONFIG.LOG_DIR, dstFile))
+	dstPath = os.path.abspath(os.path.join(LOG.DIR, dstFile))
 
 	if mode == 0: #backup: save, get, clear
 		log_code, dstSize = backupLogFile(dstPath)
@@ -182,7 +182,7 @@ async def sc_log(
 	elif mode == 2: #get
 		log_code = getLogFile()
 		msg = f"```js\n...\n{log_code}\n```"
-		await interaction.response.send_message(msg, file=File(CONFIG.LOG_FILE, filename=dstFile), ephemeral=True)
+		await interaction.response.send_message(msg, file=File(LOG.PATH, filename=dstFile), ephemeral=True)
 		logging.debug(f"sent end of log file")
 	
 	elif mode == 3: #clear
@@ -193,7 +193,7 @@ async def sc_log(
 			msg = f"no permission to use"
 		
 		await interaction.response.send_message(msg, ephemeral=True)
-		logging.info(msg)
+		logging.warning(msg)
 
 	elif mode == 4: #reset
 		if checkOwner(interaction.user.id):
@@ -203,7 +203,7 @@ async def sc_log(
 			msg = f"no permission to use"
 		
 		await interaction.response.send_message(msg, ephemeral=True)
-		logging.warning(msg)
+		logging.critical(msg)
 
 	logging.debug(f"(command sent) log: {mode=}")
 
@@ -263,15 +263,17 @@ async def sc_bot_info(interaction: Interaction):
 	embed.add_field(name="Joined at", value=app.joined_at.strftime("%d.%m.%Y %H:%M"))
 
 	try:
-		request = urlopen("https://api.github.com/repos/FabianBartl/HARIBOT/issues").read()
+		request = urlopen("https://api.github.com/repos/FabianBartl/HARIBOT/issues?state=all").read()
 		issues_list = json.loads(request)
 		logging.debug(f"(successfully requested issues) {issues_list}")
 
 		labels_dict = dict()
 		for issue in issues_list:
+			if issue["state"] == "closed":
+				labels_dict["Closed"] = labels_dict.get("Closed", 0) + 1
+				continue
 			for label in issue["labels"]:
-				num = labels_dict.get(label["name"], 0)
-				labels_dict[label["name"]] = num + 1
+				labels_dict[label["name"]] = labels_dict.get(label["name"], 0) + 1
 		
 		issues_value = ", ".join([ f"{label}: {labels_dict[label]}" for label in labels_dict ]).title()
 		embed.add_field(name=f"Issue Tracker", value=f"{issues_value}, [see all](https://github.com/{BOTINFO.REPOSITORY}/issues)", inline=False)

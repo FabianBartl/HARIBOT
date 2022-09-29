@@ -1,6 +1,6 @@
 
 import os, json, logging, re
-from structs import CONFIG, DATABASE, TOKEN
+from structs import CONFIG, DATABASE, TOKEN, LOG
 
 #-------------#
 # update data #
@@ -59,8 +59,8 @@ def checkOwner(checkID: int) -> bool: return checkID == TOKEN.OWNER_ID
 # manage logging file #
 #---------------------#
 
-def getLogFile(srcPath: str=CONFIG.LOG_FILE, rows: int=21) -> str:
-	with open(CONFIG.LOG_FILE, "r") as fobj: lines = fobj.readlines()
+def getLogFile(srcPath: str=LOG.PATH, rows: int=21) -> str:
+	with open(LOG.PATH, "r") as fobj: lines = fobj.readlines()
 	
 	length = 2000 // rows
 	log_data = list()
@@ -79,7 +79,7 @@ def getLogFile(srcPath: str=CONFIG.LOG_FILE, rows: int=21) -> str:
 	
 	return "".join(log_data)[:2000-10]
 
-def saveLogFile(dstPAth: str, srcPath: str=CONFIG.LOG_FILE) -> int:
+def saveLogFile(dstPAth: str, srcPath: str=LOG.PATH) -> int:
 	with open(srcPath, "r") as fsrc:
 		with open(dstPAth, "w+") as fdst:
 			destLines = fsrc.readlines()
@@ -87,17 +87,17 @@ def saveLogFile(dstPAth: str, srcPath: str=CONFIG.LOG_FILE) -> int:
 			fdst.writelines(destLines)
 	return destSize
 
-def clearLogFile(srcPath: str=CONFIG.LOG_FILE) -> None:
-	with open(CONFIG.LOG_FILE, "w+") as fobj: pass
+def clearLogFile(srcPath: str=LOG.PATH) -> None:
+	with open(LOG.PATH, "w+") as fobj: pass
 
-def resetLogFiles(logDir: str=CONFIG.LOG_DIR, logFile: str=CONFIG.LOG_FILE) -> list:
+def resetLogFiles(logDir: str=LOG.DIR, logPath: str=LOG.PATH) -> list:
 	logFiles = os.listdir(os.path.abspath(logDir))
 
 	for file in logFiles:
 		filePath = os.path.join(logDir, file)
 
-		if filePath == logFile:
-			clearLogFile(logFile)
+		if filePath == logPath:
+			clearLogFile(logPath)
 			logging.info(f"file `{filePath}` cleared")
 		else:
 			os.remove(filePath)
@@ -105,7 +105,7 @@ def resetLogFiles(logDir: str=CONFIG.LOG_DIR, logFile: str=CONFIG.LOG_FILE) -> l
 	
 	return logFiles
 
-def backupLogFile(dstPath: str, srcPath: str=CONFIG.LOG_FILE, *args) -> tuple:
+def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple:
 	log_code = getLogFile(srcPath, *args)
 	destSize = saveLogFile(dstPath, srcPath)
 	clearLogFile(srcPath)
