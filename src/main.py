@@ -2,7 +2,7 @@
 # libs
 import nextcord
 from nextcord.ext import commands
-from nextcord import Member, Guild, Message, Interaction, SlashOption, File, Embed, Permissions
+from nextcord import Member, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role
 
 import time, logging, sys, sqlite3, json, os
 from datetime import datetime
@@ -161,31 +161,31 @@ async def sc_ping(interaction: Interaction):
 
 @bot.slash_command(name="log", description="Manage logging files.", default_member_permissions=Permissions(administrator=True))
 async def sc_log(
-	interaction: Interaction,
-	mode: int = SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3, "reset": 4})
+	interaction: Interaction
+	, action: int = SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3, "reset": 4})
 ):
 	dstFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.dat"
 	dstPath = os.path.abspath(os.path.join(LOG.DIR, dstFile))
 
-	if mode == 0: #backup: save, get, clear
+	if action == 0: #backup: save, get, clear
 		log_code, dstSize = backupLogFile(dstPath)
 		msg = f"log of size `{dstSize/1000:.2f} KB` backuped as `{dstFile}`"
 		await interaction.response.send_message(msg, file=File(dstPath, filename=dstFile), ephemeral=True)
 		logging.info(f"log file backuped at {dstPath}")
 
-	elif mode == 1: #save
+	elif action == 1: #save
 		dstSize = saveLogFile(dstPath)
 		msg = f"log of size `{dstSize/1000:.2f} KB` saved as `{dstFile}`"
 		await interaction.response.send_message(msg, ephemeral=True)
 		logging.info(f"log file saved at {dstPath}")
 
-	elif mode == 2: #get
+	elif action == 2: #get
 		log_code = getLogFile()
 		msg = f"```js\n...\n{log_code}\n```"
 		await interaction.response.send_message(msg, file=File(LOG.PATH, filename=dstFile), ephemeral=True)
 		logging.debug(f"sent end of log file")
 	
-	elif mode == 3: #clear
+	elif action == 3: #clear
 		if checkOwner(interaction.user.id):
 			clearLogFile()
 			msg = f"log file cleared"
@@ -195,7 +195,7 @@ async def sc_log(
 		await interaction.response.send_message(msg, ephemeral=True)
 		logging.warning(msg)
 
-	elif mode == 4: #reset
+	elif action == 4: #reset
 		if checkOwner(interaction.user.id):
 			logFiles = resetLogFiles()
 			msg = f"all {len(logFiles)} log file(s) deleted / cleared"
@@ -205,12 +205,12 @@ async def sc_log(
 		await interaction.response.send_message(msg, ephemeral=True)
 		logging.critical(msg)
 
-	logging.debug(f"(command sent) log: {mode=}")
+	logging.debug(f"(command sent) log: {action=}")
 
 #-----#
 
 @bot.slash_command(name="member-info", description="Get information about a mentioned member.")
-async def sc_member_info(interaction: Interaction, member: Member):
+async def sc_memberInfo(interaction: Interaction, member: Member):
 	userData = getUserData(member.id)
 
 	embed = Embed(color=COLOR.SUCCESS, title="Member Info")
@@ -232,7 +232,7 @@ async def sc_member_info(interaction: Interaction, member: Member):
 
 
 @bot.slash_command(name="server-info", description="Get information about this server.")
-async def sc_server_info(interaction: Interaction):
+async def sc_serverInfo(interaction: Interaction):
 	guild = interaction.guild
 	guildData = getGuildData(guild.id)
 
@@ -253,7 +253,7 @@ async def sc_server_info(interaction: Interaction):
 
 
 @bot.slash_command(name="bot-info", description="Get information about this bot.")
-async def sc_bot_info(interaction: Interaction):
+async def sc_botInfo(interaction: Interaction):
 	app = await interaction.guild.fetch_member(BOTINFO.ID)
 
 	embed = Embed(color=COLOR.SUCCESS, title="Bot Info", description=BOTINFO.DESCRIPTION)
@@ -291,10 +291,21 @@ async def sc_bot_info(interaction: Interaction):
 
 #-----#
 
-@bot.slash_command(name="reaction-role", description="Add reaction role to message.")
-async def sc_reaction_role(interaction: Interaction, message_id: int, emoji: int, role: int):
-	await interaction.response.send_message(f"{message_id=}, {emoji=}, {role=}", ephemeral=CONFIG.EPHEMERAL)
-	logging.debug(f"(command sent) reaction-role: {message_id=}, {emoji=}, {role=}")
+@bot.slash_command(name="auto-role", description="Manage auto role.", default_member_permissions=Permissions(administrator=True))
+async def sc_autoRole(
+	interaction: Interaction
+	, action: int = SlashOption(required=True, choices={"add": 0, "remove": 1, "list": 2})
+	, type: int = SlashOption(required=True, choices={"User": 0, "Bot": 1})
+	, role: int=0
+):
+	await interaction.response.send_message(f"`auto-role`: `{action=}`, `{role=}`, `{type=}`", ephemeral=CONFIG.EPHEMERAL)
+	logging.debug(f"(command sent) auto-role: {action=}, {role=}, {type=}")
+
+
+@bot.slash_command(name="reaction-role", description="Manage reaction role.")
+async def sc_reactionRole(interaction: Interaction, message_id: int, emoji: int, role: int):
+	await interaction.response.send_message(f"`reaction-role`: `{message_id=}`, `{emoji=}`, `{role=}`", ephemeral=CONFIG.EPHEMERAL)
+	logging.debug(f"(command sent) reaction-role add: {message_id=}, {emoji=}, {role=}")
 
 #---------#
 # execute #

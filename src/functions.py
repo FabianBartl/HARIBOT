@@ -90,7 +90,7 @@ def saveLogFile(dstPAth: str, srcPath: str=LOG.PATH) -> int:
 def clearLogFile(srcPath: str=LOG.PATH) -> None:
 	with open(LOG.PATH, "w+") as fobj: pass
 
-def resetLogFiles(logDir: str=LOG.DIR, logPath: str=LOG.PATH) -> list:
+def resetLogFiles(logDir: str=LOG.DIR, logPath: str=LOG.PATH) -> list[str, ]:
 	logFiles = os.listdir(os.path.abspath(logDir))
 
 	for file in logFiles:
@@ -105,7 +105,7 @@ def resetLogFiles(logDir: str=LOG.DIR, logPath: str=LOG.PATH) -> list:
 	
 	return logFiles
 
-def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple:
+def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]:
 	log_code = getLogFile(srcPath, *args)
 	destSize = saveLogFile(dstPath, srcPath)
 	clearLogFile(srcPath)
