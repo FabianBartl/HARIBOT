@@ -1,4 +1,5 @@
 *.token
+*.owner
 data*
 __pycache__*
 log*

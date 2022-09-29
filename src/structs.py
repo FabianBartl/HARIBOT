@@ -9,7 +9,7 @@ import custom_logger
 
 class TOKEN:
 	DISCORD  = open(os.path.abspath(r"../discord.token"), "r").readlines()[0].strip()
-	OWNER_ID = open(os.path.abspath(r"../discord.owner"), "r").readlines()[0].strip()
+	OWNER_ID = int(open(os.path.abspath(r"../discord.owner"), "r").readlines()[0].strip())
 
 class COLOR:
 	BLUE      = 0x007BFF
