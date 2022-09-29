@@ -21,9 +21,9 @@ A discord bot specialized for the "Dr. Hans Riegel - Stiftung" community discord
 
 <br>
 
-- [x] `/member-info [member]`
+- [ ] `/member-info [member]` [#18](https://github.com/FabianBartl/HARIBOT/issues/18)
 - [x] `/server-info`
-- [x] `/bot-info`
+- [ ] `/bot-info` [#19](https://github.com/FabianBartl/HARIBOT/issues/19)
 
 <br>
 
@@ -40,7 +40,8 @@ A discord bot specialized for the "Dr. Hans Riegel - Stiftung" community discord
 <br>
 
 - [ ] `/pgp-get [member]` [#18](https://github.com/FabianBartl/HARIBOT/issues/18)
-- [ ] `/pgp-add [key] [email]`
+- [ ] `/pgp-set [key] [email]`
+- [ ] `/pgp-delete [email]`
 
 <br>
 

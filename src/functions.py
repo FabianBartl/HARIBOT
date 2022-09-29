@@ -17,16 +17,16 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 		with open(filePath, "r") as fobj: fileData = json.load(fobj)
 	
 	for key in newData:
-		if   len(newData[key]) == 1: value, mode = newData[key], "new"
+		if   len(newData[key]) == 1: value, mode = newData[key], "set"
 		elif len(newData[key]) == 2: value, mode = newData[key]
 
-		if key not in fileData: mode = "new"
+		if key not in fileData: mode = "set"
 
 		if   mode == "add": fileData[key] += value
 		elif mode == "sub": fileData[key] -= value
 		elif mode == "mul": fileData[key] *= value
 		elif mode == "div": fileData[key] /= value
-		elif mode == "new": fileData[key]  = value
+		elif mode == "set": fileData[key]  = value
 	
 	with open(filePath, "w+") as fobj: json.dump(fileData, fobj)
 	LOG.LOGGER.debug(f"{dataPath}/{fileID} data updated: {fileData}")

@@ -101,8 +101,8 @@ async def on_reaction_remove(reaction: Reaction, user: User):
 	emoji   = reaction.emoji
 	LOG.LOGGER.debug(f"(reaction removed) {message.id}: '{user.display_name}: {emoji}'")
 
-	updateGuildData({"reactions_count": [1, "sub"]}, guild.id)
-	updateUserData ({"reactions_count": [1, "sub"]}, user.id)
+	updateGuildData({"reactions_count": [-1, "add"]}, guild.id)
+	updateUserData ({"reactions_count": [-1, "add"]}, user.id)
 
 @bot.event
 async def on_reaction_clear(message: Message, reactions: list[Reaction, ]):
