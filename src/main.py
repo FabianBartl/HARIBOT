@@ -140,6 +140,7 @@ async def on_message(message: Message):
 		"messages_count": [1, "add"]
 		, "words_count": [words_count, "add"]
 		, "letters_count": [letters_count, "add"]
+		, "attachments_count": [len(attachments), "add"]
 	}, author.id)
 
 @bot.event
