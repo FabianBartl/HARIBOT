@@ -1,6 +1,12 @@
 
 import os, logging
 
+import custom_logger
+
+#---------#
+# globals #
+#---------#
+
 class TOKEN:
 	DISCORD  = open(os.path.abspath(r"../discord.token"), "r").readlines()[0].strip()
 	OWNER_ID = 386249332711620608
@@ -34,15 +40,13 @@ class CONFIG:
 	DATA_DIR  = os.path.abspath("../data")
 
 class LOG:
-	DIR   = os.path.abspath("../log")
-	FILE  = "log.dat"
-	PATH  = os.path.abspath(os.path.join(DIR, FILE))
-	LEVEL = logging.DEBUG
-
-class DATABASE:
-	FILE       = "../data/data.db"
-	CONNECTION = None
-	CURSOR     = None
+	FMT      = "%(asctime)s | %(levelname)8s | %(message)s"
+	DATE_FMT = "%Y-%m-%d %H:%M:%S"
+	DIR      = os.path.abspath("../log")
+	FILE     = "log.dat"
+	PATH     = os.path.abspath(os.path.join(DIR, FILE))
+	LEVEL    = logging.DEBUG
+	LOGGER   = None
 
 class BOTINFO:
 	ID          = 1024235031037759500

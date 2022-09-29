@@ -1,6 +1,9 @@
 
-import os, json, logging, re
-from structs import CONFIG, DATABASE, TOKEN, LOG
+import os, json, re
+from colorama import Fore, Back, Style
+
+from structs import CONFIG, TOKEN, LOG
+import custom_logger
 
 #-------------#
 # update data #
@@ -26,7 +29,7 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 		elif mode == "new": fileData[key]  = value
 	
 	with open(filePath, "w+") as fobj: json.dump(fileData, fobj)
-	logging.debug(f"{dataPath}/{fileID} data updated: {fileData}")
+	LOG.LOGGER.debug(f"{dataPath}/{fileID} data updated: {fileData}")
 
 def updateGuildData   (newData: dict, fileID: int) -> None: updateDataFile(newData, "guilds",    fileID)
 def updateUserData    (newData: dict, fileID: int) -> None: updateDataFile(newData, "users",     fileID)
@@ -37,12 +40,10 @@ def updateReactionData(newData: dict, fileID: int) -> None: updateDataFile(newDa
 #----------#
 
 def getDataFile(dataPath: str, fileID: int) -> dict:
-	cursor = DATABASE.CURSOR
-
 	filePath = os.path.abspath(os.path.join(CONFIG.DATA_DIR, dataPath, f"{fileID}.json"))
 	if not os.path.exists(filePath): return dict()
 
-	logging.debug(f"{dataPath}/{fileID} data read")
+	LOG.LOGGER.debug(f"{dataPath}/{fileID} data read")
 	with open(filePath, "r") as fobj: return json.load(fobj)
 
 def getGuildData   (fileID: int) -> dict: return getDataFile("guilds",    fileID)
@@ -55,58 +56,67 @@ def getReactionData(fileID: int) -> dict: return getDataFile("reactions", fileID
 
 def checkOwner(checkID: int) -> bool: return checkID == TOKEN.OWNER_ID
 
-#---------------------#
-# manage logging file #
-#---------------------#
+#------------------------#
+# manage logging (files) #
+#------------------------#
+
+def setupLogger():
+	LOG.LOGGER = custom_logger.getLogger(init=True, level=LOG.LEVEL, fmt=LOG.FMT, date_fmt=LOG.DATE_FMT, path=LOG.PATH)
+	return LOG.LOGGER
 
 def getLogFile(srcPath: str=LOG.PATH, rows: int=21) -> str:
 	with open(LOG.PATH, "r") as fobj: lines = fobj.readlines()
 	
-	length = 2000 // rows
+	length = 1900 // rows
 	log_data = list()
 
 	for line in lines[len(lines)-rows:]:
-
-		line = re.sub("(\t|\n)+", " ", line[11:])
-		line = line.replace(" [DEBUG]",    "D")
-		line = line.replace(" [INFO]",     "I")
-		line = line.replace(" [WARNING]",  "W")
-		line = line.replace(" [CRITICAL]", "C")
-		line = line.replace(" [ERROR]",    "E")
+		line = line[11:]
+		line = re.sub(",[0-9]+ |",     "|", line)
+		line = re.sub("(\t|\n| )+",    " ", line)
+		line = re.sub("|.*DEBUG |",    "D", line)
+		line = re.sub("|.*INFO |",     "I", line)
+		line = re.sub("|.*WARNING |",  "W", line)
+		line = re.sub("|.*ERROR |",    "E", line)
+		line = re.sub("|.*CRITICAL |", "C", line)
 
 		if len(line) <= length: log_data.append(f"{line}\n")
 		else:                   log_data.append(f"{line[:length-3]}...\n")
 	
+	LOG.LOGGER.debug(f"returned end of log file")
 	return "".join(log_data)[:2000-10]
 
-def saveLogFile(dstPAth: str, srcPath: str=LOG.PATH) -> int:
+def saveLogFile(dstPath: str, srcPath: str=LOG.PATH) -> int:
 	with open(srcPath, "r") as fsrc:
-		with open(dstPAth, "w+") as fdst:
+		with open(dstPath, "w+") as fdst:
 			destLines = fsrc.readlines()
 			destSize = len(destLines)
 			fdst.writelines(destLines)
+	LOG.LOGGER.info(f"log file saved at {dstPath}")
 	return destSize
 
 def clearLogFile(srcPath: str=LOG.PATH) -> None:
-	with open(LOG.PATH, "w+") as fobj: pass
+	with open(srcPath, "w+") as fobj: pass
+	LOG.LOGGER.info(f"file `{srcPath}` cleared")
 
 def resetLogFiles(logDir: str=LOG.DIR, logPath: str=LOG.PATH) -> list[str, ]:
 	logFiles = os.listdir(os.path.abspath(logDir))
-
 	for file in logFiles:
 		filePath = os.path.join(logDir, file)
 
 		if filePath == logPath:
 			clearLogFile(logPath)
-			logging.info(f"file `{filePath}` cleared")
+			LOG.LOGGER.info(f"file `{filePath}` cleared")
 		else:
 			os.remove(filePath)
-			logging.warning(f"file `{filePath}` deleted")
+			LOG.LOGGER.warning(f"file `{filePath}` deleted")
 	
+	LOG.LOGGER.info(f"log reseted")
 	return logFiles
 
 def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]:
 	log_code = getLogFile(srcPath, *args)
 	destSize = saveLogFile(dstPath, srcPath)
 	clearLogFile(srcPath)
+	LOG.LOGGER.info(f"log file backuped at {dstPath}")
 	return log_code, destSize
