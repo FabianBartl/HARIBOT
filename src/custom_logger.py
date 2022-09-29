@@ -14,7 +14,7 @@ class CustomFormatter(logging.Formatter):
         self.debug_color    = Style.DIM
         self.info_color     = Fore.BLUE
         self.warning_color  = Fore.YELLOW
-        self.error_color    = Fore.RED
+        self.error_color    = Fore.RED+Style.BRIGHT
         self.critical_color = Fore.WHITE+Back.RED
         self.reset_color    = Fore.RESET+Back.RESET+Style.RESET_ALL
 

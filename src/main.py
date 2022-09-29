@@ -138,7 +138,11 @@ async def sc_help(interaction: Interaction):
 @bot.slash_command(name="ping", description="Test bot response.")
 async def sc_ping(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) ping")
-	await interaction.response.send_message(f"pong with `{bot.latency*1000:.0f} ms` latency", ephemeral=CONFIG.EPHEMERAL)
+	latency = bot.latency
+	msg = f"`{latency*1000:.0f} ms` latency"
+	if   latency > 400: LOG.LOGGER.warning(msg)
+	elif latency > 900: LOG.LOGGER.critical(msg)
+	await interaction.response.send_message(f"pong with {msg}", ephemeral=CONFIG.EPHEMERAL)
 
 #-----#
 

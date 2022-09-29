@@ -42,9 +42,9 @@ def updateReactionData(newData: dict, fileID: int) -> None: updateDataFile(newDa
 def getDataFile(dataPath: str, fileID: int) -> dict:
 	filePath = os.path.abspath(os.path.join(CONFIG.DATA_DIR, dataPath, f"{fileID}.json"))
 	if not os.path.exists(filePath): return dict()
-
+	with open(filePath, "r") as fobj: data = json.load(fobj)
 	LOG.LOGGER.debug(f"{dataPath}/{fileID} data read")
-	with open(filePath, "r") as fobj: return json.load(fobj)
+	return data
 
 def getGuildData   (fileID: int) -> dict: return getDataFile("guilds",    fileID)
 def getUserData    (fileID: int) -> dict: return getDataFile("users",     fileID)
@@ -67,24 +67,25 @@ def setupLogger():
 def getLogFile(srcPath: str=LOG.PATH, rows: int=21) -> str:
 	with open(LOG.PATH, "r") as fobj: lines = fobj.readlines()
 	
-	length = 1900 // rows
+	max_chars = 1900
+	length = max_chars // rows
 	log_data = list()
 
 	for line in lines[len(lines)-rows:]:
 		line = line[11:]
-		line = re.sub(",[0-9]+ |",     "|", line)
-		line = re.sub("(\t|\n| )+",    " ", line)
-		line = re.sub("|.*DEBUG |",    "D", line)
-		line = re.sub("|.*INFO |",     "I", line)
-		line = re.sub("|.*WARNING |",  "W", line)
-		line = re.sub("|.*ERROR |",    "E", line)
-		line = re.sub("|.*CRITICAL |", "C", line)
+		line = re.sub(",[0-9]+ \|",     " |", line)
+		line = re.sub("\| *DEBUG \|",    "D", line)
+		line = re.sub("\| *INFO \|",     "I", line)
+		line = re.sub("\| *WARNING \|",  "W", line)
+		line = re.sub("\| *ERROR \|",    "E", line)
+		line = re.sub("\| *CRITICAL \|", "C", line)
+		line = re.sub("(\t|\n| )+",      " ", line)
 
 		if len(line) <= length: log_data.append(f"{line}\n")
 		else:                   log_data.append(f"{line[:length-3]}...\n")
 	
 	LOG.LOGGER.debug(f"returned end of log file")
-	return "".join(log_data)[:2000-10]
+	return "".join(log_data)[:max_chars]
 
 def saveLogFile(dstPath: str, srcPath: str=LOG.PATH) -> int:
 	with open(srcPath, "r") as fsrc:
@@ -111,7 +112,6 @@ def resetLogFiles(logDir: str=LOG.DIR, logPath: str=LOG.PATH) -> list[str, ]:
 			os.remove(filePath)
 			LOG.LOGGER.warning(f"file `{filePath}` deleted")
 	
-	LOG.LOGGER.info(f"log reseted")
 	return logFiles
 
 def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]:
