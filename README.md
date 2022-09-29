@@ -29,16 +29,10 @@ A discord bot specialized for the "Dr. Hans Riegel - Stiftung" community discord
 
 - [ ] `/auto-role [action] [type] [role]` [#12](https://github.com/FabianBartl/HARIBOT/issues/12)
   - actions:
-    - [ ] add
-    - [ ] list
-    - [ ] remove
-    - [ ] clear
+    - [ ] add, list, remove, clear
 
 <br>
 
 - [ ] `/reaction-role [action] [message] [emoji] [role]` [#10](https://github.com/FabianBartl/HARIBOT/issues/10)
   - actions:
-    - [ ] add
-    - [ ] list
-    - [ ] remove
-    - [ ] clear
+    - [ ] add, list, remove, clear
