@@ -36,7 +36,7 @@ class COLOR:
 
 class CONFIG:
 	PREFIX    = "/"
-	EPHEMERAL = True
+	EPHEMERAL = False
 	DATA_DIR  = os.path.abspath("../data")
 
 class LOG:

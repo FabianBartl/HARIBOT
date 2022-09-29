@@ -149,7 +149,7 @@ async def sc_ping(interaction: Interaction):
 @bot.slash_command(name="log", description="Manage logging files.", default_member_permissions=Permissions(administrator=True))
 async def sc_log(
 	interaction: Interaction
-	, action: int = SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3, "reset": 4})
+	, action: int = SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3, "reset": 4, "list": 5})
 ):
 	LOG.LOGGER.debug(f"(command sent) log: {action=}")
 
@@ -185,6 +185,13 @@ async def sc_log(
 			msg = f"all {len(logFiles)} log file(s) deleted / cleared"
 		else:
 			msg = f"no permission to use"
+		await interaction.response.send_message(msg, ephemeral=True)
+	
+	elif action == 5: #list
+		logFiles = os.listdir(LOG.DIR)
+		msg  = "```\n"
+		msg += "\n".join([ f"{os.path.getsize(os.path.join(LOG.DIR, file))/1000:.2f} KB | {file}" for file in logFiles ])
+		msg += "```"
 		await interaction.response.send_message(msg, ephemeral=True)
 
 #-----#
