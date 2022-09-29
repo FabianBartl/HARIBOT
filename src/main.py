@@ -125,7 +125,7 @@ async def on_message(message: Message):
 	channel     = message.channel
 	author      = message.author
 	guild       = message.guild
-	LOG.LOGGER.error(f"(msg sent) {channel.name} - {author.display_name}: {f'({len(attachments)} Attachments)' if len(attachments) > 0 else ''} '{content}'")
+	LOG.LOGGER.info(f"(msg sent) {channel.name} - {author.display_name}: {f'({len(attachments)} Attachments)' if len(attachments) > 0 else ''} '{content}'")
 	
 	words_count = len(re.sub(" +", " ", content).split(" "))
 	letters_count = len(content)
