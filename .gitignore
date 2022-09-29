@@ -1,5 +1,4 @@
-*.token
-*.owner
+discord.*
 data*
 __pycache__*
 log*
