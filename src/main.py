@@ -47,8 +47,8 @@ async def on_close():
 @bot.event
 async def on_disconnect():
 	LOG.LOGGER.warning("bot was disconnected")
-	LOG.LOGGER.info("will be reconnected after 1 second (now with reconnect flag)")
-	time.sleep(1)
+	LOG.LOGGER.info("will be reconnected after 5 seconds (now with reconnect flag)")
+	time.sleep(5)
 	await bot.connect(reconnect=True)
 
 #-----#
@@ -230,9 +230,9 @@ async def sc_log(
 		await interaction.response.send_message(msg, ephemeral=ephemeral)
 	
 	elif action == 5: #list
-		logFiles = os.listdir(LOG.DIR)
+		logFiles = os.scandir(LOG.DIR)
 		msg  = "```\n"
-		msg += "\n".join([ f"{os.path.getsize(os.path.join(LOG.DIR, file))/1000:.2f} KB | {file}" for file in logFiles ])
+		msg += "\n".join([ f"{round(file.stat().st_size/1000, 2):>10} KB | {file.name}" for file in logFiles ])
 		msg += "```"
 		await interaction.response.send_message(msg, ephemeral=ephemeral)
 
