@@ -2,7 +2,7 @@
 # libs
 import nextcord
 from nextcord.ext import commands
-from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji
+from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji, VoiceState
 
 import time, json, os, sys
 from datetime import datetime
@@ -146,12 +146,44 @@ async def on_message(message: Message):
 
 @bot.event
 async def on_message_edit(before: Message, after: Message):
+	author      = before.author
+	guild       = before.guild
 	LOG.LOGGER.debug(f"(msg edited before) {before.channel.name} - {before.author.display_name}: '{before.content}'")
 	LOG.LOGGER.debug(f"(msg edited after)  {after.channel.name} - {after.author.display_name}: '{after.content}'")
 
+	changes = abs(len(after.content) - len(before.content))
+
+	updateGuildData({
+		"edited_count": [1, "add"]
+		, "changes_lenght": [changes, "add"]
+	}, guild.id)
+	updateUserData({
+		"edited_count": [1, "add"]
+		, "changes_lenght": [changes, "add"]
+	}, author.id)
+
 @bot.event
 async def on_message_delete(message: Message):
+	author      = message.author
+	guild       = message.guild
 	LOG.LOGGER.debug(f"(msg deleted) {message.channel.name} - {message.author.display_name}: '{message.content}'")
+
+	updateGuildData({"deleted_count": [1, "add"]}, guild.id)
+	updateUserData({"deleted_count": [1, "add"]}, author.id)
+
+#-----#
+
+@bot.event
+async def on_presence_update(before: Member, after: Member):
+	pass
+
+@bot.event
+async def on_user_update(before: User, after: User):
+	pass
+
+@bot.event
+async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
+	pass
 
 #----------#
 # commands #
