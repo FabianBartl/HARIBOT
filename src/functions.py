@@ -5,6 +5,14 @@ from colorama import Fore, Back, Style
 from structs import CONFIG, TOKEN, LOG
 import custom_logger
 
+#----------------#
+# help functions #
+#----------------#
+
+def formatBytes(num: int, step: int=1000):
+	for unit in " KMGT":
+		if num < step: return f"{num:3.2f} {unit}B"
+		num /= step
 #-------------#
 # update data #
 #-------------#

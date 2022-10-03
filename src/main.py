@@ -232,7 +232,7 @@ async def sc_log(
 	elif action == 5: #list
 		logFiles = os.scandir(LOG.DIR)
 		msg  = "```\n"
-		msg += "\n".join([ f"{round(file.stat().st_size/1000, 2):>10} KB | {file.name}" for file in logFiles ])
+		msg += "\n".join([ f"{formatBytes(file.stat().st_size):>10} | {file.name}" for file in logFiles ])
 		msg += "```"
 		await interaction.response.send_message(msg, ephemeral=ephemeral)
 
