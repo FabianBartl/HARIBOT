@@ -189,8 +189,8 @@ async def on_message_edit(before: Message, after: Message):
 
 @bot.event
 async def on_message_delete(message: Message):
-	author      = message.author
-	guild       = message.guild
+	author = message.author
+	guild  = message.guild
 	LOG.LOGGER.debug(f"(msg deleted) {message.channel.name} - {message.author.display_name}: '{message.content}'")
 
 	updateGuildData({"deleted_count": [1, "add"]}, guild.id)
@@ -246,6 +246,31 @@ async def sc_ping(interaction: Interaction):
 
 #-----#
 
+@bot.slash_command(name="score", description="Get the score of a mentioned member.")
+async def sc_memberInfo(
+	interaction: Interaction
+	, member: Member = SlashOption(required=False)
+):
+	LOG.LOGGER.debug(f"(command sent) score: {member=}")
+	
+	if type(member) is not Member: member = interaction.user
+	userData = getUserData(member.id)
+
+	score_value  = "```cmd\n"
+	score_value += str(round(userData.get("words_count", 0) / userData.get("messages_count", 1), 2))
+	score_value += " WPM\n```"
+
+	embed = Embed(color=COLOR.SUCCESS, title="Scoreboard")
+	embed.set_thumbnail(url=member.display_avatar.url)
+	embed.add_field(name="Nickname", value=member.display_name)
+	embed.add_field(name="Score", value=score_value, inline=False)
+	embed.add_field(name="Score-Function", value=f"*suggest different score-function:\n[see issue on GitHub](https://github.com/{BOTINFO.REPOSITORY}/issues/15) / #server-idee-feedback channel*", inline=False)
+	embed.set_footer(text=f"Member ID: {member.id}")
+
+	await interaction.response.send_message(embed=embed, ephemeral=True)
+
+#-----#
+
 @bot.slash_command(name="log", description="Manage logging files.", default_member_permissions=Permissions(administrator=True))
 async def sc_log(
 	interaction: Interaction
@@ -269,7 +294,7 @@ async def sc_log(
 
 	elif action == 2: #get
 		log_code = getLogFile().replace("`", "'")
-		msg = f"```css\n...\n{log_code}\n```"
+		msg = f"```cmd\n...\n{log_code}\n```"
 		file = File(LOG.PATH, filename=dstFile)
 	
 	elif action == 3: #clear
@@ -290,7 +315,7 @@ async def sc_log(
 		logFiles = os.scandir(LOG.DIR)
 		msg  = "```cmd\n"
 		msg += "\n".join([ f"{formatBytes(file.stat().st_size):>10} | {file.name}" for file in logFiles ])
-		msg += "```"
+		msg += "\n```"
 	
 	if file: await interaction.response.send_message(msg, file=file, ephemeral=True)
 	else:    await interaction.response.send_message(msg, ephemeral=True)
@@ -318,7 +343,6 @@ async def sc_memberInfo(
 	embed.add_field(name="Words/Message", value=round(userData.get("words_count", 0) / userData.get("messages_count", 1), 2))
 
 	embed.add_field(name="Roles", value=" ".join([ role.mention for role in member.roles[1:] ]), inline=False)
-	
 	embed.set_footer(text=f"Member ID: {member.id}")
 
 	await interaction.response.send_message(embed=embed, ephemeral=CONFIG.EPHEMERAL)
@@ -340,7 +364,6 @@ async def sc_serverInfo(interaction: Interaction):
 	embed.add_field(name="Messages", value=guildData.get("messages_count", 0))
 
 	embed.add_field(name="Invite", value=f"[open](https://discord.gg/GVs3hmCmmJ) or copy invite:\n```\nhttps://discord.gg/GVs3hmCmmJ\n```", inline=False)
-
 	embed.set_footer(text=f"Server ID: {guild.id}")
 
 	await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -392,7 +415,6 @@ async def sc_botInfo(interaction: Interaction):
 
 	embed.add_field(name="GitHub", value=f"[{BOTINFO.REPOSITORY}](https://github.com/{BOTINFO.REPOSITORY})")
 	embed.add_field(name="Invite", value=f"[private invite]({BOTINFO.INVITE})")
-
 	embed.set_footer(text=f"Bot ID: {app.id}")
 
 	await interaction.response.send_message(embed=embed, ephemeral=True)
