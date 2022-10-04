@@ -28,13 +28,28 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 		if   len(newData[key]) == 1: value, mode = newData[key], "set"
 		elif len(newData[key]) == 2: value, mode = newData[key]
 
-		if key not in fileData: mode = "set"
-
-		if   mode == "add": fileData[key] += value
-		elif mode == "sub": fileData[key] -= value
-		elif mode == "mul": fileData[key] *= value
-		elif mode == "div": fileData[key] /= value
-		elif mode == "set": fileData[key]  = value
+		if key in fileData:
+			# <int>, <float>
+			if   mode == "add": fileData[key] += value
+			elif mode == "sub": fileData[key] -= value
+			# <list>
+			elif mode == "ext": fileData[key].append(value)
+			elif mode == "rem": 
+				if value in fileData[key]: del fileData[key][value]
+			# <Any>
+			elif mode == "set": fileData[key] = value
+			elif mode == "del": del fileData[key]
+		
+		else:
+			# <int>, <float>
+			if   mode == "add": fileData[key] = value
+			elif mode == "sub": fileData[key] = -value
+			# <list>
+			elif mode == "ext": fileData[key] = [value]
+			elif mode == "rem": pass
+			# <Any>
+			elif mode == "set": fileData[key] = value
+			elif mode == "del": pass
 	
 	with open(filePath, "w+") as fobj: json.dump(fileData, fobj)
 	LOG.LOGGER.debug(f"{dataPath}/{fileID} data updated: {fileData}")

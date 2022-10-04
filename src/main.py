@@ -7,6 +7,7 @@ from nextcord import Member, User, Guild, Message, Interaction, SlashOption, Fil
 import time, json, os, sys
 from datetime import datetime
 from urllib.request import urlopen
+from dataclasses import MISSING
 
 from structs import BOTINFO, TOKEN, COLOR, CONFIG, LOG
 from functions import *
@@ -20,6 +21,7 @@ bot = commands.Bot(
 	, intents = nextcord.Intents.all()
 )
 
+
 colored = (len(sys.argv) == 2 and sys.argv[1] == "colored")
 setupLogger(colored)
 
@@ -30,7 +32,8 @@ setupLogger(colored)
 @bot.event
 async def on_connect():
 	LOG.LOGGER.info("bot connected")
-	
+
+
 @bot.event
 async def on_ready():
 	try:
@@ -40,9 +43,11 @@ async def on_ready():
 		LOG.LOGGER.error(e)
 	LOG.LOGGER.info("bot is ready")
 
+
 @bot.event
 async def on_close():
 	LOG.LOGGER.critical("bot was shut down")
+
 
 @bot.event
 async def on_disconnect():
@@ -55,14 +60,25 @@ async def on_disconnect():
 
 @bot.event
 async def on_member_join(member: Member):
-	LOG.LOGGER.info("member joined")
-	updateGuildData({"bots_count" if member.bot else "users_count": [1, "add"]}, member.guild.id)
+	guild = member.guild
+	_type = "bot" if member.bot else "user"
+	LOG.LOGGER.info(f"member ({_type}) joined")
+
+	updateGuildData({"bots_count" if _type == "bot" else "users_count": [1, "add"]}, member.guild.id)
+
+	auto_role_IDs = getGuildData(guild.id).get(f"auto-roles_{_type}")
+	roles = [ guild.get_role(roleID).name for roleID in auto_role_IDs if guild.get_role(roleID) ]
+	role_names = [ role.name for role in roles ]
+	member.add_roles(roles)
+	LOG.LOGGER.info(f"member gets following roles: {', '.join(role_names)}")
+
 
 @bot.event
 async def on_member_remove(member: Member):
 	LOG.LOGGER.info("member removed")
 	updateGuildData({"bots_count" if member.bot else "users_count": [1, "add"]}, member.guild.id)
 	updateUserData({"leave_timestamp": [time.time()]}, member.id)
+
 
 @bot.event
 async def on_guild_join(guild: Guild):
@@ -77,6 +93,7 @@ async def on_guild_join(guild: Guild):
 		"bots_count": [bots_count, "add"]
 		, "users_count": [users_count, "add"]
 	}, guild.id)
+
 
 @bot.event
 async def on_guild_remove(guild: Guild):
@@ -95,6 +112,7 @@ async def on_reaction_add(reaction: Reaction, user: Member):
 	updateGuildData({"reactions_count": [1, "add"]}, guild.id)
 	updateUserData ({"reactions_count": [1, "add"]}, user.id)
 
+
 @bot.event
 async def on_reaction_remove(reaction: Reaction, user: User):
 	guild   = reaction.message.guild
@@ -105,10 +123,12 @@ async def on_reaction_remove(reaction: Reaction, user: User):
 	updateGuildData({"reactions_count": [-1, "add"]}, guild.id)
 	updateUserData ({"reactions_count": [-1, "add"]}, user.id)
 
+
 @bot.event
 async def on_reaction_clear(message: Message, reactions: list[Reaction, ]):
 	emojis = ", ".join([ f"{reaction.message.author.display_name}: {reaction.emoji}" for reaction in reactions ])
 	LOG.LOGGER.debug(f"(reaction cleared) {message.id}: '{emojis}'")
+
 
 @bot.event
 async def on_reaction_clear_emoji(reaction: Reaction):
@@ -144,6 +164,7 @@ async def on_message(message: Message):
 		, "attachments_count": [len(attachments), "add"]
 	}, author.id)
 
+
 @bot.event
 async def on_message_edit(before: Message, after: Message):
 	author      = before.author
@@ -162,6 +183,7 @@ async def on_message_edit(before: Message, after: Message):
 		, "changes_lenght": [changes, "add"]
 	}, author.id)
 
+
 @bot.event
 async def on_message_delete(message: Message):
 	author      = message.author
@@ -177,9 +199,11 @@ async def on_message_delete(message: Message):
 async def on_presence_update(before: Member, after: Member):
 	pass
 
+
 @bot.event
 async def on_user_update(before: User, after: User):
 	pass
+
 
 @bot.event
 async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
@@ -226,24 +250,24 @@ async def sc_log(
 ):
 	LOG.LOGGER.debug(f"(command sent) log: {action=}")
 
-	ephemeral = True
+	msg = ""
+	file = MISSING
 	dstFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.dat"
 	dstPath = os.path.abspath(os.path.join(LOG.DIR, dstFile))
 
 	if action == 0: #backup: save, get, clear
 		log_code, dstSize = backupLogFile(dstPath)
 		msg = f"log of size `{dstSize/1000:.2f} KB` backuped as `{dstFile}`"
-		await interaction.response.send_message(msg, file=File(dstPath, filename=dstFile), ephemeral=ephemeral)
+		file = File(dstPath, filename=dstFile)
 
 	elif action == 1: #save
 		dstSize = saveLogFile(dstPath)
 		msg = f"log of size `{dstSize/1000:.2f} KB` saved as `{dstFile}`"
-		await interaction.response.send_message(msg, ephemeral=ephemeral)
 
 	elif action == 2: #get
 		log_code = getLogFile().replace("`", "'")
 		msg = f"```css\n...\n{log_code}\n```"
-		await interaction.response.send_message(msg, file=File(LOG.PATH, filename=dstFile), ephemeral=ephemeral)
+		file = File(LOG.PATH, filename=dstFile)
 	
 	elif action == 3: #clear
 		if checkOwner(interaction.user.id):
@@ -251,7 +275,6 @@ async def sc_log(
 			msg = f"log file cleared"
 		else:
 			msg = f"no permission to use"
-		await interaction.response.send_message(msg, ephemeral=ephemeral)
 
 	elif action == 4: #reset
 		if checkOwner(interaction.user.id):
@@ -259,14 +282,14 @@ async def sc_log(
 			msg = f"all {len(logFiles)} log file(s) deleted / cleared"
 		else:
 			msg = f"no permission to use"
-		await interaction.response.send_message(msg, ephemeral=ephemeral)
 	
 	elif action == 5: #list
 		logFiles = os.scandir(LOG.DIR)
-		msg  = "```\n"
+		msg  = "```cmd\n"
 		msg += "\n".join([ f"{formatBytes(file.stat().st_size):>10} | {file.name}" for file in logFiles ])
 		msg += "```"
-		await interaction.response.send_message(msg, ephemeral=ephemeral)
+	
+	await interaction.response.send_message(msg, file=file, ephemeral=True)
 
 #-----#
 
@@ -359,35 +382,39 @@ async def sc_botInfo(interaction: Interaction):
 
 #-----#
 
-@bot.slash_command(name="auto-role", description="Manage auto role.", default_member_permissions=Permissions(administrator=True))
+@bot.slash_command(name="auto-role", description="Manage auto roles.", default_member_permissions=Permissions(administrator=True))
 async def sc_autoRole(
 	interaction: Interaction
 	, action: int = SlashOption(required=True, choices={"add": 0, "list": 1, "remove": 2, "clear": 3})
-	, _type: int = SlashOption(required=True, choices={"User": 0, "Bot": 1}, name="type")
+	, _type: int = SlashOption(required=True, choices={"User": "user", "Bot": "bot"}, name="type")
 	, role: Role = SlashOption(required=True)
 ):
-	LOG.LOGGER.debug(f"(command sent) auto-role: {action=}, {role=}, {_type=}")
+	LOG.LOGGER.debug(f"(command sent) auto-role: {action=}, {_type=}, {role=}")
 
 	guild = interaction.guild
-	
-	if action == 0:
-		updateGuildData({
-			"auto-role_User": [1, "add"]
-		}, guild.id)
 
-	elif action == 1:
-		pass
+	if action == 0: #add
+		updateGuildData({f"auto-roles_{_type}": [role.id, "ext"]}, guild.id)
+		msg = f"@{role.name} added to the automatic {_type} roles"
 
-	elif action == 2:
-		pass
+	elif action == 1: #list
+		auto_roles = getGuildData(guild.id).get(f"auto-roles_{_type}")
+		msg  = "*all automatic {_type} roles:*\n"
+		if auto_roles: msg += ", ".join([ f"@{guild.get_role(role.id).name}" for role in auto_roles ])
+		else:          msg += "None"
 
-	elif action == 3:
-		pass
+	elif action == 2: #remove
+		updateGuildData({f"auto-roles_{_type}": [role.id, "rem"]}, guild.id)
+		msg = f"@{role.name} removed from the automatic {_type} roles"
 
-	await interaction.response.send_message(f"`auto-role`: `{action=}`, `{role=}`, `{_type=}`", ephemeral=CONFIG.EPHEMERAL)
+	elif action == 3: #clear
+		updateGuildData({f"auto-roles_{_type}": [_,"del"]}, guild.id)
+		msg = f"automatic {_type} roles cleared"
+
+	await interaction.response.send_message(msg, ephemeral=True)
 
 
-@bot.slash_command(name="reaction-role", description="Manage reaction role.")
+@bot.slash_command(name="reaction-role", description="Manage reaction roles.")
 async def sc_reactionRole(
 	interaction: Interaction
 	, action: int = SlashOption(required=True, choices={"add": 0, "list": 1, "remove": 2, "clear": 3})
