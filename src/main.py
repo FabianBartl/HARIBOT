@@ -215,7 +215,7 @@ async def sc_ping(interaction: Interaction):
 	msg = f"`{latency*1000:.0f} ms` latency"
 	if   latency > 400: LOG.LOGGER.warning(msg)
 	elif latency > 900: LOG.LOGGER.critical(msg)
-	await interaction.response.send_message(f"pong with {msg}", ephemeral=CONFIG.EPHEMERAL)
+	await interaction.response.send_message(f"pong with {msg}", ephemeral=True)
 
 #-----#
 
@@ -241,8 +241,8 @@ async def sc_log(
 		await interaction.response.send_message(msg, ephemeral=ephemeral)
 
 	elif action == 2: #get
-		log_code = getLogFile()
-		msg = f"```js\n...\n{log_code}\n```"
+		log_code = getLogFile().replace("`", "'")
+		msg = f"```css\n...\n{log_code}\n```"
 		await interaction.response.send_message(msg, file=File(LOG.PATH, filename=dstFile), ephemeral=ephemeral)
 	
 	elif action == 3: #clear
