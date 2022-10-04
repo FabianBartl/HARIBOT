@@ -70,7 +70,7 @@ async def on_member_join(member: Member):
 	roles = [ guild.get_role(roleID) for roleID in auto_role_IDs if guild.get_role(roleID) is not None ]
 	role_names = [ role.name for role in roles ]
 	for role in roles: await member.add_roles(role)
-	LOG.LOGGER.critical(f"member gets following roles: {', '.join(role_names)}")
+	LOG.LOGGER.info(f"member ({_type}) gets following roles: {', '.join(role_names)}")
 
 
 @bot.event
@@ -395,7 +395,7 @@ async def sc_autoRole(
 ):
 	guild = interaction.guild
 	_type = "bot" if _type == 1 else "user"
-	LOG.LOGGER.critical(f"(command sent) auto-role: {action=}, {_type=}, {role=}")
+	LOG.LOGGER.debug(f"(command sent) auto-role: {action=}, {_type=}, {role=}")
 
 	if action == 0: #add
 		updateGuildData({f"auto-roles_{_type}": [role.id, "ins"]}, guild.id)
@@ -417,7 +417,7 @@ async def sc_autoRole(
 		updateGuildData({f"auto-roles_{_type}": [None, "del"]}, guild.id)
 		msg = f"automatic {_type} roles cleared"
 
-	LOG.LOGGER.critical(msg)
+	LOG.LOGGER.info(msg)
 	await interaction.response.send_message(msg, ephemeral=True)
 
 
