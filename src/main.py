@@ -361,7 +361,7 @@ async def sc_botInfo(interaction: Interaction):
 	try:
 		request = urlopen("https://api.github.com/repos/FabianBartl/HARIBOT/issues?state=all").read()
 		issues_list = json.loads(request)
-		LOG.LOGGER.debug(f"(successfully requested issues) {issues_list}")
+		LOG.LOGGER.debug(f"(successfully requested issues) {issues_list=}")
 
 		labels_dict = dict()
 		for issue in issues_list:
@@ -371,8 +371,21 @@ async def sc_botInfo(interaction: Interaction):
 			for label in issue["labels"]:
 				labels_dict[label["name"]] = labels_dict.get(label["name"], 0) + 1
 		
-		issues_value = ", ".join([ f"{label}: {labels_dict[label]}" for label in labels_dict ]).title()
-		embed.add_field(name=f"Issue Tracker", value=f"{issues_value}, [see all](https://github.com/{BOTINFO.REPOSITORY}/issues)", inline=False)
+		issues_value  = ", ".join([ f"{label}: {labels_dict[label]}" for label in labels_dict ]).title()
+		issues_value += f"\n*see: [planned functions](https://github.com/{BOTINFO.REPOSITORY}/issues/20) & [all issues](https://github.com/{BOTINFO.REPOSITORY}/issues)*"
+		embed.add_field(name=f"Issue Tracker", value=issues_value, inline=False)
+	
+	except Exception as e:
+		LOG.LOGGER.error(e)
+
+	try:
+		request = urlopen("https://api.github.com/repos/FabianBartl/HARIBOT/contributors").read()
+		contrib_list = json.loads(request)
+		LOG.LOGGER.debug(f"(successfully requested contributors) {contrib_list=}")
+
+		contrib_dict = { contrib["login"]: {"profile": contrib["html_url"], "num": contrib["contributions"]} for contrib in contrib_list }
+		contrib_value = ", ".join([ f"[{contrib}]({contrib_dict[contrib]['profile']}): {contrib_dict[contrib]['num']}" for contrib in contrib_dict ])
+		embed.add_field(name=f"Contributors", value=contrib_value, inline=False)
 	
 	except Exception as e:
 		LOG.LOGGER.error(e)

@@ -51,7 +51,7 @@ class LOG:
 class BOTINFO:
 	ID          = 1024235031037759500
 	NAME        = "HARIBOT"
-	DESCRIPTION = 'A discord bot specialized for the "Dr. Hans Riegel - Stiftung" community discord server.'
+	DESCRIPTION = 'A discord bot specialized for the **Dr. Hans Riegel - Stiftung** community discord server.'
 	INVITE      = f"https://discord.com/oauth2/authorize?client_id={ID}&permissions=8&scope=bot"
 	REPOSITORY  = "FabianBartl/HARIBOT"
 	CREATOR     = "Fabian Bartl"
