@@ -7,7 +7,6 @@ from nextcord import Member, User, Guild, Message, Interaction, SlashOption, Fil
 import time, json, os, sys
 from datetime import datetime
 from urllib.request import urlopen
-from dataclasses import MISSING
 
 from structs import BOTINFO, TOKEN, COLOR, CONFIG, LOG
 from functions import *
@@ -70,15 +69,16 @@ async def on_member_join(member: Member):
 	auto_role_IDs = getGuildData(guild.id).get(f"auto-roles_{_type}")
 	roles = [ guild.get_role(roleID) for roleID in auto_role_IDs if guild.get_role(roleID) is not None ]
 	role_names = [ role.name for role in roles ]
-	await member.add_roles(roles)
+	for role in roles: await member.add_roles(role)
 	LOG.LOGGER.critical(f"member gets following roles: {', '.join(role_names)}")
 
 
 @bot.event
 async def on_member_remove(member: Member):
-	LOG.LOGGER.info("member removed")
-	updateGuildData({"bots_count" if member.bot else "users_count": [1, "add"]}, member.guild.id)
-	updateUserData({"leave_timestamp": [time.time()]}, member.id)
+	_type = "bot" if member.bot else "user"
+	LOG.LOGGER.info(f"member ({_type}) removed")
+	updateGuildData({f"{_type}s_count", [1, "sub"]}, member.guild.id)
+	updateUserData({"leave_timestamp": [time.time(), "set"]}, member.id)
 
 
 @bot.event
@@ -254,7 +254,7 @@ async def sc_log(
 	LOG.LOGGER.debug(f"(command sent) log: {action=}")
 
 	msg = ""
-	file = MISSING
+	file = None
 	dstFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.dat"
 	dstPath = os.path.abspath(os.path.join(LOG.DIR, dstFile))
 
@@ -292,7 +292,8 @@ async def sc_log(
 		msg += "\n".join([ f"{formatBytes(file.stat().st_size):>10} | {file.name}" for file in logFiles ])
 		msg += "```"
 	
-	await interaction.response.send_message(msg, file=file, ephemeral=True)
+	if file: await interaction.response.send_message(msg, file=file, ephemeral=True)
+	else:    await interaction.response.send_message(msg, ephemeral=True)
 
 #-----#
 
@@ -390,15 +391,14 @@ async def sc_autoRole(
 	interaction: Interaction
 	, action: int = SlashOption(required=True, choices={"add": 0, "list": 1, "remove": 2, "clear": 3})
 	, _type: int = SlashOption(required=True, choices={"User": 0, "Bot": 1}, name="type")
-	, role: Role = SlashOption(required=True)
+	, role: Role = SlashOption(required=True, description="Role not relevant if action is list or clear")
 ):
-	_type = "bot" if _type == 1 else "user"
-	LOG.LOGGER.debug(f"(command sent) auto-role: {action=}, {_type=}, {role=}")
-
 	guild = interaction.guild
+	_type = "bot" if _type == 1 else "user"
+	LOG.LOGGER.critical(f"(command sent) auto-role: {action=}, {_type=}, {role=}")
 
 	if action == 0: #add
-		updateGuildData({f"auto-roles_{_type}": [role.id, "ext"]}, guild.id)
+		updateGuildData({f"auto-roles_{_type}": [role.id, "ins"]}, guild.id)
 		msg = f"`{role.name}` added to the automatic {_type} roles"
 
 	elif action == 1: #list
@@ -425,7 +425,7 @@ async def sc_autoRole(
 async def sc_reactionRole(
 	interaction: Interaction
 	, action: int = SlashOption(required=True, choices={"add": 0, "list": 1, "remove": 2, "clear": 3})
-	, messageID: int = SlashOption(required=True)
+	, messageID: int = SlashOption(required=True, name="messag-id")
 	, emoji: int = SlashOption(required=True)
 	, role: Role = SlashOption(required=True)
 ):
