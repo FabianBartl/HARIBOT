@@ -7,7 +7,7 @@ set /a max=10
 :start
 @REM if %i% GTR %max% goto end
 
-python main.py %~1
+python3 main.py %~1
 echo "%i% error occured: %DATE% %TIME%"
 
 set /a i+=1
