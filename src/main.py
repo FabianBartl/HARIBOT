@@ -68,9 +68,9 @@ async def on_member_join(member: Member):
 
 	auto_role_IDs = getGuildData(guild.id).get(f"auto-roles_{_type}")
 	roles = [ guild.get_role(roleID) for roleID in auto_role_IDs if guild.get_role(roleID) is not None ]
-	role_names = [ role.name for role in roles ]
+	role_mentions = [ role.mention for role in roles ]
 	for role in roles: await member.add_roles(role)
-	LOG.LOGGER.info(f"member ({_type}) gets following roles: {', '.join(role_names)}")
+	LOG.LOGGER.info(f"member ({_type}) gets following roles: {' '.join(role_mentions)}")
 
 
 @bot.event
@@ -317,8 +317,8 @@ async def sc_memberInfo(
 	embed.add_field(name="Messages", value=userData.get("messages_count", 0))
 	embed.add_field(name="Words/Message", value=round(userData.get("words_count", 0) / userData.get("messages_count", 1), 2))
 
-	embed.add_field(name="Roles", value=", ".join([ role.name for role in member.roles[1:] ]), inline=False)
-
+	embed.add_field(name="Roles", value=" ".join([ role.mention for role in member.roles[1:] ]), inline=False)
+	
 	embed.set_footer(text=f"Member ID: {member.id}")
 
 	await interaction.response.send_message(embed=embed, ephemeral=CONFIG.EPHEMERAL)
@@ -412,19 +412,19 @@ async def sc_autoRole(
 
 	if action == 0: #add
 		updateGuildData({f"auto-roles_{_type}": [role.id, "ins"]}, guild.id)
-		msg = f"`{role.name}` added to the automatic {_type} roles"
+		msg = f"{role.mention} added to the automatic {_type} roles"
 
 	elif action == 1: #list
 		auto_role_IDs = getGuildData(guild.id).get(f"auto-roles_{_type}")
 		if auto_role_IDs:
 			msg  = f"all automatic {_type} roles:\n"
-			msg += ", ".join([ f"`{guild.get_role(roleID).name}`" for roleID in auto_role_IDs ])
+			msg += " ".join([ f"{guild.get_role(roleID).mention}" for roleID in auto_role_IDs ])
 		else:
 			msg = f"no automatic {_type} roles set"
 
 	elif action == 2: #remove
 		updateGuildData({f"auto-roles_{_type}": [role.id, "rem"]}, guild.id)
-		msg = f"`{role.name}` removed from the automatic {_type} roles"
+		msg = f"{role.mention} removed from the automatic {_type} roles"
 
 	elif action == 3: #clear
 		updateGuildData({f"auto-roles_{_type}": [None, "del"]}, guild.id)
