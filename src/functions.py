@@ -34,6 +34,8 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 			elif mode == "sub": fileData[key] -= value
 			# <list>
 			elif mode == "ext": fileData[key].append(value)
+			elif mode == "ins":
+				if value not in fileData[key]: fileData[key].append(value)
 			elif mode == "rem": 
 				if value in fileData[key]: del fileData[key][fileData[key].index(value)]
 			# <Any>
@@ -46,6 +48,7 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 			elif mode == "sub": fileData[key] = -value
 			# <list>
 			elif mode == "ext": fileData[key] = [value]
+			elif mode == "ins": fileData[key] = [value]
 			elif mode == "rem": pass
 			# <Any>
 			elif mode == "set": fileData[key] = value
