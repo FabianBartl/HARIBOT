@@ -65,12 +65,13 @@ async def on_member_join(member: Member):
 	LOG.LOGGER.info(f"member ({_type}) joined")
 
 	updateGuildData({"bots_count" if _type == "bot" else "users_count": [1, "add"]}, member.guild.id)
+	updateUserData({"leave_timestamp": [None, "del"]}, member.id)
 
 	auto_role_IDs = getGuildData(guild.id).get(f"auto-roles_{_type}")
-	roles = [ guild.get_role(roleID).name for roleID in auto_role_IDs if guild.get_role(roleID) ]
+	roles = [ guild.get_role(roleID) for roleID in auto_role_IDs if guild.get_role(roleID) is not None ]
 	role_names = [ role.name for role in roles ]
-	member.add_roles(roles)
-	LOG.LOGGER.info(f"member gets following roles: {', '.join(role_names)}")
+	await member.add_roles(roles)
+	LOG.LOGGER.critical(f"member gets following roles: {', '.join(role_names)}")
 
 
 @bot.event
@@ -92,13 +93,14 @@ async def on_guild_join(guild: Guild):
 	updateGuildData({
 		"bots_count": [bots_count, "add"]
 		, "users_count": [users_count, "add"]
+		, "leave_timestamp": [None, "del"]
 	}, guild.id)
 
 
 @bot.event
 async def on_guild_remove(guild: Guild):
 	LOG.LOGGER.info("guild removed")
-	updateGuildData({"leave_timestamp": [time.time()]}, guild.id)
+	updateGuildData({"leave_timestamp": [time.time(), "set"]}, guild.id)
 
 #-----#
 
@@ -120,19 +122,20 @@ async def on_reaction_remove(reaction: Reaction, user: User):
 	emoji   = reaction.emoji
 	LOG.LOGGER.debug(f"(reaction removed) {message.id}: '{user.display_name}: {emoji}'")
 
-	updateGuildData({"reactions_count": [-1, "add"]}, guild.id)
-	updateUserData ({"reactions_count": [-1, "add"]}, user.id)
+	updateGuildData({"reactions_count": [1, "sub"]}, guild.id)
+	updateUserData ({"reactions_count": [1, "sub"]}, user.id)
 
 
 @bot.event
 async def on_reaction_clear(message: Message, reactions: list[Reaction, ]):
-	emojis = ", ".join([ f"{reaction.message.author.display_name}: {reaction.emoji}" for reaction in reactions ])
+	emojis  = f"{reactions.message.author.display_name}:\n"
+	emojis += ", ".join([ f"`{reaction.emoji}`" for reaction in reactions ])
 	LOG.LOGGER.debug(f"(reaction cleared) {message.id}: '{emojis}'")
 
 
 @bot.event
 async def on_reaction_clear_emoji(reaction: Reaction):
-	user  = reaction.message.author
+	user    = reaction.message.author
 	message = reaction.message
 	emoji   = reaction.emoji
 	LOG.LOGGER.debug(f"(reaction cleared emoji) {message.id}: '{user.display_name}: {emoji}'")
@@ -146,7 +149,7 @@ async def on_message(message: Message):
 	channel     = message.channel
 	author      = message.author
 	guild       = message.guild
-	LOG.LOGGER.info(f"(msg sent) {channel.name} - {author.display_name}: {f'({len(attachments)} Attachments)' if len(attachments) > 0 else ''} '{content}'")
+	LOG.LOGGER.debug(f"(msg sent) {channel.name} - {author.display_name}: {f'({len(attachments)} Attachments)' if len(attachments) > 0 else ''} '{content}'")
 	
 	words_count = len(re.sub(" +", " ", content).split(" "))
 	letters_count = len(content)
@@ -167,8 +170,8 @@ async def on_message(message: Message):
 
 @bot.event
 async def on_message_edit(before: Message, after: Message):
-	author      = before.author
-	guild       = before.guild
+	author = before.author
+	guild  = before.guild
 	LOG.LOGGER.debug(f"(msg edited before) {before.channel.name} - {before.author.display_name}: '{before.content}'")
 	LOG.LOGGER.debug(f"(msg edited after)  {after.channel.name} - {after.author.display_name}: '{after.content}'")
 
@@ -243,7 +246,7 @@ async def sc_ping(interaction: Interaction):
 
 #-----#
 
-@bot.slash_command(name="log", description="Manage logging files.")#, default_member_permissions=Permissions(administrator=True))
+@bot.slash_command(name="log", description="Manage logging files.", default_member_permissions=Permissions(administrator=True))
 async def sc_log(
 	interaction: Interaction
 	, action: int = SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3, "reset": 4, "list": 5})
@@ -299,7 +302,7 @@ async def sc_memberInfo(
 	, member: Member = SlashOption(required=False)
 ):
 	LOG.LOGGER.debug(f"(command sent) member-info: {member=}")
-
+	
 	if type(member) is not Member: member = interaction.user
 	userData = getUserData(member.id)
 
@@ -386,31 +389,35 @@ async def sc_botInfo(interaction: Interaction):
 async def sc_autoRole(
 	interaction: Interaction
 	, action: int = SlashOption(required=True, choices={"add": 0, "list": 1, "remove": 2, "clear": 3})
-	, _type: int = SlashOption(required=True, choices={"User": "user", "Bot": "bot"}, name="type")
+	, _type: int = SlashOption(required=True, choices={"User": 0, "Bot": 1}, name="type")
 	, role: Role = SlashOption(required=True)
 ):
+	_type = "bot" if _type == 1 else "user"
 	LOG.LOGGER.debug(f"(command sent) auto-role: {action=}, {_type=}, {role=}")
 
 	guild = interaction.guild
 
 	if action == 0: #add
 		updateGuildData({f"auto-roles_{_type}": [role.id, "ext"]}, guild.id)
-		msg = f"@{role.name} added to the automatic {_type} roles"
+		msg = f"`{role.name}` added to the automatic {_type} roles"
 
 	elif action == 1: #list
-		auto_roles = getGuildData(guild.id).get(f"auto-roles_{_type}")
-		msg  = "*all automatic {_type} roles:*\n"
-		if auto_roles: msg += ", ".join([ f"@{guild.get_role(role.id).name}" for role in auto_roles ])
-		else:          msg += "None"
+		auto_role_IDs = getGuildData(guild.id).get(f"auto-roles_{_type}")
+		if auto_role_IDs:
+			msg  = f"all automatic {_type} roles:\n"
+			msg += ", ".join([ f"`{guild.get_role(roleID).name}`" for roleID in auto_role_IDs ])
+		else:
+			msg = f"no automatic {_type} roles set"
 
 	elif action == 2: #remove
 		updateGuildData({f"auto-roles_{_type}": [role.id, "rem"]}, guild.id)
-		msg = f"@{role.name} removed from the automatic {_type} roles"
+		msg = f"`{role.name}` removed from the automatic {_type} roles"
 
 	elif action == 3: #clear
-		updateGuildData({f"auto-roles_{_type}": [_,"del"]}, guild.id)
+		updateGuildData({f"auto-roles_{_type}": [None, "del"]}, guild.id)
 		msg = f"automatic {_type} roles cleared"
 
+	LOG.LOGGER.critical(msg)
 	await interaction.response.send_message(msg, ephemeral=True)
 
 

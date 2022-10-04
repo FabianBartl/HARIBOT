@@ -1,5 +1,6 @@
 
 import os, json, re
+from tkinter import filedialog
 from colorama import Fore, Back, Style
 
 from structs import CONFIG, TOKEN, LOG
@@ -25,8 +26,7 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 		with open(filePath, "r") as fobj: fileData = json.load(fobj)
 	
 	for key in newData:
-		if   len(newData[key]) == 1: value, mode = newData[key], "set"
-		elif len(newData[key]) == 2: value, mode = newData[key]
+		value, mode = newData[key]
 
 		if key in fileData:
 			# <int>, <float>
@@ -35,7 +35,7 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 			# <list>
 			elif mode == "ext": fileData[key].append(value)
 			elif mode == "rem": 
-				if value in fileData[key]: del fileData[key][value]
+				if value in fileData[key]: del fileData[key][fileData[key].index(value)]
 			# <Any>
 			elif mode == "set": fileData[key] = value
 			elif mode == "del": del fileData[key]
