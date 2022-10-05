@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="130" x="0" y="0">
+    <rect id="box" x="0" y="0" width="400" height="130" fill="rgba(255, 255, 255, 0.1)"/>
+    <rect id="cell" x="10" y="10" width="380" height="110" rx="10" fill="rgba(255, 255, 255, 0.1)"/>
+
+    <rect id="avatar" x="30" y="30" width="70" height="70" rx="35" fill="rgba(255, 255, 255, 0.1)"/>
+    <rect id="status" x="83" y="83" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
+
+    <rect id="score-bar" x="120" y="80" width="250" height="20" rx="10" fill="rgba(255, 255, 255, 0.1)"/>
+    <rect id="score-progress" x="120" y="80" width="140" height="20" rx="10" fill="rgba(255, 255, 255, 0.3)"/>
+    <text id="nickname" x="130" y="75" font-size="10" fill="rgba(255, 255, 255, 0.5)">Fabian Bartl</text>
+    <text id="score-rating" x="265" y="75" text-anchor="end" font-size="10" fill="rgba(255, 255, 255, 0.5)">
+        <tspan dx="95" fill="rgba(255, 255, 255, 0.7)">2.99K</tspan>
+        <tspan dx="3">/</tspan>
+        <tspan dx="3">4.78K</tspan>
+        <tspan dx="3">XP</tspan>
+    </text>
+
+    <rect id="badge_1" x="120" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
+    <rect id="badge_2" x="130" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
+    <rect id="badge_3" x="140" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
+    <rect id="badge_3" x="150" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
+    <rect id="badge_5" x="160" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
+    <rect id="badges" x="180" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.1)"/>
+
+    <text id="level" x="265" y="35" text-anchor="end" font-size="15" fill="rgba(255, 255, 255, 0.5)">
+        <tspan dx="95" font-size="7">RANK</tspan>
+        <tspan dx="4" fill="rgba(255, 255, 255, 0.7)">#1</tspan>
+        <tspan dx="10" font-size="7">LEVEL</tspan>
+        <tspan dx="4" fill="rgba(255, 255, 255, 0.7)">26</tspan>
+    </text>
+</svg>
