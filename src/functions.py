@@ -176,7 +176,7 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 # score / level / ranking / badge functions #
 #-------------------------------------------#
 
-def createScoreCard(member: Member):
+def createScoreCard(member: Member): #-> lambda-function
 	user_data = getUserData(member.id)
 
 	current_xp = user_data.get("xp", 0)
@@ -229,6 +229,8 @@ def createScoreCard(member: Member):
 	score_card_file = lambda ext: os.path.abspath(f"{os.path.join(DIR.TEMP, f'score-card_{member.id}')}.{ext}")
 	with open(score_card_file("svg"), "w+") as fobj: fobj.write(generated_svg)
 	
-	LOG.LOGGER.debug(svg2png(score_card_file("svg"), score_card_file("png"), 400*4))
+	error = svg2png(score_card_file("svg"), score_card_file("png"), 400*4)
+	msg = f"svg2png returned error code `{error}`"
+	LOG.LOGGER.debug(msg) if error == 0 else LOG.LOGGER.error(msg)
 
-	return score_card_file("svg")
+	return score_card_file

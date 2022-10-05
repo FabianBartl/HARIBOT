@@ -300,10 +300,10 @@ async def sc_memberInfo(
 	if type(member) is not Member: member = interaction.user
 	score_card_file = createScoreCard(member)
 	
-	await interaction.response.send_message(file=File(score_card_file), ephemeral=True)
+	await interaction.response.send_message(file=File(score_card_file("svg")), ephemeral=True)
 
-	os.system(f"del {score_card_file}")
-	LOG.LOGGER.debug(f"deleted tmp score card png file `{score_card_file}`")
+	os.system(f"del {score_card_file('*')}")
+	LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file('*')}`")
 
 #-----#
 
