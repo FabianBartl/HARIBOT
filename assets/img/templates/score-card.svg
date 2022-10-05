@@ -49,7 +49,9 @@ text { font-family: "GillSansMTStd-Medium"; }
         <rect id="box" x="0" y="0" width="400" height="130" fill="rgba(255, 255, 255, 0.1)"/>
         <rect id="cell" x="10" y="10" width="380" height="110" rx="10" fill="rgba(255, 255, 255, 0.1)"/>
 
+        <rect id="avatar-border" x="29" y="29" width="72" height="72" rx="36" fill="rgba(255, 255, 255, 0.1)"/>
         <rect id="avatar" x="30" y="30" width="70" height="70" rx="35" fill="rgba(255, 255, 255, 0.1)"/>
+        <rect id="status-border" x="82" y="82" width="17" height="17" rx="8.5" fill="rgba(255, 255, 255, 0.1)"/>
         <rect id="status" x="83" y="83" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
 
         <rect id="score-bar" x="120" y="80" width="250" height="20" rx="10" fill="rgba(255, 255, 255, 0.1)"/>
@@ -62,11 +64,17 @@ text { font-family: "GillSansMTStd-Medium"; }
             <tspan dx="3">XP</tspan>
         </text>
 
+        <rect id="badge-border_1" x="119" y="21" width="17" height="17" rx="8.5" fill="rgba(255, 255, 255, 0.1)"/>
         <rect id="badge_1" x="120" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
+        <rect id="badge-border_2" x="129" y="21" width="17" height="17" rx="8.5" fill="rgba(255, 255, 255, 0.1)"/>
         <rect id="badge_2" x="130" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
+        <rect id="badge-border_3" x="139" y="21" width="17" height="17" rx="8.5" fill="rgba(255, 255, 255, 0.1)"/>
         <rect id="badge_3" x="140" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
+        <rect id="badge-border_4" x="149" y="21" width="17" height="17" rx="8.5" fill="rgba(255, 255, 255, 0.1)"/>
         <rect id="badge_3" x="150" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
+        <rect id="badge-border_5" x="159" y="21" width="17" height="17" rx="8.5" fill="rgba(255, 255, 255, 0.1)"/>
         <rect id="badge_5" x="160" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.3)"/>
+        <rect id="badges-border" x="179" y="21" width="17" height="17" rx="8.5" fill="rgba(255, 255, 255, 0.1)"/>
         <rect id="badges" x="180" y="22" width="15" height="15" rx="7.5" fill="rgba(255, 255, 255, 0.1)"/>
 
         <text id="level" x="265" y="35" text-anchor="end" font-size="15" fill="rgba(255, 255, 255, 0.5)">
