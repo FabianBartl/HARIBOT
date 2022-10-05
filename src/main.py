@@ -435,6 +435,7 @@ async def sc_autoRole(
 	if action == 0: #add
 		updateGuildData({f"auto-roles_{_type}": [role.id, "ins"]}, guild.id)
 		msg = f"{role.mention} added to the automatic {_type} roles"
+		LOG.LOGGER.info(msg)
 
 	elif action == 1: #list
 		auto_role_IDs = getGuildData(guild.id).get(f"auto-roles_{_type}")
@@ -447,12 +448,13 @@ async def sc_autoRole(
 	elif action == 2: #remove
 		updateGuildData({f"auto-roles_{_type}": [role.id, "rem"]}, guild.id)
 		msg = f"{role.mention} removed from the automatic {_type} roles"
+		LOG.LOGGER.info(msg)
 
 	elif action == 3: #clear
 		updateGuildData({f"auto-roles_{_type}": [None, "del"]}, guild.id)
 		msg = f"automatic {_type} roles cleared"
+		LOG.LOGGER.warning(msg)
 
-	LOG.LOGGER.info(msg)
 	await interaction.response.send_message(msg, ephemeral=True)
 
 
