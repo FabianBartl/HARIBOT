@@ -20,7 +20,6 @@ bot = commands.Bot(
 	, intents = nextcord.Intents.all()
 )
 
-
 colored = (len(sys.argv) == 2 and sys.argv[1] == "colored")
 setupLogger(colored)
 
@@ -296,20 +295,9 @@ async def sc_memberInfo(
 	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
 	
 	if type(member) is not Member: member = interaction.user
-	userData = getUserData(member.id)
-
-	score_value  = "```cmd\n"
-	score_value += str(round(userData.get("words_count", 0) / userData.get("messages_count", 1), 2))
-	score_value += " WPM\n```"
-
-	embed = Embed(color=COLOR.SUCCESS, title="Scoreboard")
-	embed.set_thumbnail(url=member.display_avatar.url)
-	embed.add_field(name="Nickname", value=member.display_name)
-	embed.add_field(name="Score", value=score_value, inline=False)
-	embed.add_field(name="Score-Function", value=f"*suggest different score-function:\n[see issue on GitHub](https://github.com/{BOTINFO.REPOSITORY}/issues/15) / #server-idee-feedback channel*", inline=False)
-	embed.set_footer(text=f"Member ID: {member.id}")
-
-	await interaction.response.send_message(embed=embed, ephemeral=True)
+	score_card_file = createScoreCard(member)
+	
+	await interaction.response.send_message(file=File(score_card_file, filename=f"score-card_{member.id}.png"), ephemeral=True)
 
 #-----#
 

@@ -4,6 +4,8 @@ import nextcord
 from nextcord import Member
 
 import os, json, re
+from svglib.svglib import svg2rlg
+from reportlab.graphics import renderPM
 
 from structs import TOKEN, LOG, DIR, COLOR, XP
 import custom_logger
@@ -157,15 +159,55 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 # def 
 
 def createScoreCard(member: Member):
-	avatar   = member.display_avatar.url
-	nickname = member.display_name
-	status   = member.status
-
 	user_data = getUserData(member.id)
+
+	xp = user_data.get("xp", 0)
 	
 	with open(os.path.join(DIR.TEMPLATES, "score-card_template.svg"), "r") as fobj: template_svg = fobj.read()
-	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r") as fobj: font_bas64   = fobj.read()
+	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r") as fobj: font_base64  = fobj.read()
+	
+	generated_svg = template_svg.format(
+		GillSansMTStd_Medium_base64 = font_base64
+		, cell_color = "#32353B"
 
+		, avatar_img = member.display_avatar.url
+		, status = member.status.__str__()
 
+		, nickname_color = "#"
+		, username = member.display_name
+		
+		, score_bar_color = "#"
+		, score_progress_color = "#"
+		, score_rating_color = "#"
+		, score_progress = 0
 
+		, current_xp_color = "#"
+		, required_xp_color = "#"
+		, current_xp = xp
+		, required_xp = 0
 
+		, badge_1_color = "#"
+		, badge_2_color = "#"
+		, badge_3_color = "#"
+		, badge_4_color = "#"
+		, badge_5_color = "#"
+		, badge_more_color = "#"
+		, hidden_badges_count = 5
+
+		, ranking_color = "#"
+		, rank_color = "#"
+		, level_color = "#"
+		, rank = 0
+		, level = 0
+
+		, BO = "{"
+		, BC = "}"
+	)
+
+	score_card_file = lambda ext: f"{os.path.join(DIR.TEMP, f'score-card_{member.id}')}.{ext}"
+	with open(score_card_file("svg"), "w+") as fobj: fobj.write(generated_svg)
+
+	drawing = svg2rlg(score_card_file("svg"))
+	renderPM.drawToFile(drawing, score_card_file("png"), fmt="PNG")
+
+	return score_card_file("png")

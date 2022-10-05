@@ -1,12 +1,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="130" x="0" y="0">
     <defs>
         <style>
-            @font-face {
+            @font-face {BO}
                 font-family: "GillSansMTStd-Medium";
                 src: url("{GillSansMTStd_Medium_base64}");
-            }
-            text { font-family: "GillSansMTStd-Medium"; }
-            .badge.hide-{hidden_badges_count} { display: none; }
+            {BC}
+            text {BO} font-family: "GillSansMTStd-Medium"; {BC}
+            
+            .badge.hide-{hidden_badges_count} {BO} display: none; {BC}
+
+            #status.online    {BO} fill: #57f287; {BC}
+            #status.offline   {BO} fill: #23272a; {BC}
+            #status.invisible {BO} fill: #23272a; {BC}
+            #status.idle      {BO} fill: #fee75c; {BC}
+            #status.dnd       {BO} fill: #ed4245; {BC}
         </style>
 
         <clipPath id="avatar-mask"><circle cx="65" cy="65" r="35"/></clipPath>
@@ -20,7 +27,7 @@
         <rect id="avatar-border" x="29" y="29" width="72" height="72" rx="36" fill="{cell_color}"/>
         <image id="avatar" x="30" y="30" width="70" height="70" clip-path="url(#avatar-mask)" href="{avatar_img}"/>
         <rect id="status-border" x="82" y="82" width="17" height="17" rx="8.5" fill="{cell_color}"/>
-        <rect id="status" x="83" y="83" width="15" height="15" rx="7.5" fill="{status_color}"/>
+        <rect id="status" x="83" y="83" width="15" height="15" rx="7.5" class="{status}"/>
 
         <text id="nickname" x="130" y="75" font-size="10" fill="{nickname_color}">{username}</text>
         <rect id="score-bar" x="120" y="80" width="250" height="20" rx="10" fill="{score_bar_color}"/>
