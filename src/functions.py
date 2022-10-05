@@ -1,9 +1,10 @@
 
-import os, json, re
-from tkinter import filedialog
-from colorama import Fore, Back, Style
+# libs
+from nextcord import Member
 
-from structs import CONFIG, TOKEN, LOG
+import os, json, re
+
+from structs import CONFIG, TOKEN, LOG, COLOR, DIR
 import custom_logger
 
 #----------------#
@@ -14,12 +15,13 @@ def formatBytes(num: int, step: int=1000):
 	for unit in " KMGT":
 		if num < step: return f"{num:3.2f} {unit}B"
 		num /= step
+
 #-------------#
 # update data #
 #-------------#
 
 def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
-	filePath = os.path.abspath(os.path.join(CONFIG.DATA_DIR, dataPath, f"{fileID}.json"))
+	filePath = os.path.abspath(os.path.join(DIR.DATA, dataPath, f"{fileID}.json"))
 
 	if not os.path.exists(filePath): fileData = {}
 	else:
@@ -66,7 +68,7 @@ def updateReactionData(newData: dict, fileID: int) -> None: updateDataFile(newDa
 #----------#
 
 def getDataFile(dataPath: str, fileID: int) -> dict:
-	filePath = os.path.abspath(os.path.join(CONFIG.DATA_DIR, dataPath, f"{fileID}.json"))
+	filePath = os.path.abspath(os.path.join(DIR.DATA, dataPath, f"{fileID}.json"))
 	if not os.path.exists(filePath): return dict()
 	with open(filePath, "r") as fobj: data = json.load(fobj)
 	LOG.LOGGER.debug(f"{dataPath}/{fileID} data read")
@@ -146,3 +148,14 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 	clearLogFile(srcPath)
 	LOG.LOGGER.info(f"log file backuped at {dstPath}")
 	return log_code, destSize
+
+#-------------------#
+# create score card #
+#-------------------#
+
+def createScoreCard(member: Member):
+	# with open()
+	pass
+
+
+

@@ -35,9 +35,16 @@ class COLOR:
 	DARK      = 0x343A40
 
 class CONFIG:
-	PREFIX    = "/"
-	EPHEMERAL = False
-	DATA_DIR  = os.path.abspath("../data")
+	PREFIX       = "/"
+	EPHEMERAL    = False
+
+class DIR:
+	MAIN      = ".."
+	DATA      = os.path.abspath(f"{MAIN}/data")
+	ASSETS    = os.path.abspath(f"{MAIN}/assets")
+	IMGAGES   = os.path.abspath(f"{ASSETS}/img")
+	TEMPLATES = os.path.abspath(f"{ASSETS}/templates")
+	TEMP      = os.path.abspath(f"{MAIN}/tmp")
 
 class LOG:
 	FMT      = "%(asctime)s | %(levelname)8s | %(message)s"
