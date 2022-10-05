@@ -1,10 +1,11 @@
 
 # libs
+import nextcord
 from nextcord import Member
 
 import os, json, re
 
-from structs import CONFIG, TOKEN, LOG, COLOR, DIR
+from structs import LEVELING, TOKEN, LOG, COLOR, DIR
 import custom_logger
 
 #----------------#
@@ -119,7 +120,7 @@ def saveLogFile(dstPath: str, srcPath: str=LOG.PATH) -> int:
 	with open(srcPath, "r") as fsrc:
 		with open(dstPath, "w+") as fdst:
 			destLines = fsrc.readlines()
-			destSize = len(destLines)
+			destSize = len("\n".join(destLines))
 			fdst.writelines(destLines)
 	LOG.LOGGER.info(f"log file saved at {dstPath}")
 	return destSize
@@ -149,13 +150,21 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 	LOG.LOGGER.info(f"log file backuped at {dstPath}")
 	return log_code, destSize
 
-#-------------------#
-# create score card #
-#-------------------#
+#---------------------------------------#
+# calculate score / generate score card #
+#---------------------------------------#
 
 def createScoreCard(member: Member):
-	# with open()
-	pass
+	avatar   = member.display_avatar.url
+	nickname = member.display_name
+	status   = member.status
+
+	user_data = getUserData(member.id)
+	
+	
+	with open(os.path.join(DIR.TEMPLATES, "score-card_template.svg"), "r") as fobj: template_svg = fobj.read()
+	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r") as fobj: font_bas64   = fobj.read()
+
 
 
 

@@ -40,11 +40,15 @@ class CONFIG:
 
 class DIR:
 	MAIN      = ".."
+	TEMP      = os.path.abspath(f"{MAIN}/tmp")
 	DATA      = os.path.abspath(f"{MAIN}/data")
 	ASSETS    = os.path.abspath(f"{MAIN}/assets")
+	FONTS     = os.path.abspath(f"{ASSETS}/fonts")
 	IMGAGES   = os.path.abspath(f"{ASSETS}/img")
 	TEMPLATES = os.path.abspath(f"{ASSETS}/templates")
-	TEMP      = os.path.abspath(f"{MAIN}/tmp")
+
+class LEVELING:
+	REQUIRED_XP = lambda lvl, xp: 5*(lvl**2) + (50*lvl) + 100 - xp
 
 class LOG:
 	FMT      = "%(asctime)s | %(levelname)8s | %(message)s"

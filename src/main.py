@@ -220,6 +220,9 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
 async def sc_help(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) help")
 	
+	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+
 	prefix = CONFIG.PREFIX
 	embed = Embed(color=COLOR.INFO, title="Command Overview")
 	
@@ -238,10 +241,15 @@ async def sc_help(interaction: Interaction):
 @bot.slash_command(name="ping", description="Test bot response.")
 async def sc_ping(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) ping")
+	
+	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+
 	latency = bot.latency
 	msg = f"`{latency*1000:.0f} ms` latency"
 	if   latency > 400: LOG.LOGGER.warning(msg)
 	elif latency > 900: LOG.LOGGER.critical(msg)
+
 	await interaction.response.send_message(f"pong with {msg}", ephemeral=True)
 
 #-----#
@@ -252,6 +260,9 @@ async def sc_memberInfo(
 	, member: Member = SlashOption(required=False)
 ):
 	LOG.LOGGER.debug(f"(command sent) score: {member=}")
+	
+	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
 	
 	if type(member) is not Member: member = interaction.user
 	userData = getUserData(member.id)
@@ -277,6 +288,9 @@ async def sc_log(
 	, action: int = SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3, "reset": 4, "list": 5})
 ):
 	LOG.LOGGER.debug(f"(command sent) log: {action=}")
+	
+	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
 
 	msg = ""
 	file = None
@@ -285,12 +299,12 @@ async def sc_log(
 
 	if action == 0: #backup: save, get, clear
 		log_code, dstSize = backupLogFile(dstPath)
-		msg = f"log of size `{dstSize/1000:.2f} KB` backuped as `{dstFile}`"
+		msg = f"log of size `{formatBytes(dstSize)}` backuped as `{dstFile}`"
 		file = File(dstPath, filename=dstFile)
 
 	elif action == 1: #save
 		dstSize = saveLogFile(dstPath)
-		msg = f"log of size `{dstSize/1000:.2f} KB` saved as `{dstFile}`"
+		msg = f"log of size `{formatBytes(dstSize)}` saved as `{dstFile}`"
 
 	elif action == 2: #get
 		log_code = getLogFile().replace("`", "'")
@@ -329,6 +343,9 @@ async def sc_memberInfo(
 ):
 	LOG.LOGGER.debug(f"(command sent) member-info: {member=}")
 	
+	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+
 	if type(member) is not Member: member = interaction.user
 	userData = getUserData(member.id)
 
@@ -351,6 +368,9 @@ async def sc_memberInfo(
 @bot.slash_command(name="server-info", description="Get information about this server.")
 async def sc_serverInfo(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) server-info")
+	
+	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
 
 	guild = interaction.guild
 	guildData = getGuildData(guild.id)
@@ -372,6 +392,9 @@ async def sc_serverInfo(interaction: Interaction):
 @bot.slash_command(name="bot-info", description="Get information about this bot.")
 async def sc_botInfo(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) bot-info")
+	
+	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
 
 	app = await interaction.guild.fetch_member(BOTINFO.ID)
 
@@ -431,6 +454,9 @@ async def sc_autoRole(
 	guild = interaction.guild
 	_type = "bot" if _type == 1 else "user"
 	LOG.LOGGER.debug(f"(command sent) auto-role: {action=}, {_type=}, {role=}")
+	
+	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
 
 	if action == 0: #add
 		updateGuildData({f"auto-roles_{_type}": [role.id, "ins"]}, guild.id)
@@ -467,6 +493,10 @@ async def sc_reactionRole(
 	, role: Role = SlashOption(required=True)
 ):
 	LOG.LOGGER.debug(f"(command sent) reaction-role add: {action=}, {messageID=}, {emoji=}, {role=}")
+	
+	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+
 	await interaction.response.send_message(f"`reaction-role`: `{action=}`, `{messageID=}`, `{emoji=}`, `{role}`", ephemeral=CONFIG.EPHEMERAL)
 
 #---------#
