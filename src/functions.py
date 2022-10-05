@@ -33,7 +33,6 @@ def hex2color(num: int, mode: str) -> str:
 
 def svg2png(svgFile: str, pngFile: str, width: int) -> int:
 	return os.system(f"{os.path.join(DIR.APPS, 'inkscape', 'InkscapePortable.exe')} --without-gui '{os.path.abspath(svgFile)}' -w {width} -o '{os.path.abspath(pngFile)}'")
-	# return os.system(f"start inkscape --without-gui '{os.path.abspath(svgFile)}' -w {width} -o '{os.path.abspath(pngFile)}'")
 
 #-------------#
 # update data #

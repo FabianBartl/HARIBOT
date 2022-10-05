@@ -5,6 +5,6 @@
 	, "version": "0.10"
 	, "dependencies": {
 		"nextcord": "2.2.0"
-		, "inkscape": "1.2"
+		, "inkscape": "1.1.2"
 	}
 }
