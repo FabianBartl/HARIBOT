@@ -5,7 +5,7 @@ from nextcord import Member
 
 import os, json, re
 
-from structs import LEVELING, TOKEN, LOG, COLOR, DIR
+from structs import TOKEN, LOG, DIR, COLOR, XP
 import custom_logger
 
 #----------------#
@@ -150,9 +150,11 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 	LOG.LOGGER.info(f"log file backuped at {dstPath}")
 	return log_code, destSize
 
-#---------------------------------------#
-# calculate score / generate score card #
-#---------------------------------------#
+#-------------------------------------------#
+# score / level / ranking / badge functions #
+#-------------------------------------------#
+
+# def 
 
 def createScoreCard(member: Member):
 	avatar   = member.display_avatar.url
@@ -160,7 +162,6 @@ def createScoreCard(member: Member):
 	status   = member.status
 
 	user_data = getUserData(member.id)
-	
 	
 	with open(os.path.join(DIR.TEMPLATES, "score-card_template.svg"), "r") as fobj: template_svg = fobj.read()
 	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r") as fobj: font_bas64   = fobj.read()

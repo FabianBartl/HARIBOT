@@ -47,8 +47,11 @@ class DIR:
 	IMGAGES   = os.path.abspath(f"{ASSETS}/img")
 	TEMPLATES = os.path.abspath(f"{ASSETS}/templates")
 
-class LEVELING:
-	REQUIRED_XP = lambda lvl, xp: 5*(lvl**2) + (50*lvl) + 100 - xp
+class XP:
+	MULTIPLIER = 1.0
+	COOLDOWN   = 30
+	RANGE      = {"min": 15*MULTIPLIER, "max": 25*MULTIPLIER}
+	REQUIRED   = lambda lvl, xp: 5*(lvl**2) + (50*lvl) + 100 - xp
 
 class LOG:
 	FMT      = "%(asctime)s | %(levelname)8s | %(message)s"

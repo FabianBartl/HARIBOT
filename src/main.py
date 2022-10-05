@@ -4,7 +4,7 @@ import nextcord
 from nextcord.ext import commands
 from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji, VoiceState
 
-import time, json, os, sys
+import time, json, os, sys, random
 from datetime import datetime
 from urllib.request import urlopen
 
@@ -151,20 +151,27 @@ async def on_message(message: Message):
 	guild       = message.guild
 	LOG.LOGGER.debug(f"(msg sent) {channel.name} - {author.display_name}: {f'({len(attachments)} Attachments)' if len(attachments) > 0 else ''} '{content}'")
 	
-	words_count = len(re.sub(" +", " ", content).split(" "))
+	words_count   = len(re.sub(" +", " ", content).split(" "))
 	letters_count = len(content)
+	last_message  = time.time()
+
+	xp = random.randint(XP.RANGE["min"], XP.RANGE["max"]) if (last_message - getUserData(author.id).get("last_message", 0)) >= XP.COOLDOWN else 0
+	LOG.LOGGER.debug(f"(xp earned) {author.display_name}: {xp}")
 
 	updateGuildData({
 		"messages_count": [1, "add"]
 		, "words_count": [words_count, "add"]
 		, "letters_count": [letters_count, "add"]
 		, "attachments_count": [len(attachments), "add"]
+		, "xp": [xp, "add"]
 	}, guild.id)
 	updateUserData({
 		"messages_count": [1, "add"]
 		, "words_count": [words_count, "add"]
 		, "letters_count": [letters_count, "add"]
 		, "attachments_count": [len(attachments), "add"]
+		, "xp": [xp, "add"]
+		, "last_message": [last_message, "set"]
 	}, author.id)
 
 
@@ -175,26 +182,50 @@ async def on_message_edit(before: Message, after: Message):
 	LOG.LOGGER.debug(f"(msg edited before) {before.channel.name} - {before.author.display_name}: '{before.content}'")
 	LOG.LOGGER.debug(f"(msg edited after)  {after.channel.name} - {after.author.display_name}: '{after.content}'")
 
-	changes = abs(len(after.content) - len(before.content))
+	changes     = abs(len(after.content) - len(before.content))
+	attachments = len(after.attachments) - len(before.attachments)
+	words       = len(re.sub(" +", " ", after.content).split(" ")) - len(re.sub(" +", " ", before.content).split(" "))
+	letters     = len(after.content) - len(before.content)
 
 	updateGuildData({
 		"edited_count": [1, "add"]
 		, "changes_lenght": [changes, "add"]
+		, "words_count": [words, "add"]
+		, "letters_count": [letters, "add"]
+		, "attachments_count": [attachments, "add"]
 	}, guild.id)
 	updateUserData({
 		"edited_count": [1, "add"]
 		, "changes_lenght": [changes, "add"]
+		, "words_count": [words, "add"]
+		, "letters_count": [letters, "add"]
+		, "attachments_count": [attachments, "add"]
 	}, author.id)
 
 
 @bot.event
 async def on_message_delete(message: Message):
-	author = message.author
-	guild  = message.guild
+	author  = message.author
+	guild   = message.guild
+	content = message.content
 	LOG.LOGGER.debug(f"(msg deleted) {message.channel.name} - {message.author.display_name}: '{message.content}'")
 
-	updateGuildData({"deleted_count": [1, "add"]}, guild.id)
-	updateUserData({"deleted_count": [1, "add"]}, author.id)
+	attachments = len(message.attachments)
+	words       = len(re.sub(" +", " ", content).split(" "))
+	letters     = len(content)
+
+	updateGuildData({
+		"deleted_count": [1, "add"]
+		, "words_count": [words, "sub"]
+		, "letters_count": [letters, "sub"]
+		, "attachments_count": [attachments, "sub"]
+	}, guild.id)
+	updateUserData({
+		"deleted_count": [1, "add"]
+		, "words_count": [words, "sub"]
+		, "letters_count": [letters, "sub"]
+		, "attachments_count": [attachments, "sub"]
+	}, author.id)
 
 #-----#
 
