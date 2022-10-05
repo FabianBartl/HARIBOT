@@ -298,6 +298,7 @@ async def sc_memberInfo(
 	score_card_file = createScoreCard(member)
 	
 	await interaction.response.send_message(file=File(score_card_file, filename=f"score-card_{member.id}.png"), ephemeral=True)
+	os.system(f"del '{score_card_file}'")
 
 #-----#
 

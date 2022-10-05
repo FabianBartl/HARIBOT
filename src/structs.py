@@ -1,5 +1,7 @@
 
+# libs
 import os, logging
+from math import sqrt, floor
 
 import custom_logger
 
@@ -42,16 +44,18 @@ class DIR:
 	MAIN      = ".."
 	TEMP      = os.path.abspath(f"{MAIN}/tmp")
 	DATA      = os.path.abspath(f"{MAIN}/data")
+	APPS      = os.path.abspath(f"{MAIN}/apps")
 	ASSETS    = os.path.abspath(f"{MAIN}/assets")
 	FONTS     = os.path.abspath(f"{ASSETS}/fonts")
 	IMGAGES   = os.path.abspath(f"{ASSETS}/img")
 	TEMPLATES = os.path.abspath(f"{ASSETS}/templates")
 
 class XP:
-	MULTIPLIER = 1.0
+	MULTIPLIER = 0.5
 	COOLDOWN   = 30
 	RANGE      = {"min": 15*MULTIPLIER, "max": 25*MULTIPLIER}
-	REQUIRED   = lambda lvl, xp: 5*(lvl**2) + (50*lvl) + 100 - xp
+	REQUIRED   = lambda lvl, xp: 5*(lvl**2) + (50*lvl) + 100
+	LEVEL      = lambda xp: floor(0.2 * (sqrt(5) * sqrt(xp+25) - 25))
 
 class LOG:
 	FMT      = "%(asctime)s | %(levelname)8s | %(message)s"

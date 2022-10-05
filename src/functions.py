@@ -4,8 +4,7 @@ import nextcord
 from nextcord import Member
 
 import os, json, re
-from svglib.svglib import svg2rlg
-from reportlab.graphics import renderPM
+from math import floor
 
 from structs import TOKEN, LOG, DIR, COLOR, XP
 import custom_logger
@@ -14,10 +13,20 @@ import custom_logger
 # help functions #
 #----------------#
 
-def formatBytes(num: int, step: int=1000):
+def formatBytes(num: int, step: int=1000) -> str:
 	for unit in " KMGT":
-		if num < step: return f"{num:3.2f} {unit}B"
+		if num < step: break
 		num /= step
+	return f"{num:3.2f} {unit}B"
+
+def hex2color(num: int, mode: str) -> str:
+	if   mode == "rgb": return hex2color(f"{hex(num)}ff", "rgba")
+	elif mode == "hex": return hex2color(f"{hex(num)}ff", "hexa")
+	elif mode == "rgba": return "rgba({h[2:4]}, {h[4:6]}, {h[6:8]}, {h[8:10]})".format(h=hex(num))
+	elif mode == "hexa": return "#{h[2:10]}".format(h=hex(num))
+
+def svg2png(svgFile: str, pngFile: str, width: int) -> int:
+	return os.system(f"{os.path.join(DIR.APPS, 'inkscape', 'bin', 'inkscape.exe')} --without-gui '{os.path.abspath(svgFile)}' -w {width} -o '{os.path.abspath(pngFile)}'")
 
 #-------------#
 # update data #
@@ -156,18 +165,20 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 # score / level / ranking / badge functions #
 #-------------------------------------------#
 
-# def 
-
 def createScoreCard(member: Member):
 	user_data = getUserData(member.id)
 
-	xp = user_data.get("xp", 0)
+	current_xp = user_data.get("xp", 0)
+	current_level = XP.LEVEL(current_xp)
+	required_xp = XP.REQUIRED(current_level+1, current_xp)
 	
 	with open(os.path.join(DIR.TEMPLATES, "score-card_template.svg"), "r") as fobj: template_svg = fobj.read()
 	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r") as fobj: font_base64  = fobj.read()
 	
 	generated_svg = template_svg.format(
 		GillSansMTStd_Medium_base64 = font_base64
+
+		, background_color = "transparent"
 		, cell_color = "#32353B"
 
 		, avatar_img = member.display_avatar.url
@@ -183,8 +194,8 @@ def createScoreCard(member: Member):
 
 		, current_xp_color = "#"
 		, required_xp_color = "#"
-		, current_xp = xp
-		, required_xp = 0
+		, current_xp = current_xp
+		, required_xp = required_xp
 
 		, badge_1_color = "#"
 		, badge_2_color = "#"
@@ -198,16 +209,15 @@ def createScoreCard(member: Member):
 		, rank_color = "#"
 		, level_color = "#"
 		, rank = 0
-		, level = 0
+		, level = current_level
 
 		, BO = "{"
 		, BC = "}"
 	)
 
-	score_card_file = lambda ext: f"{os.path.join(DIR.TEMP, f'score-card_{member.id}')}.{ext}"
+	score_card_file = lambda ext: os.path.abspath(f"{os.path.join(DIR.TEMP, f'score-card_{member.id}')}.{ext}")
 	with open(score_card_file("svg"), "w+") as fobj: fobj.write(generated_svg)
-
-	drawing = svg2rlg(score_card_file("svg"))
-	renderPM.drawToFile(drawing, score_card_file("png"), fmt="PNG")
+	
+	LOG.LOGGER.debug(svg2png(score_card_file("svg"), score_card_file("png"), 400*4))
 
 	return score_card_file("png")

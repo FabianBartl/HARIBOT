@@ -21,7 +21,7 @@
     </defs>
 
     <g id="score-card">
-        <rect id="box" x="0" y="0" width="400" height="130" fill="transparent"/>
+        <rect id="box" x="0" y="0" width="400" height="130" fill="{background_color}"/>
         <rect id="cell" x="10" y="10" width="380" height="110" rx="10" fill="{cell_color}"/>
 
         <rect id="avatar-border" x="29" y="29" width="72" height="72" rx="36" fill="{cell_color}"/>
