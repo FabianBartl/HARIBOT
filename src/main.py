@@ -1,5 +1,6 @@
 
 # libs
+from getpass import getuser
 import nextcord
 from nextcord.ext import commands
 from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji, VoiceState
@@ -62,8 +63,8 @@ async def on_member_join(member: Member):
 	_type = "bot" if member.bot else "user"
 	LOG.LOGGER.info(f"member ({_type}) joined")
 
-	updateGuildData({"bots_count" if _type == "bot" else "users_count": [1, "add"]}, member.guild.id)
-	updateUserData({"leave_timestamp": [None, "del"]}, member.id)
+	updateGuildData({"bots_count" if _type == "bot" else "users_count": [1, "add"], "xp": [XP.DEFAULT, "add"]}, member.guild.id)
+	updateUserData({"leave_timestamp": [None, "del"], "xp": [XP.DEFAULT, "add"]}, member.id)
 
 	auto_role_IDs = getGuildData(guild.id).get(f"auto-roles_{_type}")
 	roles = [ guild.get_role(roleID) for roleID in auto_role_IDs if guild.get_role(roleID) is not None ]
@@ -154,7 +155,9 @@ async def on_message(message: Message):
 	letters_count = len(content)
 	last_message  = time.time()
 
-	xp = random.randint(XP.RANGE["min"], XP.RANGE["max"]) if (last_message - getUserData(author.id).get("last_message", 0)) >= XP.COOLDOWN else 0
+	user_data = getUserData(author.id)
+	xp  = XP.DEFAULT if "xp" not in user_data else 0
+	xp += XP.GENERATE(last_message, user_data.get("last_message", 0))
 	LOG.LOGGER.debug(f"(xp earned) {author.display_name}: {xp}")
 
 	updateGuildData({
@@ -297,8 +300,10 @@ async def sc_memberInfo(
 	if type(member) is not Member: member = interaction.user
 	score_card_file = createScoreCard(member)
 	
-	await interaction.response.send_message(file=File(score_card_file, filename=f"score-card_{member.id}.png"), ephemeral=True)
-	os.system(f"del '{score_card_file}'")
+	await interaction.response.send_message(file=File(score_card_file), ephemeral=True)
+
+	os.system(f"del {score_card_file}")
+	LOG.LOGGER.debug(f"deleted tmp score card png file `{score_card_file}`")
 
 #-----#
 

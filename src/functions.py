@@ -10,14 +10,16 @@ from structs import TOKEN, LOG, DIR, COLOR, XP
 import custom_logger
 
 #----------------#
-# help functions #
+# format numbers #
 #----------------#
 
-def formatBytes(num: int, step: int=1000) -> str:
+def formatNum(num: int, step: int=1000, base_unit: str="") -> str:
 	for unit in " KMGT":
 		if num < step: break
 		num /= step
-	return f"{num:3.2f} {unit}B"
+	return f"{num:3.2f} {unit}{base_unit}"
+
+def formatBytes(num: int, step: int=1000) -> str: return formatNum(num, step, "B")
 
 def hex2color(num: int, mode: str) -> str:
 	if   mode == "rgb": return hex2color(f"{hex(num)}ff", "rgba")
@@ -25,8 +27,13 @@ def hex2color(num: int, mode: str) -> str:
 	elif mode == "rgba": return "rgba({h[2:4]}, {h[4:6]}, {h[6:8]}, {h[8:10]})".format(h=hex(num))
 	elif mode == "hexa": return "#{h[2:10]}".format(h=hex(num))
 
+#----------------#
+# help functions #
+#----------------#
+
 def svg2png(svgFile: str, pngFile: str, width: int) -> int:
-	return os.system(f"{os.path.join(DIR.APPS, 'inkscape', 'bin', 'inkscape.exe')} --without-gui '{os.path.abspath(svgFile)}' -w {width} -o '{os.path.abspath(pngFile)}'")
+	return os.system(f"{os.path.join(DIR.APPS, 'inkscape', 'InkscapePortable.exe')} --without-gui '{os.path.abspath(svgFile)}' -w {width} -o '{os.path.abspath(pngFile)}'")
+	# return os.system(f"start inkscape --without-gui '{os.path.abspath(svgFile)}' -w {width} -o '{os.path.abspath(pngFile)}'")
 
 #-------------#
 # update data #
@@ -46,6 +53,8 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 			# <int>, <float>
 			if   mode == "add": fileData[key] += value
 			elif mode == "sub": fileData[key] -= value
+			elif mode == "min": fileData[key] = min(fileData[key], value)
+			elif mode == "max": fileData[key] = max(fileData[key], value)
 			# <list>
 			elif mode == "ext": fileData[key].append(value)
 			elif mode == "ins":
@@ -60,6 +69,8 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 			# <int>, <float>
 			if   mode == "add": fileData[key] = value
 			elif mode == "sub": fileData[key] = -value
+			elif mode == "min": fileData[key] = value
+			elif mode == "max": fileData[key] = value
 			# <list>
 			elif mode == "ext": fileData[key] = [value]
 			elif mode == "ins": fileData[key] = [value]
@@ -194,7 +205,7 @@ def createScoreCard(member: Member):
 
 		, current_xp_color = "#"
 		, required_xp_color = "#"
-		, current_xp = current_xp
+		, current_xp = formatNum(current_xp)
 		, required_xp = required_xp
 
 		, badge_1_color = "#"
@@ -220,4 +231,4 @@ def createScoreCard(member: Member):
 	
 	LOG.LOGGER.debug(svg2png(score_card_file("svg"), score_card_file("png"), 400*4))
 
-	return score_card_file("png")
+	return score_card_file("svg")

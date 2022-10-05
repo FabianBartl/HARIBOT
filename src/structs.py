@@ -1,6 +1,6 @@
 
 # libs
-import os, logging
+import os, logging, random
 from math import sqrt, floor
 
 import custom_logger
@@ -53,9 +53,11 @@ class DIR:
 class XP:
 	MULTIPLIER = 0.5
 	COOLDOWN   = 30
+	DEFAULT    = 100
 	RANGE      = {"min": 15*MULTIPLIER, "max": 25*MULTIPLIER}
-	REQUIRED   = lambda lvl, xp: 5*(lvl**2) + (50*lvl) + 100
+	REQUIRED   = lambda lvl, xp: 5*(lvl**2) + (50*lvl) + XP.DEFAULT
 	LEVEL      = lambda xp: floor(0.2 * (sqrt(5) * sqrt(xp+25) - 25))
+	GENERATE   = lambda t0, t1: random.uniform(XP.RANGE["min"], XP.RANGE["max"]) if (t1 - t0) >= XP.COOLDOWN else 0
 
 class LOG:
 	FMT      = "%(asctime)s | %(levelname)8s | %(message)s"
