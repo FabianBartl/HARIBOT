@@ -4,8 +4,8 @@
 	, "main": "src/main.py"
 	, "version": "0.10"
 	, "dependencies": {
-		"nextcord/nextcord": "2.2.0"
+		"nextcord": "2.2.0"
 		, "inkscape": "1.1.2"
-		, "yanone/ynlib": "unknown"
+		, "ynlib": "unknown"
 	}
 }
