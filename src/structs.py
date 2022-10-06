@@ -14,27 +14,43 @@ class TOKEN:
 	OWNER_ID = int(open(os.path.abspath(r"../discord.owner"), "r").readlines()[0].strip())
 
 class COLOR:
-	BLUE      = 0x007BFF
-	INDIGO    = 0x6610F2
-	PURPLE    = 0x6F42C1
-	PINK      = 0xE83E8C
-	RED       = 0xE2001A
-	ORANGE    = 0xFD7E14
-	YELLOW    = 0xFFC107
-	GREEN     = 0x28A745
-	TEAL      = 0x20C997
-	CYAN      = 0x17A2B8
-	WHITE     = 0xFFFFFF
-	GRAY      = 0x6C757D
-	GRAY_DARK = 0x343A40
-	PRIMARY   = 0x3390B4
-	SECONDARY = 0x6C757D
-	SUCCESS   = 0x28A745
-	INFO      = 0x17A2B8
-	WARNING   = 0xFFC107
-	DANGER    = 0xE2001A
-	LIGHT     = 0xF8F9FA
-	DARK      = 0x343A40
+
+	class HARIBO:
+		# HARIBO color palette
+		BLUE      = 0x007BFF
+		INDIGO    = 0x6610F2
+		PURPLE    = 0x6F42C1
+		PINK      = 0xE83E8C
+		RED       = 0xE2001A
+		ORANGE    = 0xFD7E14
+		YELLOW    = 0xFFC107
+		GREEN     = 0x28A745
+		TEAL      = 0x20C997
+		CYAN      = 0x17A2B8
+		WHITE     = 0xFFFFFF
+		GRAY      = 0x6C757D
+		GRAY_DARK = 0x343A40
+		# HARIBO corporate colors 
+		PRIMARY   = 0x3390B4
+		SECONDARY = GRAY
+		SUCCESS   = GREEN
+		INFO      = CYAN
+		WARNING   = YELLOW
+		DANGER    = RED
+		LIGHT     = 0xF8F9FA
+		DARK      = GRAY_DARK
+	
+	class DISCORD:
+		# DISCORD color palette
+		BLURPLE = 0x5865F2
+		GREEN   = 0x57f287
+		YELLOW  = 0xFEE75C
+		RED     = 0xED4245
+		FUCHSIA = 0xEB459E
+		WHITE   = 0xFFFFFF
+		BLACK   = 0x23272A
+		# DISCORD-UI colors
+		CHAT_BG = 0x32353B
 
 class CONFIG:
 	PREFIX       = "/"
@@ -54,10 +70,10 @@ class XP:
 	MULTIPLIER = 0.5
 	COOLDOWN   = 30
 	DEFAULT    = 100
-	RANGE      = {"min": 15*MULTIPLIER, "max": 25*MULTIPLIER}
+	RANGE      = {"min": 15, "max": 25}
 	REQUIRED   = lambda lvl, xp: 5*(lvl**2) + (50*lvl) + XP.DEFAULT
 	LEVEL      = lambda xp: floor(0.2 * (sqrt(5) * sqrt(xp+25) - 25))
-	GENERATE   = lambda t0, t1: random.uniform(XP.RANGE["min"], XP.RANGE["max"]) if (t1 - t0) >= XP.COOLDOWN else 0
+	GENERATE   = lambda t0, t1: (random.randint(XP.RANGE["min"], XP.RANGE["max"]) * XP.MULTIPLIER) if (t1 - t0) >= XP.COOLDOWN else XP.MULTIPLIER
 
 class LOG:
 	FMT      = "%(asctime)s | %(levelname)8s | %(message)s"
