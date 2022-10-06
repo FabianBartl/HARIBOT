@@ -6,6 +6,6 @@
 	, "dependencies": {
 		"nextcord": "2.2.0"
 		, "inkscape": "1.1.2"
-		, "ynlib": "unknown"
+		, "selenium": "4.5.0"
 	}
 }
