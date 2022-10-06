@@ -20,9 +20,9 @@ bot = commands.Bot(
 	, intents = nextcord.Intents.all()
 )
 
-if len(sys.argv) >= 2 and sys.argv[1] == "colored": colored = True
-if len(sys.argv) >= 3 and sys.argv[2].isdigit(): level = int(sys.argv[2])
-else: level = logging.INFO
+colored = (len(sys.argv) >= 2 and sys.argv[1] == "colored")
+level = int(sys.argv[2]) if len(sys.argv) >= 3 and sys.argv[2].isdigit() else logging.INFO
+
 setupLogger(colored, level)
 
 #--------#
