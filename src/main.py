@@ -158,7 +158,7 @@ async def on_message(message: Message):
 
 	user_data = getUserData(author.id)
 	xp  = XP.DEFAULT if "xp" not in user_data else 0
-	xp += XP.GENERATE(last_message, user_data.get("last_message", 0))
+	xp += XP.GENERATE(user_data.get("last_message", 0), last_message)
 	LOG.LOGGER.debug(f"(xp earned) {author.display_name}: {xp}")
 
 	updateGuildData({
@@ -258,7 +258,7 @@ async def sc_help(interaction: Interaction):
 	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
 
 	prefix = CONFIG.PREFIX
-	embed = Embed(color=COLOR.INFO, title="Command Overview")
+	embed = Embed(color=COLOR.HARIBO.INFO, title="Command Overview")
 	
 	for command in bot.walk_commands():
 		name        = command.name
@@ -303,8 +303,8 @@ async def sc_memberInfo(
 	
 	await interaction.response.send_message(file=File(score_card_file("svg")), ephemeral=True)
 
-	os.system(f"del {score_card_file('*')}")
-	LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file('*')}`")
+	# os.system(f"del {score_card_file('*')}")
+	# LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file('*')}`")
 
 #-----#
 
@@ -375,7 +375,7 @@ async def sc_memberInfo(
 	if type(member) is not Member: member = interaction.user
 	userData = getUserData(member.id)
 
-	embed = Embed(color=COLOR.SUCCESS, title="Member Info")
+	embed = Embed(color=COLOR.HARIBO.SUCCESS, title="Member Info")
 	embed.set_thumbnail(url=member.display_avatar.url)
 	embed.add_field(name="Username", value=f"{member.name}#{member.discriminator}")
 	embed.add_field(name="Nickname", value=member.display_name)
@@ -401,7 +401,7 @@ async def sc_serverInfo(interaction: Interaction):
 	guild = interaction.guild
 	guildData = getGuildData(guild.id)
 
-	embed = Embed(color=COLOR.SUCCESS, title="Server Info", description=guild.description)
+	embed = Embed(color=COLOR.HARIBO.SUCCESS, title="Server Info", description=guild.description)
 	embed.set_thumbnail(url=guild.icon.url)
 	embed.add_field(name="Name", value=guild.name, inline=False)
 
@@ -424,7 +424,7 @@ async def sc_botInfo(interaction: Interaction):
 
 	app = await interaction.guild.fetch_member(BOTINFO.ID)
 
-	embed = Embed(color=COLOR.SUCCESS, title="Bot Info", description=BOTINFO.DESCRIPTION)
+	embed = Embed(color=COLOR.HARIBO.SUCCESS, title="Bot Info", description=BOTINFO.DESCRIPTION)
 	embed.set_thumbnail(url=app.display_avatar.url)
 	embed.add_field(name="Name", value=f"{app.name}")
 	embed.add_field(name="Creator", value=BOTINFO.CREATOR)

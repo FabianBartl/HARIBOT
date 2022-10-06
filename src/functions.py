@@ -21,11 +21,13 @@ def formatNum(num: int, step: int=1000, base_unit: str="") -> str:
 
 def formatBytes(num: int, step: int=1000) -> str: return formatNum(num, step, "B")
 
-def hex2color(num: int, mode: str) -> str:
-	if   mode == "rgb": return hex2color(f"{hex(num)}ff", "rgba")
-	elif mode == "hex": return hex2color(f"{hex(num)}ff", "hexa")
-	elif mode == "rgba": return "rgba({h[2:4]}, {h[4:6]}, {h[6:8]}, {h[8:10]})".format(h=hex(num))
-	elif mode == "hexa": return "#{h[2:10]}".format(h=hex(num))
+def hex2color(num: int, mode: str="hex") -> str:
+	if   mode == "hex": return hex2color(int(f"{hex(num)}ff", 16), "hexa")
+	elif mode == "rgb": return hex2color(int(f"{hex(num)}ff", 16), "rgba")
+	elif mode == "hexa": return f"#{hex(num)[2:10]}"
+	elif mode == "rgba":
+		h = hex(num)
+		return f"rgba({h[2:4]}, {h[4:6]}, {h[6:8]}, {h[8:10]})"
 
 #----------------#
 # help functions #
@@ -182,6 +184,8 @@ def createScoreCard(member: Member): #-> lambda-function
 	current_level = XP.LEVEL(current_xp)
 	required_xp = XP.REQUIRED(current_level+1, current_xp)
 	
+	score_progress = (230 / required_xp) * current_xp
+	
 	with open(os.path.join(DIR.TEMPLATES, "score-card_template.svg"), "r") as fobj: template_svg = fobj.read()
 	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r") as fobj: font_base64  = fobj.read()
 	
@@ -189,21 +193,23 @@ def createScoreCard(member: Member): #-> lambda-function
 		GillSansMTStd_Medium_base64 = font_base64
 
 		, background_color = "transparent"
-		, cell_color = "#32353B"
+		, cell_border_color = hex2color(COLOR.DISCORD.CHAT_BG)
+		, cell_color = hex2color(COLOR.DISCORD.BLACK)
 
 		, avatar_img = member.display_avatar.url
 		, status = member.status.__str__()
 
-		, nickname_color = hex2color(COLOR.BLUE)
+		, nickname_color = hex2color(COLOR.HARIBO.LIGHT)
 		, username = member.display_name
 		
-		, score_bar_color = "#"
-		, score_progress_color = "#"
-		, score_rating_color = "#"
-		, score_progress = 0
+		, score_bar_color = hex2color(COLOR.HARIBO.SUCCESS)
+		, score_progress_color = hex2color(COLOR.HARIBO.INFO)
+		, score_rating_color = hex2color(COLOR.HARIBO.LIGHT)
+		, score_progress_border = 20 + score_progress + 2
+		, score_progress = 20 + score_progress
 
-		, current_xp_color = "#"
-		, required_xp_color = "#"
+		, current_xp_color = hex2color(COLOR.HARIBO.LIGHT)
+		, required_xp_color = hex2color(COLOR.HARIBO.LIGHT)
 		, current_xp = formatNum(current_xp)
 		, required_xp = required_xp
 
@@ -215,9 +221,8 @@ def createScoreCard(member: Member): #-> lambda-function
 		, badge_more_color = "#"
 		, hidden_badges_count = 5
 
-		, ranking_color = "#"
-		, rank_color = "#"
-		, level_color = "#"
+		, ranking_color = hex2color(COLOR.HARIBO.LIGHT)
+		, level_color = hex2color(COLOR.HARIBO.LIGHT)
 		, rank = 0
 		, level = current_level
 
