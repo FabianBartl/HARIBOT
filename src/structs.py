@@ -3,8 +3,6 @@
 import os, logging, random
 from math import sqrt, floor
 
-import custom_logger
-
 #---------#
 # globals #
 #---------#
@@ -30,7 +28,7 @@ class COLOR:
 		WHITE     = 0xFFFFFF
 		GRAY      = 0x6C757D
 		GRAY_DARK = 0x343A40
-		# HARIBO corporate colors 
+		# HARIBO corporate colors
 		PRIMARY   = 0x3390B4
 		SECONDARY = GRAY
 		SUCCESS   = GREEN
