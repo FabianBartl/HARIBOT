@@ -4,15 +4,15 @@
         <rect id="cell-border" x="9" y="9" width="382" height="112" rx="10" fill="#32353B"/>
         <rect id="cell" x="10" y="10" width="380" height="110" rx="10" fill="#23272A"/>
 
-        <rect id="avatar-border" x="29" y="29" width="72" height="72" rx="36" fill="#343A40"/>
+        <rect id="avatar-border" x="29" y="29" width="72" height="72" rx="36" fill="#23272A"/>
         <image id="avatar" x="30" y="30" width="70" height="70" clip-path="url(#avatar-mask)" href="https://cdn.discordapp.com/avatars/386249332711620608/9e67e2e99b3914d0a28351ec36842353.png?size=1024"/>
-        <rect id="status-border" x="82" y="82" width="17" height="17" rx="8.5" fill="#343A40"/>
+        <rect id="status-border" x="82" y="82" width="17" height="17" rx="8.5" fill="#23272A"/>
         <rect id="status" x="83" y="83" width="15" height="15" rx="7.5" class="online"/>
 
         <text id="nickname" x="130" y="75" font-size="10" fill="#f8f9fa">Fabian Bartl</text>
         <rect id="score-bar" x="120" y="80" width="250" height="20" rx="10" fill="#28A745"/>
-        <rect id="score-bar-inner" x="121" y="81" width="248" height="18" rx="9" fill="#343A40"/>
-        <rect id="score-progress-border" x="119" y="79" width="223.15254237288136" height="22" rx="11" fill="#343A40"/>
+        <rect id="score-bar-inner" x="121" y="81" width="248" height="18" rx="9" fill="#23272A"/>
+        <rect id="score-progress-border" x="119" y="79" width="223.15254237288136" height="22" rx="11" fill="#23272A"/>
         <rect id="score-progress" x="120" y="80" width="221.15254237288136" height="20" rx="10" fill="#3390B4"/>
         <text id="score-rating" x="265" y="75" text-anchor="end" font-size="10" fill="#f8f9fa">
             <tspan dx="95" fill="#">258.00  </tspan>
@@ -22,22 +22,22 @@
         </text>
 
         <g class="badge hide-5">
-            <rect id="badge-border_1" x="119" y="21" width="17" height="17" rx="8.5" fill="#343A40"/>
+            <rect id="badge-border_1" x="119" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
             <rect id="badge_1" x="120" y="22" width="15" height="15" rx="8.5" fill="#"/>
             <g class="badge hide-4">
-                <rect id="badge-border_2" x="132" y="21" width="17" height="17" rx="8.5" fill="#343A40"/>
+                <rect id="badge-border_2" x="132" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
                 <rect id="badge_2" x="133" y="22" width="15" height="15" rx="7.5" fill="#"/>
                 <g class="badge hide-3">
-                    <rect id="badge-border_3" x="145" y="21" width="17" height="17" rx="8.5" fill="#343A40"/>
+                    <rect id="badge-border_3" x="145" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
                     <rect id="badge_3" x="146" y="22" width="15" height="15" rx="7.5" fill="#"/>
                     <g class="badge hide-2">
-                        <rect id="badge-border_4" x="158" y="21" width="17" height="17" rx="8.5" fill="#343A40"/>
+                        <rect id="badge-border_4" x="158" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
                         <rect id="badge_4" x="159" y="22" width="15" height="15" rx="7.5" fill="#"/>
                         <g class="badge hide-1">
-                            <rect id="badge-border_5" x="171" y="21" width="17" height="17" rx="8.5" fill="#343A40"/>
+                            <rect id="badge-border_5" x="171" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
                             <rect id="badge_5" x="172" y="22" width="15" height="15" rx="7.5" fill="#"/>
                             <g class="badge hide-0">
-                                <rect id="badge-border_more" x="191" y="21" width="17" height="17" rx="8.5" fill="#343A40"/>
+                                <rect id="badge-border_more" x="191" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
                                 <rect id="badge_more" x="192" y="22" width="15" height="15" rx="7.5" fill="#"/>
                             </g>
                         </g>
