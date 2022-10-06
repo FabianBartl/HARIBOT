@@ -180,11 +180,14 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 def createScoreCard(member: Member): #-> lambda-function
 	user_data = getUserData(member.id)
 
-	current_xp = user_data.get("xp", 0)
-	current_level = XP.LEVEL(current_xp)
-	required_xp = XP.REQUIRED(current_level+1, current_xp)
+	xp_current         = user_data.get("xp", 0)
+	level_current      = XP.LEVEL(xp_current)
+	xp_required        = XP.REQUIRED(level_current+1, xp_current)
+	xp_required_before = XP.REQUIRED(level_current, xp_current)
+	xp_difference      = xp_required - xp_required_before
+	xp_collected       = xp_current - xp_required_before
 	
-	score_progress = (230 / required_xp) * current_xp
+	score_progress = (230 / xp_difference) * xp_collected
 	
 	with open(os.path.join(DIR.TEMPLATES, "score-card_template.svg"), "r") as fobj: template_svg = fobj.read()
 	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r") as fobj: font_base64  = fobj.read()
@@ -210,8 +213,8 @@ def createScoreCard(member: Member): #-> lambda-function
 
 		, current_xp_color = hex2color(COLOR.HARIBO.LIGHT)
 		, required_xp_color = hex2color(COLOR.HARIBO.LIGHT)
-		, current_xp = formatNum(current_xp)
-		, required_xp = required_xp
+		, current_xp = formatNum(xp_current)
+		, required_xp = xp_required
 
 		, badge_1_color = "#"
 		, badge_2_color = "#"
@@ -224,7 +227,7 @@ def createScoreCard(member: Member): #-> lambda-function
 		, ranking_color = hex2color(COLOR.HARIBO.LIGHT)
 		, level_color = hex2color(COLOR.HARIBO.LIGHT)
 		, rank = 0
-		, level = current_level
+		, level = level_current
 
 		, BO = "{"
 		, BC = "}"
