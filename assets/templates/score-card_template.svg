@@ -21,34 +21,11 @@
             <tspan dx="3">XP</tspan>
         </text>
 
-        <g class="badge hide-5">
-            <rect id="badge-border_1" x="119" y="21" width="17" height="17" rx="8.5" fill="{cell_color}"/>
-            <rect id="badge_1" x="120" y="22" width="15" height="15" rx="8.5" fill="{badge_1_color}"/>
-            <g class="badge hide-4">
-                <rect id="badge-border_2" x="132" y="21" width="17" height="17" rx="8.5" fill="{cell_color}"/>
-                <rect id="badge_2" x="133" y="22" width="15" height="15" rx="7.5" fill="{badge_2_color}"/>
-                <g class="badge hide-3">
-                    <rect id="badge-border_3" x="145" y="21" width="17" height="17" rx="8.5" fill="{cell_color}"/>
-                    <rect id="badge_3" x="146" y="22" width="15" height="15" rx="7.5" fill="{badge_3_color}"/>
-                    <g class="badge hide-2">
-                        <rect id="badge-border_4" x="158" y="21" width="17" height="17" rx="8.5" fill="{cell_color}"/>
-                        <rect id="badge_4" x="159" y="22" width="15" height="15" rx="7.5" fill="{badge_4_color}"/>
-                        <g class="badge hide-1">
-                            <rect id="badge-border_5" x="171" y="21" width="17" height="17" rx="8.5" fill="{cell_color}"/>
-                            <rect id="badge_5" x="172" y="22" width="15" height="15" rx="7.5" fill="{badge_5_color}"/>
-                            <g class="badge hide-0">
-                                <rect id="badge-border_more" x="191" y="21" width="17" height="17" rx="8.5" fill="{cell_color}"/>
-                                <rect id="badge_more" x="192" y="22" width="15" height="15" rx="7.5" fill="{badge_more_color}"/>
-                            </g>
-                        </g>
-                    </g>
-                </g>
-            </g>
-        </g>
+        <g id="badges">{badges}</g>
 
         <text id="ranking" x="265" y="35" text-anchor="end" font-size="15" fill="{ranking_color}">
             <tspan dx="95" font-size="7">RANK</tspan>
-            <tspan dx="0" id="rank" class="place-{rank}">#{rank}</tspan>
+            <tspan dx="0" id="rank" class="place{rank}">#{rank}</tspan>
             <tspan dx="3" font-size="7">LEVEL</tspan>
             <tspan dx="0" fill="{level_color}">{level}</tspan>
         </text>
@@ -62,18 +39,19 @@
             {BC}
             text {BO} font-family: "GillSansMTStd-Medium"; {BC}
             
-            .badge.hide-{hidden_badges_count} {BO} display: none; {BC}
+            #rank, .badge {BO} fill: #808080; {BC}
 
-            #rank.place-1 {BO} fill: #FFD700; {BC}
-            #rank.place-2 {BO} fill: #C0C0C0; {BC}
-            #rank.place-3 {BO} fill: #CD7F32; {BC}
-            #rank         {BO} fill: #808080; {BC}
+            .place1 {BO} fill: #FFD700; {BC}
+            .place2 {BO} fill: #C0C0C0; {BC}
+            .place3 {BO} fill: #CD7F32; {BC}
 
             #status.online    {BO} fill: #57f287; {BC}
             #status.offline   {BO} fill: #23272a; {BC}
             #status.invisible {BO} fill: #23272a; {BC}
             #status.idle      {BO} fill: #fee75c; {BC}
             #status.dnd       {BO} fill: #ed4245; {BC}
+            
+            .hidden {BO} display: none !important; {BC}
         </style>
 
         <clipPath id="avatar-mask"><circle cx="65" cy="65" r="35"/></clipPath>

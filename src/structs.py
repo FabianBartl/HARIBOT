@@ -60,8 +60,9 @@ class DIR:
 	DATA      = os.path.abspath(f"{MAIN}/data")
 	APPS      = os.path.abspath(f"{MAIN}/apps")
 	ASSETS    = os.path.abspath(f"{MAIN}/assets")
+	CONFIGS   = os.path.abspath(f"{ASSETS}/configs")
 	FONTS     = os.path.abspath(f"{ASSETS}/fonts")
-	IMGAGES   = os.path.abspath(f"{ASSETS}/img")
+	IMGAGES   = os.path.abspath(f"{ASSETS}/imgs")
 	TEMPLATES = os.path.abspath(f"{ASSETS}/templates")
 
 class XP:

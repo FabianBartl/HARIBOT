@@ -177,6 +177,13 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 # score / level / ranking / badge functions #
 #-------------------------------------------#
 
+def getRankings() -> dict:
+	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r") as fobj: badges_config = json.load(fobj)
+
+	rankings = { badges_config[badgeID]["name"]: 0 for badgeID in badges_config }
+
+
+
 def createScoreCard(member: Member): #-> lambda-function
 	user_data = getUserData(member.id)
 
@@ -189,10 +196,35 @@ def createScoreCard(member: Member): #-> lambda-function
 	
 	score_progress = (230 / xp_difference) * xp_collected
 	
-	with open(os.path.join(DIR.TEMPLATES, "score-card_template.svg"), "r") as fobj: template_svg = fobj.read()
-	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r") as fobj: font_base64  = fobj.read()
+	with open(os.path.join(DIR.TEMPLATES, "score-card_template.svg"), "r") as fobj: scoreCard_template = fobj.read()
+	with open(os.path.join(DIR.TEMPLATES, "badge_template.svg"), "r") as fobj: badge_template = fobj.read()
+	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r") as fobj: font_base64 = fobj.read()
+
+	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r") as fobj: badges_config = json.load(fobj)
 	
-	generated_svg = template_svg.format(
+	badges_list = {
+		"0": 0
+		, "1": 1
+		, "2": 3
+		, "3": 1
+		, "4": 2
+	}
+
+	badges_generated = ""
+	for num, badge in enumerate(badges_list):
+		x = 120 + num*13
+
+		badges_generated += badge_template.format(
+			cell_color = hex2color(COLOR.DISCORD.BLACK)
+			
+			, rank = badges_list[badge]
+			, icon = badges_config.get(badge, {"icon": ""})["icon"]
+			
+			, x_border = x-1
+			, x = x
+		)
+
+	scoreCard_generated = scoreCard_template.format(
 		GillSansMTStd_Medium_base64 = font_base64
 
 		, background_color = "transparent"
@@ -216,13 +248,7 @@ def createScoreCard(member: Member): #-> lambda-function
 		, current_xp = formatNum(xp_current)
 		, required_xp = xp_required
 
-		, badge_1_color = "#"
-		, badge_2_color = "#"
-		, badge_3_color = "#"
-		, badge_4_color = "#"
-		, badge_5_color = "#"
-		, badge_more_color = "#"
-		, hidden_badges_count = 5
+		, badges = badges_generated
 
 		, ranking_color = hex2color(COLOR.HARIBO.LIGHT)
 		, level_color = hex2color(COLOR.HARIBO.LIGHT)
@@ -234,7 +260,7 @@ def createScoreCard(member: Member): #-> lambda-function
 	)
 
 	score_card_file = lambda ext: os.path.abspath(f"{os.path.join(DIR.TEMP, f'score-card_{member.id}')}.{ext}")
-	with open(score_card_file("svg"), "w+") as fobj: fobj.write(generated_svg)
+	with open(score_card_file("svg"), "w+") as fobj: fobj.write(scoreCard_generated)
 	
 	error = svg2png(score_card_file("svg"), score_card_file("png"), 3)
 	msg = f"svg2png returned error code `{error}`"

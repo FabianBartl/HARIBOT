@@ -1,0 +1,26 @@
+{
+    "0": {
+        "name": "Default Achievement"
+        , "icon": "default.png"
+    }
+    , "1": {
+        "name": "attachments"
+        , "icon": "attachments.png"
+    }
+    , "2": {
+        "name": "commands"
+        , "icon": "commands.png"
+    }
+    , "3": {
+        "name": "words"
+        , "icon": "words.png"
+    }
+    , "4": {
+        "name": "voice"
+        , "icon": "voice.png"
+    }
+    , "5": {
+        "name": "reactions"
+        , "icon": "reactions.png"
+    }
+}

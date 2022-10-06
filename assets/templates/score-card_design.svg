@@ -15,42 +15,29 @@
         <rect id="score-progress-border" x="119" y="79" width="223.15254237288136" height="22" rx="11" fill="#23272A"/>
         <rect id="score-progress" x="120" y="80" width="221.15254237288136" height="20" rx="10" fill="#3390B4"/>
         <text id="score-rating" x="265" y="75" text-anchor="end" font-size="10" fill="#f8f9fa">
-            <tspan dx="95" fill="#">258.00  </tspan>
+            <tspan dx="95" fill="">258.00  </tspan>
             <tspan dx="3">/</tspan>
-            <tspan dx="3" fill="#">295</tspan>
+            <tspan dx="3" fill="">295</tspan>
             <tspan dx="3">XP</tspan>
         </text>
 
-        <g class="badge hide-5">
-            <rect id="badge-border_1" x="119" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
-            <rect id="badge_1" x="120" y="22" width="15" height="15" rx="8.5" fill="#"/>
-            <g class="badge hide-4">
-                <rect id="badge-border_2" x="132" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
-                <rect id="badge_2" x="133" y="22" width="15" height="15" rx="7.5" fill="#"/>
-                <g class="badge hide-3">
-                    <rect id="badge-border_3" x="145" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
-                    <rect id="badge_3" x="146" y="22" width="15" height="15" rx="7.5" fill="#"/>
-                    <g class="badge hide-2">
-                        <rect id="badge-border_4" x="158" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
-                        <rect id="badge_4" x="159" y="22" width="15" height="15" rx="7.5" fill="#"/>
-                        <g class="badge hide-1">
-                            <rect id="badge-border_5" x="171" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
-                            <rect id="badge_5" x="172" y="22" width="15" height="15" rx="7.5" fill="#"/>
-                            <g class="badge hide-0">
-                                <rect id="badge-border_more" x="191" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
-                                <rect id="badge_more" x="192" y="22" width="15" height="15" rx="7.5" fill="#"/>
-                            </g>
-                        </g>
-                    </g>
-                </g>
-            </g>
+        <g id="badges">
+            <rect x="119" y="21" width="17" height="17" rx="8.5"/>
+            <rect x="120" y="22" width="15" height="15" rx="8.5" class="badge place6"/>
+
+            <rect x="132" y="21" width="17" height="17" rx="8.5"/>
+            <rect x="133" y="22" width="15" height="15" rx="8.5" class="badge place3"/>
+            <rect x="145" y="21" width="17" height="17" rx="8.5"/>
+            <rect x="146" y="22" width="15" height="15" rx="8.5" class="badge place2"/>
+            <rect x="158" y="21" width="17" height="17" rx="8.5"/>
+            <rect x="159" y="22" width="15" height="15" rx="8.5" class="badge place1"/>
         </g>
 
         <text id="ranking" x="265" y="35" text-anchor="end" font-size="15" fill="#f8f9fa">
             <tspan dx="95" font-size="7">RANK</tspan>
-            <tspan dx="0" id="rank" class="place-5">#5</tspan>
+            <tspan dx="0" id="rank" class="place5">#5</tspan>
             <tspan dx="3" font-size="7">LEVEL</tspan>
-            <tspan dx="0" fill="#">2</tspan>
+            <tspan dx="0" fill="">2</tspan>
         </text>
     </g>
     
@@ -62,18 +49,19 @@
             }
             text { font-family: "GillSansMTStd-Medium"; }
             
-            .badge.hide-5 { display: none; }
+            #rank, .badge { fill: #808080; }
 
-            #rank.place-1 { fill: #FFD700; }
-            #rank.place-2 { fill: #C0C0C0; }
-            #rank.place-3 { fill: #CD7F32; }
-            #rank         { fill: #808080; }
+            .place1 { fill: #FFD700; }
+            .place2 { fill: #C0C0C0; }
+            .place3 { fill: #CD7F32; }
 
             #status.online    { fill: #57f287; }
             #status.offline   { fill: #23272a; }
             #status.invisible { fill: #23272a; }
             #status.idle      { fill: #fee75c; }
             #status.dnd       { fill: #ed4245; }
+            
+            .hidden { display: none !important; }
         </style>
 
         <clipPath id="avatar-mask"><circle cx="65" cy="65" r="35"/></clipPath>
