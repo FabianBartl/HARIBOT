@@ -6,5 +6,6 @@
 	, "dependencies": {
 		"nextcord": "2.2.0"
 		, "svgexport": "0.4.1"
+		, "node.js": "16.17.1"
 	}
 }
