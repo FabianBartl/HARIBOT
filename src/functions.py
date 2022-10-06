@@ -236,7 +236,7 @@ def createScoreCard(member: Member): #-> lambda-function
 	score_card_file = lambda ext: os.path.abspath(f"{os.path.join(DIR.TEMP, f'score-card_{member.id}')}.{ext}")
 	with open(score_card_file("svg"), "w+") as fobj: fobj.write(generated_svg)
 	
-	error = svg2png(score_card_file("svg"), score_card_file("png"), 4)
+	error = svg2png(score_card_file("svg"), score_card_file("png"), 3)
 	msg = f"svg2png returned error code `{error}`"
 	LOG.LOGGER.debug(msg) if error == 0 else LOG.LOGGER.error(msg)
 
