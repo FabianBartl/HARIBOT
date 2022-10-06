@@ -1,11 +1,10 @@
 
 # libs
-from getpass import getuser
 import nextcord
 from nextcord.ext import commands
 from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji, VoiceState
 
-import time, json, os, sys, random
+import time, json, os, sys, logging
 from datetime import datetime
 from urllib.request import urlopen
 
@@ -21,8 +20,10 @@ bot = commands.Bot(
 	, intents = nextcord.Intents.all()
 )
 
-colored = (len(sys.argv) == 2 and sys.argv[1] == "colored")
-setupLogger(colored)
+if len(sys.argv) >= 2 and sys.argv[1] == "colored": colored = True
+if len(sys.argv) >= 3 and sys.argv[2].isdigit(): level = int(sys.argv[2])
+else: level = logging.INFO
+setupLogger(colored, level)
 
 #--------#
 # events #

@@ -3,7 +3,7 @@
 import nextcord
 from nextcord import Member
 
-import os, json, re
+import os, json, re, logging
 from math import floor
 
 from structs import TOKEN, LOG, DIR, COLOR, XP
@@ -110,14 +110,14 @@ def checkOwner(checkID: int) -> bool: return checkID == TOKEN.OWNER_ID
 # manage logging (files) #
 #------------------------#
 
-def setupLogger(colored: bool=False):
-	LOG.LOGGER = custom_logger.getLogger(init=True, level=LOG.LEVEL, fmt=LOG.FMT, date_fmt=LOG.DATE_FMT, path=LOG.PATH, colored=colored)
+def setupLogger(colored: bool=False, level: int=logging.INFO):
+	LOG.LOGGER = custom_logger.getLogger(init=True, level=level, fmt=LOG.FMT, date_fmt=LOG.DATE_FMT, path=LOG.PATH, colored=colored)
 	return LOG.LOGGER
 
 def getLogFile(srcPath: str=LOG.PATH, rows: int=21) -> str:
 	with open(LOG.PATH, "r") as fobj: lines = fobj.readlines()
 	
-	max_chars = 1900
+	max_chars = 1_900
 	length = max_chars // rows
 	log_data = list()
 
@@ -194,7 +194,7 @@ def createScoreCard(member: Member): #-> lambda-function
 		, avatar_img = member.display_avatar.url
 		, status = member.status.__str__()
 
-		, nickname_color = "#"
+		, nickname_color = hex2color(COLOR.BLUE)
 		, username = member.display_name
 		
 		, score_bar_color = "#"
