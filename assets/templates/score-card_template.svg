@@ -1,6 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="130" x="0" y="0">
     <g id="score-card">
         <rect id="box" x="0" y="0" width="400" height="130" fill="{background_color}"/>
+        <rect id="cell-border" x="9" y="9" width="382" height="112" rx="10" fill="{cell_border_color}"/>
         <rect id="cell" x="10" y="10" width="380" height="110" rx="10" fill="{cell_color}"/>
 
         <rect id="avatar-border" x="29" y="29" width="72" height="72" rx="36" fill="{cell_color}"/>
@@ -10,6 +11,8 @@
 
         <text id="nickname" x="130" y="75" font-size="10" fill="{nickname_color}">{username}</text>
         <rect id="score-bar" x="120" y="80" width="250" height="20" rx="10" fill="{score_bar_color}"/>
+        <rect id="score-bar-inner" x="121" y="81" width="248" height="18" rx="9" fill="{cell_color}"/>
+        <rect id="score-progress-border" x="119" y="79" width="{score_progress_border}" height="22" rx="11" fill="{cell_color}"/>
         <rect id="score-progress" x="120" y="80" width="{score_progress}" height="20" rx="10" fill="{score_progress_color}"/>
         <text id="score-rating" x="265" y="75" text-anchor="end" font-size="10" fill="{score_rating_color}">
             <tspan dx="95" fill="{current_xp_color}">{current_xp}</tspan>
@@ -45,7 +48,7 @@
 
         <text id="ranking" x="265" y="35" text-anchor="end" font-size="15" fill="{ranking_color}">
             <tspan dx="95" font-size="7">RANK</tspan>
-            <tspan dx="0" fill="{rank_color}">#{rank}</tspan>
+            <tspan dx="0" id="rank" class="place-{rank}">#{rank}</tspan>
             <tspan dx="3" font-size="7">LEVEL</tspan>
             <tspan dx="0" fill="{level_color}">{level}</tspan>
         </text>
@@ -60,6 +63,11 @@
             text {BO} font-family: "GillSansMTStd-Medium"; {BC}
             
             .badge.hide-{hidden_badges_count} {BO} display: none; {BC}
+
+            #rank.place-1 {BO} fill: #FFD700; {BC}
+            #rank.place-2 {BO} fill: #C0C0C0; {BC}
+            #rank.place-3 {BO} fill: #CD7F32; {BC}
+            #rank         {BO} fill: #808080; {BC}
 
             #status.online    {BO} fill: #57f287; {BC}
             #status.offline   {BO} fill: #23272a; {BC}
