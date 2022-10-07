@@ -177,12 +177,36 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 # score / level / ranking / badge functions #
 #-------------------------------------------#
 
-def getRankings() -> dict:
+def getRankings() -> tuple[dict[str: int], int]:
+	users_data = dict()
+	path = os.path.join(DIR.DATA, "users")
+	for filename in os.listdir(path):
+		file = os.path.join(path, filename)
+		with open(file, "r") as fobj: data = json.load(fobj)
+		last_user = filename.split(".")[0]
+		users_data[last_user] = data
+	
+	rankings = dict()
+	rankings["rank"] = { userID: users_data[userID].get("xp", XP.DEFAULT) for userID in users_data }
+
 	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r") as fobj: badges_config = json.load(fobj)
+	rankings = { badgeID: str(last_user) for badgeID in badges_config }
+	
+	for badgeID in rankings.copy():
+		for userID in users_data:
+			user1, user2 = rankings[badgeID], userID
+			data1, data2 = users_data.get(user1, None), users_data.get(user2, None)
+			if data1 is None or data2 is None: continue
 
-	rankings = { badges_config[badgeID]["name"]: 0 for badgeID in badges_config }
-
-
+			counter_name = badges_config[badgeID]["name"]
+			value1, value2 = data1.get(counter_name, None), data2.get(counter_name, None)
+			if value1 is None or value2 is None: continue
+			
+			newUser = user1 if (value1 >= value2) else value1
+			rankings[badgeID] = newUser
+	
+	rank = rankings.pop("rank")
+	return rankings, rank
 
 def createScoreCard(member: Member): #-> lambda-function
 	user_data = getUserData(member.id)
@@ -209,16 +233,21 @@ def createScoreCard(member: Member): #-> lambda-function
 		, "3": 1
 		, "4": 2
 	}
+	# rankings = getRankings()
+	# badges_list = { badgeID: 1 for badgeID in rankings if rankings[badgeID] == member.id }
 
 	badges_generated = ""
 	for num, badge in enumerate(badges_list):
+		badge_config = badges_config.get(badge, None)
+		if badges_config is None: continue
+
 		x = 120 + num*13
 
 		badges_generated += badge_template.format(
 			cell_color = hex2color(COLOR.DISCORD.BLACK)
 			
 			, rank = badges_list[badge]
-			, icon = badges_config.get(badge, {"icon": ""})["icon"]
+			, icon = f"{badge_config['name']}.{badge_config['type']}"
 			
 			, x_border = x-1
 			, x = x

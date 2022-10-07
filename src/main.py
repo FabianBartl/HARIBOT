@@ -64,7 +64,7 @@ async def on_member_join(member: Member):
 	_type = "bot" if member.bot else "user"
 	LOG.LOGGER.info(f"member ({_type}) joined")
 
-	updateGuildData({"bots_count" if _type == "bot" else "users_count": [1, "add"], "xp": [XP.DEFAULT, "add"]}, member.guild.id)
+	updateGuildData({"bots_count" if _type == "bot" else "users": [1, "add"], "xp": [XP.DEFAULT, "add"]}, member.guild.id)
 	updateUserData({"leave_timestamp": [None, "del"], "xp": [XP.DEFAULT, "add"]}, member.id)
 
 	auto_role_IDs = getGuildData(guild.id).get(f"auto-roles_{_type}")
@@ -92,8 +92,8 @@ async def on_guild_join(guild: Guild):
 		else:          users_count += 1
 	
 	updateGuildData({
-		"bots_count": [bots_count, "add"]
-		, "users_count": [users_count, "add"]
+		"bots": [bots_count, "add"]
+		, "users": [users_count, "add"]
 		, "leave_timestamp": [None, "del"]
 	}, guild.id)
 
@@ -112,8 +112,8 @@ async def on_reaction_add(reaction: Reaction, user: Member):
 	emoji   = reaction.emoji
 	LOG.LOGGER.info(f"(reaction added) {message.id}: '{user.display_name}: {emoji}'")
 
-	updateGuildData({"reactions_count": [1, "add"]}, guild.id)
-	updateUserData ({"reactions_count": [1, "add"]}, user.id)
+	updateGuildData({"reactions": [1, "add"]}, guild.id)
+	updateUserData ({"reactions": [1, "add"]}, user.id)
 
 
 @bot.event
@@ -123,8 +123,8 @@ async def on_reaction_remove(reaction: Reaction, user: User):
 	emoji   = reaction.emoji
 	LOG.LOGGER.debug(f"(reaction removed) {message.id}: '{user.display_name}: {emoji}'")
 
-	updateGuildData({"reactions_count": [1, "sub"]}, guild.id)
-	updateUserData ({"reactions_count": [1, "sub"]}, user.id)
+	updateGuildData({"reactions": [1, "sub"]}, guild.id)
+	updateUserData ({"reactions": [1, "sub"]}, user.id)
 
 
 @bot.event
@@ -162,17 +162,17 @@ async def on_message(message: Message):
 	LOG.LOGGER.debug(f"(xp earned) {author.display_name}: {xp}")
 
 	updateGuildData({
-		"messages_count": [1, "add"]
-		, "words_count": [words_count, "add"]
-		, "letters_count": [letters_count, "add"]
-		, "attachments_count": [len(attachments), "add"]
+		"messages": [1, "add"]
+		, "words": [words_count, "add"]
+		, "letters": [letters_count, "add"]
+		, "attachments": [len(attachments), "add"]
 		, "xp": [xp, "add"]
 	}, guild.id)
 	updateUserData({
-		"messages_count": [1, "add"]
-		, "words_count": [words_count, "add"]
-		, "letters_count": [letters_count, "add"]
-		, "attachments_count": [len(attachments), "add"]
+		"messages": [1, "add"]
+		, "words": [words_count, "add"]
+		, "letters": [letters_count, "add"]
+		, "attachments": [len(attachments), "add"]
 		, "xp": [xp, "add"]
 		, "last_message": [last_message, "set"]
 	}, author.id)
@@ -191,18 +191,18 @@ async def on_message_edit(before: Message, after: Message):
 	letters     = len(after.content) - len(before.content)
 
 	updateGuildData({
-		"edited_count": [1, "add"]
+		"edited": [1, "add"]
 		, "changes_lenght": [changes, "add"]
-		, "words_count": [words, "add"]
-		, "letters_count": [letters, "add"]
-		, "attachments_count": [attachments, "add"]
+		, "words": [words, "add"]
+		, "letters": [letters, "add"]
+		, "attachments": [attachments, "add"]
 	}, guild.id)
 	updateUserData({
-		"edited_count": [1, "add"]
+		"edited": [1, "add"]
 		, "changes_lenght": [changes, "add"]
-		, "words_count": [words, "add"]
-		, "letters_count": [letters, "add"]
-		, "attachments_count": [attachments, "add"]
+		, "words": [words, "add"]
+		, "letters": [letters, "add"]
+		, "attachments": [attachments, "add"]
 	}, author.id)
 
 
@@ -218,16 +218,16 @@ async def on_message_delete(message: Message):
 	letters     = len(content)
 
 	updateGuildData({
-		"deleted_count": [1, "add"]
-		, "words_count": [words, "sub"]
-		, "letters_count": [letters, "sub"]
-		, "attachments_count": [attachments, "sub"]
+		"deleted": [1, "add"]
+		, "words": [words, "sub"]
+		, "letters": [letters, "sub"]
+		, "attachments": [attachments, "sub"]
 	}, guild.id)
 	updateUserData({
-		"deleted_count": [1, "add"]
-		, "words_count": [words, "sub"]
-		, "letters_count": [letters, "sub"]
-		, "attachments_count": [attachments, "sub"]
+		"deleted": [1, "add"]
+		, "words": [words, "sub"]
+		, "letters": [letters, "sub"]
+		, "attachments": [attachments, "sub"]
 	}, author.id)
 
 #-----#
@@ -254,8 +254,8 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
 async def sc_help(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) help")
 	
-	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands": [1, "add"]}, interaction.user.id)
 
 	prefix = CONFIG.PREFIX
 	embed = Embed(color=COLOR.HARIBO.INFO, title="Command Overview")
@@ -276,8 +276,8 @@ async def sc_help(interaction: Interaction):
 async def sc_ping(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) ping")
 	
-	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands": [1, "add"]}, interaction.user.id)
 
 	latency = bot.latency
 	msg = f"`{latency*1000:.0f} ms` latency"
@@ -296,8 +296,8 @@ async def sc_memberInfo(
 ):
 	LOG.LOGGER.debug(f"(command sent) score: {member=}")
 	
-	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands": [1, "add"]}, interaction.user.id)
 	
 	if type(member) is not Member: member = interaction.user
 	format = ["svg", "png"][formatID]
@@ -318,8 +318,8 @@ async def sc_log(
 ):
 	LOG.LOGGER.debug(f"(command sent) log: {action=}")
 	
-	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands": [1, "add"]}, interaction.user.id)
 
 	msg = ""
 	file = None
@@ -372,8 +372,8 @@ async def sc_memberInfo(
 ):
 	LOG.LOGGER.debug(f"(command sent) member-info: {member=}")
 	
-	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands": [1, "add"]}, interaction.user.id)
 
 	if type(member) is not Member: member = interaction.user
 	userData = getUserData(member.id)
@@ -398,8 +398,8 @@ async def sc_memberInfo(
 async def sc_serverInfo(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) server-info")
 	
-	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands": [1, "add"]}, interaction.user.id)
 
 	guild = interaction.guild
 	guildData = getGuildData(guild.id)
@@ -422,8 +422,8 @@ async def sc_serverInfo(interaction: Interaction):
 async def sc_botInfo(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) bot-info")
 	
-	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands": [1, "add"]}, interaction.user.id)
 
 	app = await interaction.guild.fetch_member(BOTINFO.ID)
 
@@ -484,8 +484,8 @@ async def sc_autoRole(
 	_type = "bot" if _type == 1 else "user"
 	LOG.LOGGER.debug(f"(command sent) auto-role: {action=}, {_type=}, {role=}")
 	
-	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands": [1, "add"]}, interaction.user.id)
 
 	if action == 0: #add
 		updateGuildData({f"auto-roles_{_type}": [role.id, "ins"]}, guild.id)
@@ -523,8 +523,8 @@ async def sc_reactionRole(
 ):
 	LOG.LOGGER.debug(f"(command sent) reaction-role add: {action=}, {messageID=}, {emoji=}, {role=}")
 	
-	updateGuildData({"commands_count": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands_count": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands": [1, "add"]}, interaction.user.id)
 
 	await interaction.response.send_message(f"`reaction-role`: `{action=}`, `{messageID=}`, `{emoji=}`, `{role}`", ephemeral=CONFIG.EPHEMERAL)
 
