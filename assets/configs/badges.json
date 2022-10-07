@@ -1,26 +1,34 @@
 {
     "0": {
-        "name": "Default Achievement"
-        , "icon": "default.png"
+        "name": "words-per-message"
+        , "type": "png"
     }
     , "1": {
-        "name": "attachments"
-        , "icon": "attachments.png"
+        "name": "voice-minutes"
+        , "type": "svg"
     }
     , "2": {
-        "name": "commands"
-        , "icon": "commands.png"
+        "name": "words"
+        , "type": "png"
     }
     , "3": {
-        "name": "words"
-        , "icon": "words.png"
+        "name": "reactions"
+        , "type": "png"
     }
     , "4": {
-        "name": "voice"
-        , "icon": "voice.png"
+        "name": "deleted"
+        , "type": "png"
     }
     , "5": {
-        "name": "reactions"
-        , "icon": "reactions.png"
+        "name": "commands"
+        , "type": "png"
+    }
+    , "6": {
+        "name": "attachments"
+        , "type": "png"
+    }
+    , "7": {
+        "name": "edited"
+        , "type": "png"
     }
 }
