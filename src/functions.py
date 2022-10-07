@@ -36,6 +36,12 @@ def hex2color(num: int, mode: str="hex") -> str:
 def svg2png(svgFile: str, pngFile: str, scale: int) -> int:
 	return os.system(f"svgexport {os.path.abspath(svgFile)} {os.path.abspath(pngFile)} {scale}x")
 
+def sortDictByValue(dictionary: dict, reverse: bool=False):
+	return sorted(dictionary.items(), key=lambda x:x[0], reverse=reverse)
+
+def sortDictByKey(dictionary: dict, reverse: bool=False):
+	return sorted(dictionary.items(), key=lambda x:x[1], reverse=reverse)
+
 #-------------#
 # update data #
 #-------------#
@@ -177,36 +183,35 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 # score / level / ranking / badge functions #
 #-------------------------------------------#
 
-def getRankings() -> tuple[dict[str: int], int]:
+def getRankings(member: Member) -> dict[str: int]:
 	users_data = dict()
 	path = os.path.join(DIR.DATA, "users")
 	for filename in os.listdir(path):
-		file = os.path.join(path, filename)
-		with open(file, "r") as fobj: data = json.load(fobj)
+		with open(os.path.join(path, filename), "r") as fobj: data = json.load(fobj)
 		last_user = filename.split(".")[0]
 		users_data[last_user] = data
 	
-	rankings = dict()
-	rankings["rank"] = { userID: users_data[userID].get("xp", XP.DEFAULT) for userID in users_data }
-
 	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r") as fobj: badges_config = json.load(fobj)
-	rankings = { badgeID: str(last_user) for badgeID in badges_config }
-	
-	for badgeID in rankings.copy():
-		for userID in users_data:
-			user1, user2 = rankings[badgeID], userID
-			data1, data2 = users_data.get(user1, None), users_data.get(user2, None)
-			if data1 is None or data2 is None: continue
 
-			counter_name = badges_config[badgeID]["name"]
-			value1, value2 = data1.get(counter_name, None), data2.get(counter_name, None)
-			if value1 is None or value2 is None: continue
-			
-			newUser = user1 if (value1 >= value2) else value1
-			rankings[badgeID] = newUser
-	
-	rank = rankings.pop("rank")
-	return rankings, rank
+	rankings = dict()
+	for badgeID in badges_config:
+		name = badges_config[badgeID]["name"]
+
+		# unsorted = { userID: users_data[userID].get(name, 0) for userID in users_data }
+		unsorted = dict()
+		for userID in users_data:
+			user_data = users_data[userID]
+			unsorted[userID] = user_data.get(name, 0)
+		rankings[badgeID] = sortDictByValue(unsorted, True)
+
+	ranking = dict()
+	for badgeID in badges_config:
+		for rank, pair in enumerate(rankings[badgeID]):
+			if pair[0] == str(member.id):
+				ranking[badgeID] = rank+1
+				break
+
+	return ranking
 
 def createScoreCard(member: Member): #-> lambda-function
 	user_data = getUserData(member.id)
@@ -226,15 +231,9 @@ def createScoreCard(member: Member): #-> lambda-function
 
 	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r") as fobj: badges_config = json.load(fobj)
 	
-	badges_list = {
-		"0": 0
-		, "1": 1
-		, "2": 3
-		, "3": 1
-		, "4": 2
-	}
-	# rankings = getRankings()
-	# badges_list = { badgeID: 1 for badgeID in rankings if rankings[badgeID] == member.id }
+	rankings = getRankings(member)
+	xp_ranking = rankings.pop("0")
+	badges_list = { badgeID: rankings[badgeID] for badgeID in rankings if 1 <= rankings[badgeID] <= 3 }
 
 	badges_generated = ""
 	for num, badge in enumerate(badges_list):
@@ -281,7 +280,7 @@ def createScoreCard(member: Member): #-> lambda-function
 
 		, ranking_color = hex2color(COLOR.HARIBO.LIGHT)
 		, level_color = hex2color(COLOR.HARIBO.LIGHT)
-		, rank = 0
+		, rank = xp_ranking
 		, level = level_current
 
 		, BO = "{"

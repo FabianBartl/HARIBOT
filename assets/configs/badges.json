@@ -1,15 +1,15 @@
 {
     "0": {
-        "name": "words-per-message"
+        "name": "xp"
         , "type": "png"
     }
     , "1": {
-        "name": "voice-minutes"
+        "name": "words-per-message"
         , "type": "svg"
     }
     , "2": {
-        "name": "words"
-        , "type": "png"
+        "name": "voice-minutes"
+        , "type": "svg"
     }
     , "3": {
         "name": "reactions"
@@ -29,6 +29,10 @@
     }
     , "7": {
         "name": "edited"
+        , "type": "png"
+    }
+    , "8": {
+        "name": "words"
         , "type": "png"
     }
 }
