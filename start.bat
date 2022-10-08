@@ -12,7 +12,8 @@ set /a max=10
 @REM if %i% GTR %max% goto end
 
 @REM arg1: color mode; arg2: logging level
-python main.py %~1 %~2
+main.py %~1 %~2
+@REM python main.py %~1 %~2
 echo "%i% error occured: %DATE% %TIME%"
 
 set /a i+=1
