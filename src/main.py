@@ -152,17 +152,16 @@ async def on_message(message: Message):
 	guild       = message.guild
 	LOG.LOGGER.debug(f"(msg sent) {channel.name} - {author.display_name}: {f'({len(attachments)} Attachments)' if len(attachments) > 0 else ''} '{content}'")
 	
-	words               = len(re.sub(" +", " ", content).split(" "))
-	letters             = len(content)
-	last_message        = time.time()
+	words        = len(re.sub(" +", " ", content).split(" "))
+	letters      = len(content)
+	last_message = time.time()
 
 	user_data = getUserData(author.id)
 	last_message_before = user_data.get("last_message", 0)
-	xp_before           = user_data.get("xp", 0)
+	xp                  = user_data.get("xp", 0)
 
-	xp  = xp_before
 	xp += XP.DEFAULT if xp < XP.DEFAULT else 0
-	xp += XP.GENERATE(last_message_before, last_message)
+	xp += XP.GENERATE(last_message_before, last_message) if author.id != BOTINFO.ID else XP.RANGE_MULTIPLIER
 	LOG.LOGGER.debug(f"(xp earned) {author.display_name}: {xp}")
 
 	updateGuildData({
