@@ -4,7 +4,8 @@ import nextcord
 from nextcord.ext import commands
 from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji, VoiceState
 
-import time, json, os, sys, logging
+import time, json, os, sys, logging, requests, random
+from bs4 import BeautifulSoup
 from datetime import datetime
 from urllib.request import urlopen
 
@@ -296,6 +297,7 @@ async def sc_memberInfo(
 	interaction: Interaction
 	, member: Member = SlashOption(required=False)
 	, formatID: int = SlashOption(required=False, choices={"SVG": 0, "PNG": 1}, default=1, name="format")
+	, private: bool = SlashOption(required=False, default=CONFIG.EPHEMERAL)
 ):
 	LOG.LOGGER.debug(f"(command sent) score: {member=}")
 	
@@ -307,7 +309,7 @@ async def sc_memberInfo(
 
 	score_card_file = createScoreCard(member)
 	
-	await interaction.response.send_message(file=File(score_card_file(format)), ephemeral=CONFIG.EPHEMERAL)
+	await interaction.response.send_message(file=File(score_card_file(format)), ephemeral=private)
 
 	time.sleep(1)
 	os.system(f"del {score_card_file('*')}")
@@ -531,6 +533,32 @@ async def sc_reactionRole(
 	updateUserData({"commands": [1, "add"]}, interaction.user.id)
 
 	await interaction.response.send_message(f"`reaction-role`: `{action=}`, `{messageID=}`, `{emoji=}`, `{role}`", ephemeral=CONFIG.EPHEMERAL)
+
+#-----#
+
+@bot.slash_command(name="what-if", description="Returns a random **WHAT IF?** image.")
+async def sc_whatIf(
+	interaction: Interaction
+	, num: int = SlashOption(required=False, default=None)
+):
+	LOG.LOGGER.debug(f"(command sent) whatif: {num=}")
+	
+	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
+	updateUserData({"commands": [1, "add"]}, interaction.user.id)
+	
+	htmlDoc = BeautifulSoup(requests.get("https://xkcd.com/archive/").text, "html")
+	image_count = int(htmlDoc.select_one("#middleContainer > a:nth-child(5)")["href"][1:-1])
+	LOG.LOGGER.debug(f"{image_count=}, {htmlDoc=}")
+	
+	if   num is None: num = random.randint(0, image_count)
+	elif num > image_count: num = image_count
+
+	htmlDoc = BeautifulSoup(requests.get(f"https://xkcd.com/{num}/").text, "html")
+	image_title = htmlDoc.select_one("#ctitle").text
+	image_url = htmlDoc.select_one("#middleContainer > a:nth-child(8)")["href"]
+	LOG.LOGGER.debug(f"{image_title=}, {image_url=}, {htmlDoc=}")
+
+	await interaction.response.send_message(f"**{image_title}** *(image {num})*\n{image_url}", ephemeral=CONFIG.EPHEMERAL)
 
 #---------#
 # execute #
