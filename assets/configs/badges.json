@@ -3,22 +3,22 @@
         "name": "xp"
         , "type": "png"
     }
-    , "1": {
-        "name": "words-per-message"
-        , "type": "svg"
-    }
-    , "2": {
-        "name": "voice-minutes"
-        , "type": "svg"
-    }
+    // , "1": {
+    //     "name": "words-per-message"
+    //     , "type": "svg"
+    // }
+    // , "2": {
+    //     "name": "voice-minutes"
+    //     , "type": "svg"
+    // }
     , "3": {
         "name": "reactions"
         , "type": "png"
     }
-    , "4": {
-        "name": "deleted"
-        , "type": "png"
-    }
+    // , "4": {
+    //     "name": "deleted"
+    //     , "type": "png"
+    // }
     , "5": {
         "name": "commands"
         , "type": "png"
@@ -28,7 +28,7 @@
         , "type": "png"
     }
     , "7": {
-        "name": "edited"
+        "name": "edits"
         , "type": "png"
     }
     , "8": {
