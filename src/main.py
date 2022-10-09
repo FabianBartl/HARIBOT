@@ -186,8 +186,8 @@ async def on_message(message: Message):
 async def on_message_edit(before: Message, after: Message):
 	author = before.author
 	guild  = before.guild
-	LOG.LOGGER.debug(f"(msg edited before) {before.channel.name} - {before.author.display_name}: '{before.content}'")
-	LOG.LOGGER.debug(f"(msg edited after)  {after.channel.name} - {after.author.display_name}: '{after.content}'")
+	LOG.LOGGER.debug(f"(msg edits before) {before.channel.name} - {before.author.display_name}: '{before.content}'")
+	LOG.LOGGER.debug(f"(msg edits after)  {after.channel.name} - {after.author.display_name}: '{after.content}'")
 
 	changes     = abs(len(after.content) - len(before.content))
 	attachments = len(after.attachments) - len(before.attachments)
@@ -195,14 +195,14 @@ async def on_message_edit(before: Message, after: Message):
 	letters     = len(after.content) - len(before.content)
 
 	updateGuildData({
-		"edited": [1, "add"]
+		"edits": [1, "add"]
 		, "changes_lenght": [changes, "add"]
 		, "words": [words, "add"]
 		, "letters": [letters, "add"]
 		, "attachments": [attachments, "add"]
 	}, guild.id)
 	updateUserData({
-		"edited": [1, "add"]
+		"edits": [1, "add"]
 		, "changes_lenght": [changes, "add"]
 		, "words": [words, "add"]
 		, "letters": [letters, "add"]
