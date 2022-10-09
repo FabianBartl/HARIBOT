@@ -38,7 +38,7 @@ def sortDictByKey(dictionary: dict, descending: bool=False):
 # update data #
 #-------------#
 
-def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
+def updateDataFile(newData: dict[str: tuple[int, str], ], dataPath: str, fileID: int) -> None:
 	filePath = os.path.abspath(os.path.join(DIR.DATA, dataPath, f"{fileID}.json"))
 
 	if not os.path.exists(filePath): fileData = {}
@@ -46,6 +46,7 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 		with open(filePath, "r") as fobj: fileData = json.load(fobj)
 	
 	for key in newData:
+		LOG.LOGGER.warning(f"{newData=}")
 		value, mode = newData[key]
 
 		if key in fileData:
@@ -83,24 +84,24 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 	with open(filePath, "w+") as fobj: json.dump(fileData, fobj)
 	LOG.LOGGER.debug(f"{dataPath}/{fileID} data updated: {fileData}")
 
-def updateGuildData   (newData: dict, fileID: int) -> None: updateDataFile(newData, "guilds",    fileID)
-def updateUserData    (newData: dict, fileID: int) -> None: updateDataFile(newData, "users",     fileID)
-def updateReactionData(newData: dict, fileID: int) -> None: updateDataFile(newData, "reactions", fileID)
+def updateGuildData   (newData: dict[str: tuple[int, str], ], fileID: int) -> None: updateDataFile(newData, "guilds",    fileID)
+def updateUserData    (newData: dict[str: tuple[int, str], ], fileID: int) -> None: updateDataFile(newData, "users",     fileID)
+def updateReactionData(newData: dict[str: tuple[int, str], ], fileID: int) -> None: updateDataFile(newData, "reactions", fileID)
 
 #----------#
 # get data #
 #----------#
 
-def getDataFile(dataPath: str, fileID: int) -> dict:
+def getDataFile(dataPath: str, fileID: int) -> dict[str: int, ]:
 	filePath = os.path.abspath(os.path.join(DIR.DATA, dataPath, f"{fileID}.json"))
 	if not os.path.exists(filePath): return dict()
 	with open(filePath, "r") as fobj: data = json.load(fobj)
 	LOG.LOGGER.debug(f"{dataPath}/{fileID} data read")
 	return data
 
-def getGuildData   (fileID: int) -> dict: return getDataFile("guilds",    fileID)
-def getUserData    (fileID: int) -> dict: return getDataFile("users",     fileID)
-def getReactionData(fileID: int) -> dict: return getDataFile("reactions", fileID)
+def getGuildData   (fileID: int) -> dict[str: tuple[int, str], ]: return getDataFile("guilds",    fileID)
+def getUserData    (fileID: int) -> dict[str: tuple[int, str], ]: return getDataFile("users",     fileID)
+def getReactionData(fileID: int) -> dict[str: tuple[int, str], ]: return getDataFile("reactions", fileID)
 
 #------------------#
 # check permissons #

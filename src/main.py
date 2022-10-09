@@ -65,8 +65,8 @@ async def on_member_join(member: Member):
 	_type = "bot" if member.bot else "user"
 	LOG.LOGGER.info(f"member ({_type}) joined")
 
-	updateGuildData({"bots" if _type == "bot" else "users": [1, "add"], "xp": [XP.DEFAULT, "add"]}, member.guild.id)
-	updateUserData({"leave_timestamp": [None, "del"], "xp": [XP.DEFAULT, "add"]}, member.id)
+	updateGuildData({"bots" if _type == "bot" else "users": (1, "add"), "xp": [XP.DEFAULT, "add"]}, member.guild.id)
+	updateUserData({"leave_timestamp": (None, "del"), "xp": (XP.DEFAULT, "add")}, member.id)
 
 	auto_role_IDs = getGuildData(guild.id).get(f"auto-roles_{_type}")
 	roles = [ guild.get_role(roleID) for roleID in auto_role_IDs if guild.get_role(roleID) is not None ]
@@ -79,8 +79,8 @@ async def on_member_join(member: Member):
 async def on_member_remove(member: Member):
 	_type = "bot" if member.bot else "user"
 	LOG.LOGGER.info(f"member ({_type}) removed")
-	updateGuildData({f"{_type}s", [1, "sub"]}, member.guild.id)
-	updateUserData({"leave_timestamp": [time.time(), "set"]}, member.id)
+	updateGuildData({f"{_type}s": (1, "sub")}, member.guild.id)
+	updateUserData({"leave_timestamp": (time.time(), "set")}, member.id)
 
 
 @bot.event
@@ -93,16 +93,16 @@ async def on_guild_join(guild: Guild):
 		else:          users += 1
 	
 	updateGuildData({
-		"bots": [bots, "add"]
-		, "users": [users, "add"]
-		, "leave_timestamp": [None, "del"]
+		"bots": (bots, "add")
+		, "users": (users, "add")
+		, "leave_timestamp": (None, "del")
 	}, guild.id)
 
 
 @bot.event
 async def on_guild_remove(guild: Guild):
 	LOG.LOGGER.info("guild removed")
-	updateGuildData({"leave_timestamp": [time.time(), "set"]}, guild.id)
+	updateGuildData({"leave_timestamp": (time.time(), "set")}, guild.id)
 
 #-----#
 
@@ -113,8 +113,8 @@ async def on_reaction_add(reaction: Reaction, user: Member):
 	emoji   = reaction.emoji
 	LOG.LOGGER.info(f"(reaction added) {message.id}: '{user.display_name}: {emoji}'")
 
-	updateGuildData({"reactions": [1, "add"]}, guild.id)
-	updateUserData ({"reactions": [1, "add"]}, user.id)
+	updateGuildData({"reactions": (1, "add")}, guild.id)
+	updateUserData ({"reactions": (1, "add")}, user.id)
 
 
 @bot.event
@@ -124,8 +124,8 @@ async def on_reaction_remove(reaction: Reaction, user: User):
 	emoji   = reaction.emoji
 	LOG.LOGGER.debug(f"(reaction removed) {message.id}: '{user.display_name}: {emoji}'")
 
-	updateGuildData({"reactions": [1, "sub"]}, guild.id)
-	updateUserData ({"reactions": [1, "sub"]}, user.id)
+	updateGuildData({"reactions": (1, "sub")}, guild.id)
+	updateUserData ({"reactions": (1, "sub")}, user.id)
 
 
 @bot.event
@@ -166,19 +166,19 @@ async def on_message(message: Message):
 	LOG.LOGGER.debug(f"(xp earned) {author.display_name}: {xp}")
 
 	updateGuildData({
-		"messages": [1, "add"]
-		, "words": [words, "add"]
-		, "letters": [letters, "add"]
-		, "attachments": [len(attachments), "add"]
-		, "xp": [xp, "set"]
+		"messages": (1, "add")
+		, "words": (words, "add")
+		, "letters": (letters, "add")
+		, "attachments": (len(attachments), "add")
+		, "xp": (xp, "set")
 	}, guild.id)
 	updateUserData({
-		"messages": [1, "add"]
-		, "words": [words, "add"]
-		, "letters": [letters, "add"]
-		, "attachments": [len(attachments), "add"]
-		, "xp": [xp, "set"]
-		, "last_message": [last_message, "set" if XP.COOLDOWN_ELAPSED(last_message_before, last_message) else "ign"]
+		"messages": (1, "add")
+		, "words": (words, "add")
+		, "letters": (letters, "add")
+		, "attachments": (len(attachments), "add")
+		, "xp": (xp, "set")
+		, "last_message": (last_message, "set" if XP.COOLDOWN_ELAPSED(last_message_before, last_message) else "ign")
 	}, author.id)
 
 
@@ -195,18 +195,18 @@ async def on_message_edit(before: Message, after: Message):
 	letters     = len(after.content) - len(before.content)
 
 	updateGuildData({
-		"edits": [1, "add"]
-		, "changes_lenght": [changes, "add"]
-		, "words": [words, "add"]
-		, "letters": [letters, "add"]
-		, "attachments": [attachments, "add"]
+		"edits": (1, "add")
+		, "changes_lenght": (changes, "add")
+		, "words": (words, "add")
+		, "letters": (letters, "add")
+		, "attachments": (attachments, "add")
 	}, guild.id)
 	updateUserData({
-		"edits": [1, "add"]
-		, "changes_lenght": [changes, "add"]
-		, "words": [words, "add"]
-		, "letters": [letters, "add"]
-		, "attachments": [attachments, "add"]
+		"edits": (1, "add")
+		, "changes_lenght": (changes, "add")
+		, "words": (words, "add")
+		, "letters": (letters, "add")
+		, "attachments": (attachments, "add")
 	}, author.id)
 
 
@@ -222,16 +222,16 @@ async def on_message_delete(message: Message):
 	letters     = len(content)
 
 	updateGuildData({
-		"deleted": [1, "add"]
-		, "words": [words, "sub"]
-		, "letters": [letters, "sub"]
-		, "attachments": [attachments, "sub"]
+		"deleted": (1, "add")
+		, "words": (words, "sub")
+		, "letters": (letters, "sub")
+		, "attachments": (attachments, "sub")
 	}, guild.id)
 	updateUserData({
-		"deleted": [1, "add"]
-		, "words": [words, "sub"]
-		, "letters": [letters, "sub"]
-		, "attachments": [attachments, "sub"]
+		"deleted": (1, "add")
+		, "words": (words, "sub")
+		, "letters": (letters, "sub")
+		, "attachments": (attachments, "sub")
 	}, author.id)
 
 #-----#
@@ -258,8 +258,8 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
 async def sc_help(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) help")
 	
-	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
 
 	prefix = CONFIG.PREFIX
 	embed = Embed(color=int(HARIBO.INFO), title="Command Overview")
@@ -276,12 +276,22 @@ async def sc_help(interaction: Interaction):
 
 #-----#
 
+@bot.slash_command(name="test", description="Test some new stuff.", default_member_permissions=Permissions(administrator=True))
+async def sc_test(interaction: Interaction):
+	LOG.LOGGER.debug(f"(command sent) test")
+	
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
+
+	await interaction.response.send_message(f"nothing tested", ephemeral=True)
+
+
 @bot.slash_command(name="ping", description="Test bot response.")
 async def sc_ping(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) ping")
 	
-	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
 
 	latency = bot.latency
 	msg = f"`{latency*1000:.0f} ms` latency"
@@ -301,8 +311,8 @@ async def sc_memberInfo(
 ):
 	LOG.LOGGER.debug(f"(command sent) score: {member=}")
 	
-	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
 	
 	if type(member) is not Member: member = interaction.user
 	format = ["svg", "png"][formatID]
@@ -324,8 +334,8 @@ async def sc_log(
 ):
 	LOG.LOGGER.debug(f"(command sent) log: {action=}")
 	
-	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
 
 	msg = ""
 	file = None
@@ -378,8 +388,8 @@ async def sc_memberInfo(
 ):
 	LOG.LOGGER.debug(f"(command sent) member-info: {member=}")
 	
-	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
 
 	if type(member) is not Member: member = interaction.user
 	userData = getUserData(member.id)
@@ -404,8 +414,8 @@ async def sc_memberInfo(
 async def sc_serverInfo(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) server-info")
 	
-	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
 
 	guild = interaction.guild
 	guildData = getGuildData(guild.id)
@@ -428,8 +438,8 @@ async def sc_serverInfo(interaction: Interaction):
 async def sc_botInfo(interaction: Interaction):
 	LOG.LOGGER.debug(f"(command sent) bot-info")
 	
-	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
 
 	app = await interaction.guild.fetch_member(BOTINFO.ID)
 
@@ -490,8 +500,8 @@ async def sc_autoRole(
 	_type = "bot" if _type == 1 else "user"
 	LOG.LOGGER.debug(f"(command sent) auto-role: {action=}, {_type=}, {role=}")
 	
-	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
 
 	if action == 0: #add
 		updateGuildData({f"auto-roles_{_type}": [role.id, "ins"]}, guild.id)
@@ -529,8 +539,8 @@ async def sc_reactionRole(
 ):
 	LOG.LOGGER.debug(f"(command sent) reaction-role add: {action=}, {messageID=}, {emoji=}, {role=}")
 	
-	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
 
 	await interaction.response.send_message(f"`reaction-role`: `{action=}`, `{messageID=}`, `{emoji=}`, `{role}`", ephemeral=CONFIG.EPHEMERAL)
 
@@ -543,17 +553,17 @@ async def sc_whatIf(
 ):
 	LOG.LOGGER.debug(f"(command sent) whatif: {num=}")
 	
-	updateGuildData({"commands": [1, "add"]}, interaction.guild.id)
-	updateUserData({"commands": [1, "add"]}, interaction.user.id)
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
 	
-	htmlDoc = BeautifulSoup(requests.get("https://xkcd.com/archive/").text, "html")
+	htmlDoc = BeautifulSoup(requests.get("https://xkcd.com/archive/").text, "lxml")
 	image_count = int(htmlDoc.select_one("#middleContainer > a:nth-child(5)")["href"][1:-1])
 	LOG.LOGGER.debug(f"{image_count=}, {htmlDoc=}")
 	
 	if   num is None: num = random.randint(0, image_count)
 	elif num > image_count: num = image_count
 
-	htmlDoc = BeautifulSoup(requests.get(f"https://xkcd.com/{num}/").text, "html")
+	htmlDoc = BeautifulSoup(requests.get(f"https://xkcd.com/{num}/").text, "lxml")
 	image_title = htmlDoc.select_one("#ctitle").text
 	image_url = htmlDoc.select_one("#middleContainer > a:nth-child(8)")["href"]
 	LOG.LOGGER.debug(f"{image_title=}, {image_url=}, {htmlDoc=}")
