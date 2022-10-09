@@ -8,7 +8,7 @@ import time, json, os, sys, logging
 from datetime import datetime
 from urllib.request import urlopen
 
-from structs import BOTINFO, TOKEN, COLOR, CONFIG, LOG
+from structs import BOTINFO, TOKEN, HARIBO, CONFIG, LOG
 from functions import *
 
 #-------#
@@ -152,13 +152,17 @@ async def on_message(message: Message):
 	guild       = message.guild
 	LOG.LOGGER.debug(f"(msg sent) {channel.name} - {author.display_name}: {f'({len(attachments)} Attachments)' if len(attachments) > 0 else ''} '{content}'")
 	
-	words   = len(re.sub(" +", " ", content).split(" "))
-	letters = len(content)
-	last_message  = time.time()
+	words               = len(re.sub(" +", " ", content).split(" "))
+	letters             = len(content)
+	last_message        = time.time()
 
 	user_data = getUserData(author.id)
-	xp  = XP.DEFAULT if "xp" not in user_data else 0
-	xp += XP.GENERATE(user_data.get("last_message", 0), last_message)
+	last_message_before = user_data.get("last_message", 0)
+	xp_before           = user_data.get("xp", 0)
+
+	xp  = xp_before
+	xp += XP.DEFAULT if xp < XP.DEFAULT else 0
+	xp += XP.GENERATE(last_message_before, last_message)
 	LOG.LOGGER.debug(f"(xp earned) {author.display_name}: {xp}")
 
 	updateGuildData({
@@ -166,15 +170,15 @@ async def on_message(message: Message):
 		, "words": [words, "add"]
 		, "letters": [letters, "add"]
 		, "attachments": [len(attachments), "add"]
-		, "xp": [xp, "add"]
+		, "xp": [xp, "set"]
 	}, guild.id)
 	updateUserData({
 		"messages": [1, "add"]
 		, "words": [words, "add"]
 		, "letters": [letters, "add"]
 		, "attachments": [len(attachments), "add"]
-		, "xp": [xp, "add"]
-		, "last_message": [last_message, "set"]
+		, "xp": [xp, "set"]
+		, "last_message": [last_message, "set" if XP.COOLDOWN_ELAPSED(last_message_before, last_message) else "ign"]
 	}, author.id)
 
 
@@ -258,7 +262,7 @@ async def sc_help(interaction: Interaction):
 	updateUserData({"commands": [1, "add"]}, interaction.user.id)
 
 	prefix = CONFIG.PREFIX
-	embed = Embed(color=COLOR.HARIBO.INFO, title="Command Overview")
+	embed = Embed(color=int(HARIBO.INFO), title="Command Overview")
 	
 	for command in bot.walk_commands():
 		name        = command.name
@@ -304,7 +308,7 @@ async def sc_memberInfo(
 
 	score_card_file = createScoreCard(member)
 	
-	await interaction.response.send_message(file=File(score_card_file(format)), ephemeral=CONFIG.EPHEMERAL)
+	await interaction.response.send_message(file=File(score_card_file(format)), ephemeral=True)
 
 	os.system(f"del {score_card_file('*')}")
 	LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file('*')}`")
@@ -378,7 +382,7 @@ async def sc_memberInfo(
 	if type(member) is not Member: member = interaction.user
 	userData = getUserData(member.id)
 
-	embed = Embed(color=COLOR.HARIBO.SUCCESS, title="Member Info")
+	embed = Embed(color=int(HARIBO.SUCCESS), title="Member Info")
 	embed.set_thumbnail(url=member.display_avatar.url)
 	embed.add_field(name="Username", value=f"{member.name}#{member.discriminator}")
 	embed.add_field(name="Nickname", value=member.display_name)
@@ -404,7 +408,7 @@ async def sc_serverInfo(interaction: Interaction):
 	guild = interaction.guild
 	guildData = getGuildData(guild.id)
 
-	embed = Embed(color=COLOR.HARIBO.SUCCESS, title="Server Info", description=guild.description)
+	embed = Embed(color=int(HARIBO.SUCCESS), title="Server Info", description=guild.description)
 	embed.set_thumbnail(url=guild.icon.url)
 	embed.add_field(name="Name", value=guild.name, inline=False)
 
@@ -427,7 +431,7 @@ async def sc_botInfo(interaction: Interaction):
 
 	app = await interaction.guild.fetch_member(BOTINFO.ID)
 
-	embed = Embed(color=COLOR.HARIBO.SUCCESS, title="Bot Info", description=BOTINFO.DESCRIPTION)
+	embed = Embed(color=int(HARIBO.SUCCESS), title="Bot Info", description=BOTINFO.DESCRIPTION)
 	embed.set_thumbnail(url=app.display_avatar.url)
 	embed.add_field(name="Name", value=f"{app.name}")
 	embed.add_field(name="Creator", value=BOTINFO.CREATOR)

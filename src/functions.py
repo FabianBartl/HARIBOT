@@ -3,10 +3,10 @@
 import nextcord
 from nextcord import Member
 
-import os, json, re, logging
+import os, json, re, logging, time
 from math import floor
 
-from structs import TOKEN, LOG, DIR, COLOR, XP
+from structs import DISCORD, TOKEN, LOG, DIR, HARIBO, DISCORD, XP
 import custom_logger
 
 #----------------#
@@ -21,14 +21,6 @@ def formatNum(num: int, step: int=1000, base_unit: str="") -> str:
 
 def formatBytes(num: int, step: int=1000) -> str: return formatNum(num, step, "B")
 
-def hex2color(num: int, mode: str="hex") -> str:
-	if   mode == "hex": return hex2color(int(f"{hex(num)}ff", 16), "hexa")
-	elif mode == "rgb": return hex2color(int(f"{hex(num)}ff", 16), "rgba")
-	elif mode == "hexa": return f"#{hex(num)[2:10]}"
-	elif mode == "rgba":
-		h = hex(num)
-		return f"rgba({h[2:4]}, {h[4:6]}, {h[6:8]}, {h[8:10]})"
-
 #----------------#
 # help functions #
 #----------------#
@@ -36,11 +28,11 @@ def hex2color(num: int, mode: str="hex") -> str:
 def svg2png(svgFile: str, pngFile: str, scale: int) -> int:
 	return os.system(f"svgexport {os.path.abspath(svgFile)} {os.path.abspath(pngFile)} {scale}x")
 
-def sortDictByValue(dictionary: dict, reverse: bool=False):
-	return sorted(dictionary.items(), key=lambda x:x[0], reverse=reverse)
+def sortDictByValue(dictionary: dict, descending: bool=False):
+	return sorted(dictionary.items(), key=lambda x:x[1], reverse=descending)
 
-def sortDictByKey(dictionary: dict, reverse: bool=False):
-	return sorted(dictionary.items(), key=lambda x:x[1], reverse=reverse)
+def sortDictByKey(dictionary: dict, descending: bool=False):
+	return sorted(dictionary.items(), key=lambda x:x[0], reverse=descending)
 
 #-------------#
 # update data #
@@ -71,6 +63,7 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 			# <Any>
 			elif mode == "set": fileData[key] = value
 			elif mode == "del": del fileData[key]
+			elif mode == "ign": pass
 		
 		else:
 			# <int>, <float>
@@ -85,6 +78,7 @@ def updateDataFile(newData: dict, dataPath: str, fileID: int) -> None:
 			# <Any>
 			elif mode == "set": fileData[key] = value
 			elif mode == "del": pass
+			elif mode == "ign": pass
 	
 	with open(filePath, "w+") as fobj: json.dump(fileData, fobj)
 	LOG.LOGGER.debug(f"{dataPath}/{fileID} data updated: {fileData}")
@@ -196,12 +190,7 @@ def getRankings(member: Member) -> dict[str: int]:
 	rankings = dict()
 	for badgeID in badges_config:
 		name = badges_config[badgeID]["name"]
-
-		# unsorted = { userID: users_data[userID].get(name, 0) for userID in users_data }
-		unsorted = dict()
-		for userID in users_data:
-			user_data = users_data[userID]
-			unsorted[userID] = user_data.get(name, 0)
+		unsorted = { userID: users_data[userID].get(name, 0) for userID in users_data }
 		rankings[badgeID] = sortDictByValue(unsorted, True)
 
 	ranking = dict()
@@ -210,7 +199,7 @@ def getRankings(member: Member) -> dict[str: int]:
 			if pair[0] == str(member.id):
 				ranking[badgeID] = rank+1
 				break
-
+	
 	return ranking
 
 def createScoreCard(member: Member) -> object: # -> lambda-function
@@ -233,7 +222,7 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 	
 	rankings = getRankings(member)
 	xp_ranking = rankings.pop("0")
-	badges_list = { badgeID: rankings[badgeID] for badgeID in rankings if 1 <= rankings[badgeID] <= 3 }
+	badges_list = { badgeID: rankings[badgeID] for badgeID in rankings }
 
 	badges_generated = ""
 	for num, badge in enumerate(badges_list):
@@ -243,7 +232,7 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 		x = 120 + num*13
 
 		badges_generated += badge_template.format(
-			cell_color = hex2color(COLOR.DISCORD.BLACK)
+			cell_color = f"{DISCORD.BLACK:#}"
 			
 			, rank = badges_list[badge]
 			, icon = f"{badge_config['name']}.{badge_config['type']}"
@@ -256,30 +245,30 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 		GillSansMTStd_Medium_base64 = font_base64
 
 		, background_color = "transparent"
-		, cell_border_color = hex2color(COLOR.DISCORD.CHAT_BG)
-		, cell_color = hex2color(COLOR.DISCORD.BLACK)
+		, cell_border_color = f"{DISCORD.CHAT_BG:#}"
+		, cell_color = f"{DISCORD.BLACK:#}"
 
 		, avatar_img = member.display_avatar.url
 		, status = member.status.__str__()
 
-		, nickname_color = hex2color(COLOR.HARIBO.LIGHT)
+		, nickname_color = f"{HARIBO.LIGHT:#}"
 		, username = member.display_name
 		
-		, score_bar_color = hex2color(COLOR.HARIBO.SUCCESS)
-		, score_progress_color = hex2color(COLOR.HARIBO.INFO)
-		, score_rating_color = hex2color(COLOR.HARIBO.LIGHT)
+		, score_bar_color = f"{HARIBO.SUCCESS:#}"
+		, score_progress_color = f"{HARIBO.INFO:#}"
+		, score_rating_color = f"{HARIBO.LIGHT:#}"
 		, score_progress_border = 20 + score_progress + 2
 		, score_progress = 20 + score_progress
 
-		, current_xp_color = hex2color(COLOR.HARIBO.LIGHT)
-		, required_xp_color = hex2color(COLOR.HARIBO.LIGHT)
+		, current_xp_color = f"{HARIBO.LIGHT:#}"
+		, required_xp_color = f"{HARIBO.LIGHT:#}"
 		, current_xp = formatNum(xp_current)
 		, required_xp = xp_required
 
 		, badges = badges_generated
 
-		, ranking_color = hex2color(COLOR.HARIBO.LIGHT)
-		, level_color = hex2color(COLOR.HARIBO.LIGHT)
+		, ranking_color = f"{HARIBO.LIGHT:#}"
+		, level_color = f"{HARIBO.LIGHT:#}"
 		, rank = xp_ranking
 		, level = level_current
 
