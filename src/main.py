@@ -2,9 +2,10 @@
 # libs
 import nextcord
 from nextcord.ext import commands
+from nextcord.errors import NotFound
 from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji, VoiceState
 
-import time, json, os, sys, logging, requests, random
+import time, json, os, sys, logging, requests, random, asyncio
 from bs4 import BeautifulSoup
 from datetime import datetime
 from urllib.request import urlopen
@@ -318,10 +319,13 @@ async def sc_memberInfo(
 	format = ["svg", "png"][formatID]
 
 	score_card_file = createScoreCard(member)
-	
-	await interaction.response.send_message(file=File(score_card_file(format)), ephemeral=private)
 
-	time.sleep(1)
+	try:
+		await interaction.response.send_message(file=File(score_card_file(format)), ephemeral=private)
+	except NotFound:
+		await interaction.guild.get_channel(interaction.channel_id).send(file=File(score_card_file(format)))
+
+	await asyncio.sleep(1)
 	os.system(f"del {score_card_file('*')}")
 	LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file('*')}`")
 

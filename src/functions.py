@@ -46,7 +46,6 @@ def updateDataFile(newData: dict[str: tuple[int, str], ], dataPath: str, fileID:
 		with open(filePath, "r") as fobj: fileData = json.load(fobj)
 	
 	for key in newData:
-		LOG.LOGGER.warning(f"{newData=}")
 		value, mode = newData[key]
 
 		if key in fileData:
