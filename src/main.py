@@ -64,7 +64,7 @@ async def on_member_join(member: Member):
 	_type = "bot" if member.bot else "user"
 	LOG.LOGGER.info(f"member ({_type}) joined")
 
-	updateGuildData({"bots_count" if _type == "bot" else "users": [1, "add"], "xp": [XP.DEFAULT, "add"]}, member.guild.id)
+	updateGuildData({"bots" if _type == "bot" else "users": [1, "add"], "xp": [XP.DEFAULT, "add"]}, member.guild.id)
 	updateUserData({"leave_timestamp": [None, "del"], "xp": [XP.DEFAULT, "add"]}, member.id)
 
 	auto_role_IDs = getGuildData(guild.id).get(f"auto-roles_{_type}")
@@ -78,7 +78,7 @@ async def on_member_join(member: Member):
 async def on_member_remove(member: Member):
 	_type = "bot" if member.bot else "user"
 	LOG.LOGGER.info(f"member ({_type}) removed")
-	updateGuildData({f"{_type}s_count", [1, "sub"]}, member.guild.id)
+	updateGuildData({f"{_type}s", [1, "sub"]}, member.guild.id)
 	updateUserData({"leave_timestamp": [time.time(), "set"]}, member.id)
 
 
@@ -86,14 +86,14 @@ async def on_member_remove(member: Member):
 async def on_guild_join(guild: Guild):
 	LOG.LOGGER.info("guild joined")
 
-	bots_count, users_count = 0, 0
+	bots, users = 0, 0
 	for member in guild.members:
-		if member.bot: bots_count += 1
-		else:          users_count += 1
+		if member.bot: bots += 1
+		else:          users += 1
 	
 	updateGuildData({
-		"bots": [bots_count, "add"]
-		, "users": [users_count, "add"]
+		"bots": [bots, "add"]
+		, "users": [users, "add"]
 		, "leave_timestamp": [None, "del"]
 	}, guild.id)
 
@@ -152,8 +152,8 @@ async def on_message(message: Message):
 	guild       = message.guild
 	LOG.LOGGER.debug(f"(msg sent) {channel.name} - {author.display_name}: {f'({len(attachments)} Attachments)' if len(attachments) > 0 else ''} '{content}'")
 	
-	words_count   = len(re.sub(" +", " ", content).split(" "))
-	letters_count = len(content)
+	words   = len(re.sub(" +", " ", content).split(" "))
+	letters = len(content)
 	last_message  = time.time()
 
 	user_data = getUserData(author.id)
@@ -163,15 +163,15 @@ async def on_message(message: Message):
 
 	updateGuildData({
 		"messages": [1, "add"]
-		, "words": [words_count, "add"]
-		, "letters": [letters_count, "add"]
+		, "words": [words, "add"]
+		, "letters": [letters, "add"]
 		, "attachments": [len(attachments), "add"]
 		, "xp": [xp, "add"]
 	}, guild.id)
 	updateUserData({
 		"messages": [1, "add"]
-		, "words": [words_count, "add"]
-		, "letters": [letters_count, "add"]
+		, "words": [words, "add"]
+		, "letters": [letters, "add"]
 		, "attachments": [len(attachments), "add"]
 		, "xp": [xp, "add"]
 		, "last_message": [last_message, "set"]
@@ -385,8 +385,8 @@ async def sc_memberInfo(
 	embed.add_field(name="Is a Bot", value="Yes" if member.bot else "No")
 
 	embed.add_field(name="Joined at", value=member.joined_at.strftime("%d.%m.%Y %H:%M"))
-	embed.add_field(name="Messages", value=userData.get("messages_count", 0))
-	embed.add_field(name="Words/Message", value=round(userData.get("words_count", 0) / userData.get("messages_count", 1), 2))
+	embed.add_field(name="Messages", value=userData.get("messages", 0))
+	embed.add_field(name="Words/Message", value=round(userData.get("words", 0) / userData.get("messages", 1), 2))
 
 	embed.add_field(name="Roles", value=" ".join([ role.mention for role in member.roles[1:] ]), inline=False)
 	embed.set_footer(text=f"Member ID: {member.id}")
@@ -408,9 +408,9 @@ async def sc_serverInfo(interaction: Interaction):
 	embed.set_thumbnail(url=guild.icon.url)
 	embed.add_field(name="Name", value=guild.name, inline=False)
 
-	embed.add_field(name="Users", value=guildData.get("users_count", 0))
-	embed.add_field(name="Bots", value=guildData.get("bots_count", 0))
-	embed.add_field(name="Messages", value=guildData.get("messages_count", 0))
+	embed.add_field(name="Users", value=guildData.get("users", 0))
+	embed.add_field(name="Bots", value=guildData.get("bots", 0))
+	embed.add_field(name="Messages", value=guildData.get("messages", 0))
 
 	embed.add_field(name="Invite", value=f"[open](https://discord.gg/GVs3hmCmmJ) or copy invite:\n```\nhttps://discord.gg/GVs3hmCmmJ\n```", inline=False)
 	embed.set_footer(text=f"Server ID: {guild.id}")

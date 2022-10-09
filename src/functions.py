@@ -213,7 +213,7 @@ def getRankings(member: Member) -> dict[str: int]:
 
 	return ranking
 
-def createScoreCard(member: Member): #-> lambda-function
+def createScoreCard(member: Member) -> object: # -> lambda-function
 	user_data = getUserData(member.id)
 
 	xp_current         = user_data.get("xp", 0)
