@@ -268,7 +268,7 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 		, current_xp_color = f"{HARIBO.LIGHT:#}"
 		, required_xp_color = f"{HARIBO.LIGHT:#}"
 		, current_xp = formatNum(xp_current)
-		, required_xp = xp_required
+		, required_xp = formatNum(xp_required)
 
 		, badges = badges_generated
 
