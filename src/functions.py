@@ -177,7 +177,7 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 # score / level / ranking / badge functions #
 #-------------------------------------------#
 
-def getRankings(member: Member) -> dict[str: int]:
+def getRankings(member: Member) -> dict[str: dict[int, int]]:
 	users_data = dict()
 	path = os.path.join(DIR.DATA, "users")
 	for filename in os.listdir(path):
@@ -197,7 +197,7 @@ def getRankings(member: Member) -> dict[str: int]:
 	for badgeID in badges_config:
 		for rank, pair in enumerate(rankings[badgeID]):
 			if pair[0] == str(member.id):
-				ranking[badgeID] = rank+1
+				ranking[badgeID] = {"rank": rank+1, "count": pair[1]}
 				break
 	
 	return ranking
@@ -221,15 +221,16 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r") as fobj: badges_config = json.load(fobj)
 	
 	rankings = getRankings(member)
-	xp_ranking = rankings.pop("0")
-	badges_list = { badgeID: rankings[badgeID] for badgeID in rankings }
+	xp_ranking = rankings.pop("0")["rank"]
 
 	badges_generated, num = "", 0
-	for badge in badges_list:
+	for badge in rankings:
 		badge_config = badges_config.get(badge, None)
 
-		if   badges_config is None: continue
-		elif badge_config.get("ignore", False): continue
+		if badges_config is None or any([
+			badge_config.get("ignore", False)
+			, rankings[badge]["count"] == 0
+		]): continue
 
 		x = 120 + num*13
 		num += 1
@@ -237,7 +238,7 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 		badges_generated += badge_template.format(
 			cell_color = f"{DISCORD.BLACK:#}"
 			
-			, rank = badges_list[badge]
+			, rank = rankings[badge]["rank"]
 			, icon = f"https://raw.githubusercontent.com/FabianBartl/HARIBOT/main/assets/imgs/badges/{badge_config['name']}.{badge_config['type']}"
 			
 			, x_border = x - 1
