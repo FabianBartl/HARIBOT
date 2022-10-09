@@ -25,7 +25,7 @@
 
         <text id="ranking" x="265" y="35" text-anchor="end" font-size="15" fill="{ranking_color}">
             <tspan dx="95" font-size="7">RANK</tspan>
-            <tspan dx="0" id="rank" class="place{rank}">#{rank}</tspan>
+            <tspan dx="0" class="rank place{rank}">#{rank}</tspan>
             <tspan dx="3" font-size="7">LEVEL</tspan>
             <tspan dx="0" fill="{level_color}">{level}</tspan>
         </text>
@@ -33,13 +33,7 @@
     
     <defs>
         <style>
-            @font-face {BO}
-                font-family: "GillSansMTStd-Medium";
-                src: url("{GillSansMTStd_Medium_base64}");
-            {BC}
-            text {BO} font-family: "GillSansMTStd-Medium"; {BC}
-            
-            #rank, .badge {BO} fill: #808080; {BC}
+            .rank, .badge {BO} fill: #808080; {BC}
 
             .place1 {BO} fill: #FFD700; {BC}
             .place2 {BO} fill: #C0C0C0; {BC}
@@ -52,6 +46,12 @@
             #status.dnd       {BO} fill: #ed4245; {BC}
             
             .hidden {BO} display: none !important; {BC}
+
+            @font-face {BO}
+                font-family: "GillSansMTStd-Medium";
+                src: url("{GillSansMTStd_Medium_base64}");
+            {BC}
+            text {BO} font-family: "GillSansMTStd-Medium"; {BC}
         </style>
 
         <clipPath id="avatar-mask"><circle cx="65" cy="65" r="35"/></clipPath>
