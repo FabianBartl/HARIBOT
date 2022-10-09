@@ -191,7 +191,7 @@ def getRankings(member: Member) -> dict[str: int]:
 	for badgeID in badges_config:
 		name = badges_config[badgeID]["name"]
 		unsorted = { userID: users_data[userID].get(name, 0) for userID in users_data }
-		rankings[badgeID] = sortDictByValue(unsorted, True)
+		rankings[badgeID] = sortDictByValue(unsorted, descending=True)
 
 	ranking = dict()
 	for badgeID in badges_config:
@@ -224,18 +224,21 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 	xp_ranking = rankings.pop("0")
 	badges_list = { badgeID: rankings[badgeID] for badgeID in rankings }
 
-	badges_generated = ""
-	for num, badge in enumerate(badges_list):
+	badges_generated, num = "", 0
+	for badge in badges_list:
 		badge_config = badges_config.get(badge, None)
-		if badges_config is None: continue
+
+		if   badges_config is None: continue
+		elif badge_config.get("ignore", False): continue
 
 		x = 120 + num*13
+		num += 1
 
 		badges_generated += badge_template.format(
 			cell_color = f"{DISCORD.BLACK:#}"
 			
 			, rank = badges_list[badge]
-			, icon = f"{badge_config['name']}.{badge_config['type']}"
+			, icon = f"https://raw.githubusercontent.com/FabianBartl/HARIBOT/main/assets/imgs/badges/{badge_config['name']}.{badge_config['type']}"
 			
 			, x_border = x - 1
 			, x_background = x

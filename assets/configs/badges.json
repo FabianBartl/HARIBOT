@@ -1,38 +1,38 @@
 {
     "0": {
         "name": "xp"
-        , "type": "png"
+        , "ignore": true
     }
-    // , "1": {
-    //     "name": "words-per-message"
-    //     , "type": "svg"
-    // }
-    // , "2": {
-    //     "name": "voice-minutes"
-    //     , "type": "svg"
-    // }
+    , "1": {
+        "name": "words-per-message"
+        , "ignore": true
+    }
+    , "2": {
+        "name": "voice-minutes"
+        , "ignore": true
+    }
     , "3": {
         "name": "reactions"
-        , "type": "png"
+        , "type": "svg"
     }
-    // , "4": {
-    //     "name": "deleted"
-    //     , "type": "png"
-    // }
+    , "4": {
+        "name": "deleted"
+        , "ignore": true
+    }
     , "5": {
         "name": "commands"
-        , "type": "png"
+        , "type": "svg"
     }
     , "6": {
         "name": "attachments"
-        , "type": "png"
+        , "type": "svg"
     }
     , "7": {
         "name": "edits"
-        , "type": "png"
+        , "type": "svg"
     }
     , "8": {
         "name": "words"
-        , "type": "png"
+        , "type": "svg"
     }
 }
