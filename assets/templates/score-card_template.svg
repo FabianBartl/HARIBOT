@@ -32,6 +32,8 @@
     </g>
     
     <defs>
+        <clipPath id="avatar-mask"><circle cx="65" cy="65" r="35"/></clipPath>
+
         <style>
             .rank, .badge {BO} fill: #808080; {BC}
 
@@ -53,8 +55,5 @@
             {BC}
             text {BO} font-family: "GillSansMTStd-Medium"; {BC}
         </style>
-
-        <clipPath id="avatar-mask"><circle cx="65" cy="65" r="35"/></clipPath>
-        <clipPath id="badge-mask"><circle cx="127.5" cy="29.5" r="7.5"/></clipPath>
     </defs>
 </svg>

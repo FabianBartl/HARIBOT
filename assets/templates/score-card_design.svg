@@ -8,7 +8,7 @@
         <image id="avatar" x="30" y="30" width="70" height="70" clip-path="url(#avatar-mask)" href="https://cdn.discordapp.com/avatars/386249332711620608/9e67e2e99b3914d0a28351ec36842353.png?size=1024"/>
         <rect id="status-border" x="82" y="82" width="17" height="17" rx="8.5" fill="#23272A"/>
         <rect id="status" x="83" y="83" width="15" height="15" rx="7.5" class="online"/>
-
+        
         <text id="nickname" x="130" y="75" font-size="10" fill="#f8f9fa">Fabian Bartl</text>
         <rect id="score-bar" x="120" y="80" width="250" height="20" rx="10" fill="#28A745"/>
         <rect id="score-bar-inner" x="121" y="81" width="248" height="18" rx="9" fill="#23272A"/>
@@ -20,17 +20,23 @@
             <tspan dx="3" fill="">295</tspan>
             <tspan dx="3">XP</tspan>
         </text>
-
+        
         <g id="badges">
             <rect x="119" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
             <rect x="120" y="22" width="15" height="15" rx="8.5" class="badge place6"/>
-
+            <image x="122.5" y="24.5" width="10" height="10" href="../imgs/badges/reactions.svg"/>
+            
             <rect x="132" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
             <rect x="133" y="22" width="15" height="15" rx="8.5" class="badge place3"/>
+            <image x="135.5" y="24.5" width="10" height="10" href="../imgs/badges/commands.svg"/>
+            
             <rect x="145" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
             <rect x="146" y="22" width="15" height="15" rx="8.5" class="badge place2"/>
+            <image x="148.5" y="24.5" width="10" height="10" href="../imgs/badges/attachments.png"/>
+
             <rect x="158" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
             <rect x="159" y="22" width="15" height="15" rx="8.5" class="badge place1"/>
+            <image x="161.5" y="24.5" width="10" height="10" href="../imgs/badges/edits.png"/>
         </g>
 
         <text id="ranking" x="265" y="35" text-anchor="end" font-size="15" fill="#f8f9fa">
@@ -42,6 +48,8 @@
     </g>
     
     <defs>
+        <clipPath id="avatar-mask"><circle cx="65" cy="65" r="35"/></clipPath>
+
         <style>
             .rank, .badge { fill: #808080; }
 
@@ -62,8 +70,5 @@
             }
             text { font-family: "GillSansMTStd-Medium"; }
         </style>
-
-        <clipPath id="avatar-mask"><circle cx="65" cy="65" r="35"/></clipPath>
-        <clipPath id="badge-mask"><circle cx="127.5" cy="29.5" r="7.5"/></clipPath>
     </defs>
 </svg>

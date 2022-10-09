@@ -237,8 +237,9 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 			, rank = badges_list[badge]
 			, icon = f"{badge_config['name']}.{badge_config['type']}"
 			
-			, x_border = x-1
-			, x = x
+			, x_border = x - 1
+			, x_background = x
+			, x_img = x + 2.5
 		)
 
 	scoreCard_generated = scoreCard_template.format(
