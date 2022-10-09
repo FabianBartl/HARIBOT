@@ -309,6 +309,7 @@ async def sc_memberInfo(
 	
 	await interaction.response.send_message(file=File(score_card_file(format)), ephemeral=CONFIG.EPHEMERAL)
 
+	time.sleep(1)
 	os.system(f"del {score_card_file('*')}")
 	LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file('*')}`")
 
