@@ -12,43 +12,57 @@ class TOKEN:
 	OWNER_ID = int(open(os.path.abspath(r"../discord.owner"), "r").readlines()[0].strip())
 
 class COLOR:
-
-	class HARIBO:
-		# HARIBO color palette
-		BLUE      = 0x007BFF
-		INDIGO    = 0x6610F2
-		PURPLE    = 0x6F42C1
-		PINK      = 0xE83E8C
-		RED       = 0xE2001A
-		ORANGE    = 0xFD7E14
-		YELLOW    = 0xFFC107
-		GREEN     = 0x28A745
-		TEAL      = 0x20C997
-		CYAN      = 0x17A2B8
-		WHITE     = 0xFFFFFF
-		GRAY      = 0x6C757D
-		GRAY_DARK = 0x343A40
-		# HARIBO corporate colors
-		PRIMARY   = 0x3390B4
-		SECONDARY = GRAY
-		SUCCESS   = GREEN
-		INFO      = CYAN
-		WARNING   = YELLOW
-		DANGER    = RED
-		LIGHT     = 0xF8F9FA
-		DARK      = GRAY_DARK
+	def __init__(self, r: int, g: int, b: int, a: int=None) -> object:
+		self.r, self.g, self.b = r, g, b
+		self.has_a = a is not None
+		self.a = a if self.has_a else 0xFF
 	
-	class DISCORD:
-		# DISCORD color palette
-		BLURPLE = 0x5865F2
-		GREEN   = 0x57f287
-		YELLOW  = 0xFEE75C
-		RED     = 0xED4245
-		FUCHSIA = 0xEB459E
-		WHITE   = 0xFFFFFF
-		BLACK   = 0x23272A
-		# DISCORD-UI colors
-		CHAT_BG = 0x32353B
+	def __int__(self): return int(self.__format__(f"#{'a' if self.has_a else ''}")[1:], 16)
+
+	def __format__(self, __format_spec: str) -> str:
+		with_a = ((len(__format_spec) >= 2 and __format_spec[1] == "a") or self.has_a) and (len(__format_spec) >= 2 and __format_spec[1] != "n")
+		if   __format_spec[0] == "#": return f"#{self.fitHex(self.r)}{self.fitHex(self.g)}{self.fitHex(self.b)}{self.fitHex(self.a) if with_a else ''}"
+		elif __format_spec[0] == "d": return f"rgb{'a' if with_a else ''}({self.r}, {self.g}, {self.b}{f', {self.a}' if with_a else ''})"
+		else:                         return self.__int__()
+
+	def fitHex(self, val: int) -> str: return f"{hex(val)[2:]:0>2}"
+
+class HARIBO:
+	# HARIBO color palette
+	BLUE      = COLOR(0x00, 0x7B, 0xFF)
+	INDIGO    = COLOR(0x66, 0x10, 0xF2)
+	PURPLE    = COLOR(0x6F, 0x42, 0xC1)
+	PINK      = COLOR(0xE8, 0x3E, 0x8C)
+	RED       = COLOR(0xE2, 0x00, 0x1A)
+	ORANGE    = COLOR(0xFD, 0x7E, 0x14)
+	YELLOW    = COLOR(0xFF, 0xC1, 0x07)
+	GREEN     = COLOR(0x28, 0xA7, 0x45)
+	TEAL      = COLOR(0x20, 0xC9, 0x97)
+	CYAN      = COLOR(0x17, 0xA2, 0xB8)
+	WHITE     = COLOR(0xFF, 0xFF, 0xFF)
+	GRAY      = COLOR(0x6C, 0x75, 0x7D)
+	GRAY_DARK = COLOR(0x34, 0x3A, 0x40)
+	# HARIBO corporate colors
+	PRIMARY   = COLOR(0x33, 0x90, 0xB4)
+	SECONDARY = GRAY
+	SUCCESS   = GREEN
+	INFO      = CYAN
+	WARNING   = YELLOW
+	DANGER    = RED
+	LIGHT     = COLOR(0xF8, 0xF9, 0xFA)
+	DARK      = GRAY_DARK
+
+class DISCORD:
+	# DISCORD color palette
+	BLURPLE = COLOR(0x58, 0x65, 0xF2)
+	GREEN   = COLOR(0x57, 0xf2, 0x87)
+	YELLOW  = COLOR(0xFE, 0xE7, 0x5C)
+	RED     = COLOR(0xED, 0x42, 0x45)
+	FUCHSIA = COLOR(0xEB, 0x45, 0x9E)
+	WHITE   = COLOR(0xFF, 0xFF, 0xFF)
+	BLACK   = COLOR(0x23, 0x27, 0x2A)
+	# DISCORD-UI colors
+	CHAT_BG = COLOR(0x32, 0x35, 0x3B)
 
 class CONFIG:
 	PREFIX       = "/"
@@ -66,13 +80,14 @@ class DIR:
 	TEMPLATES = os.path.abspath(f"{ASSETS}/templates")
 
 class XP:
-	MULTIPLIER = 0.5
-	COOLDOWN   = 30
-	DEFAULT    = 100
-	RANGE      = {"min": 15, "max": 25}
-	REQUIRED   = lambda lvl, xp: 5*(lvl**2) + (50*lvl) + XP.DEFAULT
-	LEVEL      = lambda xp: floor(0.2 * (sqrt(5) * sqrt(xp+25) - 25))
-	GENERATE   = lambda t0, t1: (random.randint(XP.RANGE["min"], XP.RANGE["max"]) * XP.MULTIPLIER) if (t1 - t0) >= XP.COOLDOWN else XP.MULTIPLIER
+	RANGE            = {"min": 15, "max": 25}
+	RANGE_MULTIPLIER = 0.5
+	DEFAULT          = 100
+	REQUIRED         = lambda lvl, xp: 5*(lvl**2) + (50*lvl) + XP.DEFAULT
+	COOLDOWN         = 30
+	COOLDOWN_ELAPSED = lambda t0, t1: (t1 - t0) >= XP.COOLDOWN
+	LEVEL            = lambda xp: floor(0.2 * (sqrt(5) * sqrt(xp+25) - 25))
+	GENERATE         = lambda t0, t1: (random.randint(XP.RANGE["min"], XP.RANGE["max"]) * XP.RANGE_MULTIPLIER) if XP.COOLDOWN_ELAPSED(t0, t1) else XP.RANGE_MULTIPLIER
 
 class LOG:
 	FMT      = "%(asctime)s | %(levelname)8s | %(message)s"
