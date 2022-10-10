@@ -4,6 +4,7 @@ import nextcord
 from nextcord.ext import commands
 from nextcord.errors import NotFound
 from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji, VoiceState
+from nextcord import RawReactionActionEvent
 
 import time, json, os, sys, logging, requests, random, asyncio
 from bs4 import BeautifulSoup
@@ -108,31 +109,45 @@ async def on_guild_remove(guild: Guild):
 #-----#
 
 @bot.event
-async def on_reaction_add(reaction: Reaction, user: Member):
-	guild   = reaction.message.guild
-	message = reaction.message
-	emoji   = reaction.emoji
-	LOG.LOGGER.info(f"(reaction added) {message.id}: '{user.display_name}: {emoji}'")
+async def on_raw_reaction_add(payload: RawReactionActionEvent):
+	LOG.LOGGER.debug(f"on_raw_reaction_add")
+	if payload.member is None: return
 
-	updateGuildData({"reactions": (1, "add")}, guild.id)
-	updateUserData ({"reactions": (1, "add")}, user.id)
+	guild   = payload.member.guild
+	channel = await guild.fetch_channel(payload.channel_id)
+	message = await channel.fetch_message(payload.message_id)
+	member  = payload.member
+	emoji   = payload.emoji
+	LOG.LOGGER.debug(f"(reaction added) {message.id}: '{member.display_name}: {emoji}'")
+	LOG.LOGGER.warning(f"(added received reaction) {message.author.display_name} <- {member.display_name}: '{emoji}'")
 
-
-@bot.event
-async def on_reaction_remove(reaction: Reaction, user: User):
-	guild   = reaction.message.guild
-	message = reaction.message
-	emoji   = reaction.emoji
-	LOG.LOGGER.debug(f"(reaction removed) {message.id}: '{user.display_name}: {emoji}'")
-
-	updateGuildData({"reactions": (1, "sub")}, guild.id)
-	updateUserData ({"reactions": (1, "sub")}, user.id)
+	updateGuildData({"reactions_given": (1, "add")}, guild.id)
+	updateUserData({"reactions_given": (1, "add")}, member.id)
+	updateUserData({"reactions_received": (1, "add")}, message.author.id)
 
 
 @bot.event
-async def on_reaction_clear(message: Message, reactions: list[Reaction, ]):
-	emojis  = f"{reactions.message.author.display_name}:\n"
-	emojis += ", ".join([ f"`{reaction.emoji}`" for reaction in reactions ])
+async def on_raw_reaction_remove(payload: RawReactionActionEvent):
+	LOG.LOGGER.debug(f"on_raw_reaction_remove")
+	guild = await bot.fetch_guild(payload.guild_id)
+	if guild is None: return
+
+	channel = await guild.fetch_channel(payload.channel_id)
+	message = await channel.fetch_message(payload.message_id)
+	member  = await guild.fetch_member(payload.user_id)
+	emoji   = payload.emoji
+	LOG.LOGGER.debug(f"(reaction removed) {message.id}: '{member.display_name}: {emoji}'")
+	LOG.LOGGER.critical(f"(removed received reaction) {message.author.display_name} <- {member.display_name}: '{emoji}'")
+
+	updateGuildData({"reactions_given": (1, "sub")}, guild.id)
+	updateUserData({"reactions_given": (1, "sub")}, member.id)
+	updateUserData({"reactions_received": (1, "sub")}, message.author.id)
+
+
+@bot.event
+async def on_reaction_clear(message: Message, reactions_given: list[Reaction, ]):
+	emojis  = f"{reactions_given.message.author.display_name}:\n"
+	emojis += ", ".join([ f"`{reaction.emoji}`" for reaction in reactions_given ])
 	LOG.LOGGER.debug(f"(reaction cleared) {message.id}: '{emojis}'")
 
 

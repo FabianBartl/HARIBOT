@@ -221,7 +221,7 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r") as fobj: badges_config = json.load(fobj)
 	
 	rankings = getRankings(member)
-	xp_ranking = rankings.pop("0")["rank"]
+	xp_ranking = rankings.pop("4fda574a-5f5a-4c58-a606-759fd7439f26")["rank"]
 
 	badges_generated, num = "", 0
 	for badge in rankings:

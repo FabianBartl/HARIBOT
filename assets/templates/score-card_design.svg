@@ -24,7 +24,7 @@
         <g id="badges">
             <rect x="119" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
             <rect x="120" y="22" width="15" height="15" rx="8.5" class="badge place6"/>
-            <image x="122.5" y="24.5" width="10" height="10" href="../imgs/badges/reactions.svg"/>
+            <image x="122.5" y="24.5" width="10" height="10" href="../imgs/badges/reactions_given.svg"/>
             
             <rect x="132" y="21" width="17" height="17" rx="8.5" fill="#23272A"/>
             <rect x="133" y="22" width="15" height="15" rx="8.5" class="badge place3"/>
