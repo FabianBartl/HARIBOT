@@ -280,12 +280,7 @@ async def sc_help(interaction: Interaction):
 	prefix = CONFIG.PREFIX
 	commands = bot.get_all_application_commands()
 	embed = Embed(color=int(HARIBO.INFO), title="Command Overview")
-	
-	for command in commands:
-		# embed.add_field(name=f"`{prefix}{command.qualified_name}`", value=command.description)
-
-		LOG.LOGGER.warning(f"{command.qualified_name=}")
-		LOG.LOGGER.error(f"{command.get_signatures()=}")
+	for command in commands: embed.add_field(name=f"`{prefix}{command.qualified_name}`", value=command.description)
 	
 	await interaction.response.send_message(embed=embed, ephemeral=True)
 
