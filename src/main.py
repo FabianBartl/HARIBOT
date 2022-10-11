@@ -119,7 +119,7 @@ async def on_raw_reaction_add(payload: RawReactionActionEvent):
 	member  = payload.member
 	emoji   = payload.emoji
 	LOG.LOGGER.debug(f"(reaction added) {message.id}: '{member.display_name}: {emoji}'")
-	LOG.LOGGER.warning(f"(added received reaction) {message.author.display_name} <- {member.display_name}: '{emoji}'")
+	LOG.LOGGER.debug(f"(added received reaction) {message.author.display_name} <- {member.display_name}: '{emoji}'")
 
 	updateGuildData({"reactions_given": (1, "add")}, guild.id)
 	updateUserData({"reactions_given": (1, "add")}, member.id)
@@ -137,7 +137,7 @@ async def on_raw_reaction_remove(payload: RawReactionActionEvent):
 	member  = await guild.fetch_member(payload.user_id)
 	emoji   = payload.emoji
 	LOG.LOGGER.debug(f"(reaction removed) {message.id}: '{member.display_name}: {emoji}'")
-	LOG.LOGGER.critical(f"(removed received reaction) {message.author.display_name} <- {member.display_name}: '{emoji}'")
+	LOG.LOGGER.debug(f"(removed received reaction) {message.author.display_name} <- {member.display_name}: '{emoji}'")
 
 	updateGuildData({"reactions_given": (1, "sub")}, guild.id)
 	updateUserData({"reactions_given": (1, "sub")}, member.id)
