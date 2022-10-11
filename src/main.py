@@ -3,8 +3,8 @@
 import nextcord
 from nextcord.ext.commands import Bot
 from nextcord.errors import NotFound
-from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji, VoiceState
-from nextcord import RawReactionActionEvent, SlashApplicationCommand
+from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, VoiceState
+from nextcord import RawReactionActionEvent
 
 import time, json, os, sys, logging, requests, random, asyncio
 from bs4 import BeautifulSoup
@@ -398,10 +398,10 @@ async def sc_memberInfo(
 	if type(member) is not Member: member = interaction.user
 	format = ["svg", "png"][formatID]
 
+	await interaction.response.defer(ephemeral=private)
 	score_card_file = createScoreCard(member)
-
 	try:
-		await interaction.response.send_message(file=File(score_card_file(format)), ephemeral=private)
+		await interaction.followup.send(file=File(score_card_file(format)), ephemeral=private)
 	except NotFound:
 		await interaction.guild.get_channel(interaction.channel_id).send(file=File(score_card_file(format)))
 
