@@ -277,10 +277,12 @@ async def sc_help(interaction: Interaction):
 	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
 	updateUserData({"commands": (1, "add")}, interaction.user.id)
 
-	prefix = CONFIG.PREFIX
 	commands = bot.get_all_application_commands()
+	commands = sorted(commands, key=lambda x:x.qualified_name)
+
 	embed = Embed(color=int(HARIBO.INFO), title="Command Overview")
-	for command in commands: embed.add_field(name=f"`{prefix}{command.qualified_name}`", value=command.description)
+	for command in commands:
+		embed.add_field(name=f"`{CONFIG.PREFIX}{command.qualified_name}`", value=command.description)
 	
 	await interaction.response.send_message(embed=embed, ephemeral=True)
 
