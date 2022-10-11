@@ -338,20 +338,22 @@ async def sc_log(
 	
 	elif action == 3: #clear
 		name = "Clear current log"
-		color = HARIBO.WARNING
 		if checkOwner(interaction.user.id):
+			color = HARIBO.WARNING
 			clearLogFile()
 			value = f"log file cleared"
 		else:
+			color = HARIBO.DANGER
 			value = f"no permission to use"
 
 	elif action == 4: #reset
 		name = "Reset complete log"
-		color = HARIBO.WARNING
 		if checkOwner(interaction.user.id):
+			color = HARIBO.WARNING
 			logFiles = resetLogFiles()
 			value = f"all {len(logFiles)} log file(s) deleted / cleared"
 		else:
+			color = HARIBO.DANGER
 			value = f"no permission to use"
 	
 	elif action == 5: #list
