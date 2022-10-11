@@ -1,10 +1,10 @@
 
 # libs
 import nextcord
-from nextcord.ext import commands
+from nextcord.ext.commands import Bot
 from nextcord.errors import NotFound
 from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, Emoji, VoiceState
-from nextcord import RawReactionActionEvent
+from nextcord import RawReactionActionEvent, SlashApplicationCommand
 
 import time, json, os, sys, logging, requests, random, asyncio
 from bs4 import BeautifulSoup
@@ -18,7 +18,7 @@ from functions import *
 # setup #
 #-------#
 
-bot = commands.Bot(
+bot = Bot(
 	command_prefix = CONFIG.PREFIX
 	, intents = nextcord.Intents.all()
 )
@@ -42,8 +42,8 @@ async def on_ready():
 	try:
 		await bot.sync_all_application_commands()
 		LOG.LOGGER.info(f"synced all application commands")
-	except Exception as e:
-		LOG.LOGGER.error(e)
+	except Exception as error:
+		LOG.LOGGER.error(error)
 	LOG.LOGGER.info("bot is ready")
 
 
@@ -278,17 +278,13 @@ async def sc_help(interaction: Interaction):
 	updateUserData({"commands": (1, "add")}, interaction.user.id)
 
 	prefix = CONFIG.PREFIX
+	commands = bot.get_all_application_commands()
 	embed = Embed(color=int(HARIBO.INFO), title="Command Overview")
-	
-	for command in bot.walk_commands():
-		name        = command.name
-		description = command.description
-		signature   = command.signature
 
-		if not description or description is None or description == "": description = "*no description provided*"
-		embed.add_field(name=f"`{prefix}{name}{signature if signature is not None else ''}`", value=description)
+	for command in commands:
+		embed.add_field(name=f"`{prefix}{command.qualified_name}`", value=command.description)
 	
-	await interaction.response.send_message(embed=embed, ephemeral=CONFIG.EPHEMERAL)
+	await interaction.response.send_message(embed=embed, ephemeral=True)
 
 #-----#
 
@@ -301,50 +297,6 @@ async def sc_test(interaction: Interaction):
 
 	await interaction.response.send_message(f"nothing tested", ephemeral=True)
 
-
-@bot.slash_command(name="ping", description="Test bot response.")
-async def sc_ping(interaction: Interaction):
-	LOG.LOGGER.debug(f"(command sent) ping")
-	
-	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
-	updateUserData({"commands": (1, "add")}, interaction.user.id)
-
-	latency = bot.latency
-	msg = f"`{latency*1000:.0f} ms` latency"
-	if   latency > 400: LOG.LOGGER.warning(msg)
-	elif latency > 900: LOG.LOGGER.critical(msg)
-
-	await interaction.response.send_message(f"pong with {msg}", ephemeral=True)
-
-#-----#
-
-@bot.slash_command(name="score", description="Get the score of a mentioned member.")
-async def sc_memberInfo(
-	interaction: Interaction
-	, member: Member = SlashOption(required=False)
-	, formatID: int = SlashOption(required=False, choices={"SVG": 0, "PNG": 1}, default=1, name="format")
-	, private: bool = SlashOption(required=False, default=CONFIG.EPHEMERAL)
-):
-	LOG.LOGGER.debug(f"(command sent) score: {member=}")
-	
-	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
-	updateUserData({"commands": (1, "add")}, interaction.user.id)
-	
-	if type(member) is not Member: member = interaction.user
-	format = ["svg", "png"][formatID]
-
-	score_card_file = createScoreCard(member)
-
-	try:
-		await interaction.response.send_message(file=File(score_card_file(format)), ephemeral=private)
-	except NotFound:
-		await interaction.guild.get_channel(interaction.channel_id).send(file=File(score_card_file(format)))
-
-	await asyncio.sleep(1)
-	os.system(f"del {score_card_file('*')}")
-	LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file('*')}`")
-
-#-----#
 
 @bot.slash_command(name="log", description="Manage logging files.", default_member_permissions=Permissions(administrator=True))
 async def sc_log(
@@ -397,6 +349,49 @@ async def sc_log(
 	
 	if file: await interaction.response.send_message(msg, file=file, ephemeral=True)
 	else:    await interaction.response.send_message(msg, ephemeral=True)
+
+
+@bot.slash_command(name="ping", description="Test bot response.")
+async def sc_ping(interaction: Interaction):
+	LOG.LOGGER.debug(f"(command sent) ping")
+	
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
+
+	latency = bot.latency
+	msg = f"`{latency*1000:.0f} ms` latency"
+	if   latency > 400: LOG.LOGGER.warning(msg)
+	elif latency > 900: LOG.LOGGER.critical(msg)
+
+	await interaction.response.send_message(f"pong with {msg}", ephemeral=True)
+
+#-----#
+
+@bot.slash_command(name="score", description="Get the score of a mentioned member.")
+async def sc_memberInfo(
+	interaction: Interaction
+	, member: Member = SlashOption(required=False)
+	, formatID: int = SlashOption(required=False, choices={"SVG": 0, "PNG": 1}, default=1, name="format")
+	, private: bool = SlashOption(required=False, default=CONFIG.EPHEMERAL)
+):
+	LOG.LOGGER.debug(f"(command sent) score: {member=}")
+	
+	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
+	updateUserData({"commands": (1, "add")}, interaction.user.id)
+	
+	if type(member) is not Member: member = interaction.user
+	format = ["svg", "png"][formatID]
+
+	score_card_file = createScoreCard(member)
+
+	try:
+		await interaction.response.send_message(file=File(score_card_file(format)), ephemeral=private)
+	except NotFound:
+		await interaction.guild.get_channel(interaction.channel_id).send(file=File(score_card_file(format)))
+
+	await asyncio.sleep(1)
+	os.system(f"del {score_card_file('*')}")
+	LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file('*')}`")
 
 #-----#
 
@@ -548,7 +543,7 @@ async def sc_autoRole(
 	await interaction.response.send_message(msg, ephemeral=True)
 
 
-@bot.slash_command(name="reaction-role", description="Manage reaction roles.")
+@bot.slash_command(name="reaction-role", description="Manage reaction roles.", default_member_permissions=Permissions(administrator=True))
 async def sc_reactionRole(
 	interaction: Interaction
 	, action: int = SlashOption(required=True, choices={"add": 0, "list": 1, "remove": 2, "clear": 3})
@@ -565,7 +560,7 @@ async def sc_reactionRole(
 
 #-----#
 
-@bot.slash_command(name="what-if", description="Returns a random **WHAT IF?** image.")
+@bot.slash_command(name="what-if", description="Returns a random *WHAT IF?* image.")
 async def sc_whatIf(
 	interaction: Interaction
 	, num: int = SlashOption(required=False, default=None)
