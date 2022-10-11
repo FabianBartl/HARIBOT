@@ -116,22 +116,21 @@ def setupLogger(colored: bool=False, level: int=logging.INFO):
 	LOG.LOGGER = custom_logger.getLogger(init=True, level=level, fmt=LOG.FMT, date_fmt=LOG.DATE_FMT, path=LOG.PATH, colored=colored)
 	return LOG.LOGGER
 
-def getLogFile(srcPath: str=LOG.PATH, rows: int=21) -> str:
+def getLogFile(srcPath: str=LOG.PATH, rows: int=21, max_chars: int=1_900) -> str:
 	with open(LOG.PATH, "r") as fobj: lines = fobj.readlines()
 	
-	max_chars = 1_900
 	length = max_chars // rows
 	log_data = list()
 
 	for line in lines[len(lines)-rows:]:
 		line = line[11:]
-		line = re.sub(",[0-9]+ \|",     " |", line)
-		line = re.sub("\| *DEBUG \|",    "D", line)
-		line = re.sub("\| *INFO \|",     "I", line)
-		line = re.sub("\| *WARNING \|",  "W", line)
-		line = re.sub("\| *ERROR \|",    "E", line)
-		line = re.sub("\| *CRITICAL \|", "C", line)
-		line = re.sub("(\t|\n| )+",      " ", line)
+		line = re.sub(":[0-9]+,[0-9]+ \|", " |", line)
+		line = re.sub("\| *DEBUG \|",       "D", line)
+		line = re.sub("\| *INFO \|",        "I", line)
+		line = re.sub("\| *WARNING \|",     "W", line)
+		line = re.sub("\| *ERROR \|",       "E", line)
+		line = re.sub("\| *CRITICAL \|",    "C", line)
+		line = re.sub("(\t|\n| )+",         " ", line)
 
 		if len(line) <= length: log_data.append(f"{line}\n")
 		else:                   log_data.append(f"{line[:length-3]}...\n")
@@ -217,7 +216,6 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 	with open(os.path.join(DIR.TEMPLATES, "score-card_template.svg"), "r") as fobj: scoreCard_template = fobj.read()
 	with open(os.path.join(DIR.TEMPLATES, "badge_template.svg"), "r") as fobj: badge_template = fobj.read()
 	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r") as fobj: font_base64 = fobj.read()
-
 	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r") as fobj: badges_config = json.load(fobj)
 	
 	rankings = getRankings(member)

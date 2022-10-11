@@ -280,9 +280,12 @@ async def sc_help(interaction: Interaction):
 	prefix = CONFIG.PREFIX
 	commands = bot.get_all_application_commands()
 	embed = Embed(color=int(HARIBO.INFO), title="Command Overview")
-
+	
 	for command in commands:
-		embed.add_field(name=f"`{prefix}{command.qualified_name}`", value=command.description)
+		# embed.add_field(name=f"`{prefix}{command.qualified_name}`", value=command.description)
+
+		LOG.LOGGER.warning(f"{command.qualified_name=}")
+		LOG.LOGGER.error(f"{command.get_signatures()=}")
 	
 	await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -308,47 +311,61 @@ async def sc_log(
 	updateGuildData({"commands": (1, "add")}, interaction.guild.id)
 	updateUserData({"commands": (1, "add")}, interaction.user.id)
 
-	msg = ""
-	file = None
 	dstFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.dat"
 	dstPath = os.path.abspath(os.path.join(LOG.DIR, dstFile))
 
+	response_kwargs = dict()
+
 	if action == 0: #backup: save, get, clear
+		name = "Backup current log: *save - get - clear*"
+		color = HARIBO.SUCCESS
 		log_code, dstSize = backupLogFile(dstPath)
-		msg = f"log of size `{formatBytes(dstSize)}` backuped as `{dstFile}`"
-		file = File(dstPath, filename=dstFile)
+		value = f"log of size `{formatBytes(dstSize)}` backuped as `{dstFile}`"
+		response_kwargs["file"] = File(dstPath, filename=dstFile)
 
 	elif action == 1: #save
+		name = "Save current log"
+		color = HARIBO.SUCCESS
 		dstSize = saveLogFile(dstPath)
-		msg = f"log of size `{formatBytes(dstSize)}` saved as `{dstFile}`"
+		value = f"log of size `{formatBytes(dstSize)}` saved as `{dstFile}`"
 
 	elif action == 2: #get
-		log_code = getLogFile().replace("`", "'")
-		msg = f"```cmd\n...\n{log_code}\n```"
-		file = File(LOG.PATH, filename=dstFile)
+		name = "Get last lines of current log"
+		color = HARIBO.INFO
+		log_code = getLogFile(max_chars=1020).replace("`", "'")
+		value = f"```cmd\n...\n{log_code}\n```"
+		response_kwargs["file"] = File(LOG.PATH, filename=dstFile)
 	
 	elif action == 3: #clear
+		name = "Clear current log"
+		color = HARIBO.WARNING
 		if checkOwner(interaction.user.id):
 			clearLogFile()
-			msg = f"log file cleared"
+			value = f"log file cleared"
 		else:
-			msg = f"no permission to use"
+			value = f"no permission to use"
 
 	elif action == 4: #reset
+		name = "Reset complete log"
+		color = HARIBO.WARNING
 		if checkOwner(interaction.user.id):
 			logFiles = resetLogFiles()
-			msg = f"all {len(logFiles)} log file(s) deleted / cleared"
+			value = f"all {len(logFiles)} log file(s) deleted / cleared"
 		else:
-			msg = f"no permission to use"
+			value = f"no permission to use"
 	
 	elif action == 5: #list
+		name = "List all log files"
+		color = HARIBO.INFO
 		logFiles = os.scandir(LOG.DIR)
-		msg  = "```cmd\n"
-		msg += "\n".join([ f"{formatBytes(file.stat().st_size):>10} | {file.name}" for file in logFiles ])
-		msg += "\n```"
+		value  = "```cmd\n"
+		value += "\n".join([ f"{formatBytes(file.stat().st_size):>10} | {file.name}" for file in logFiles ])
+		value += "\n```"
 	
-	if file: await interaction.response.send_message(msg, file=file, ephemeral=True)
-	else:    await interaction.response.send_message(msg, ephemeral=True)
+	response_kwargs["embed"] = Embed(color=int(color), title="Logging Manager")
+	response_kwargs["embed"].add_field(name=name, value=value)
+
+	await interaction.response.send_message(**response_kwargs, ephemeral=True)
 
 
 @bot.slash_command(name="ping", description="Test bot response.")
