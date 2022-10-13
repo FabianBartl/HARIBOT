@@ -202,16 +202,13 @@ async def on_message(message: Message):
 async def on_message_edit(before: Message, after: Message):
 	author = before.author
 	guild  = before.guild
-	LOG.LOGGER.warning(f"(msg edits before) {before.channel.name} - {before.author.display_name}: '{before.content}'")
-	LOG.LOGGER.warning(f"(msg edits after)  {after.channel.name} - {after.author.display_name}: '{after.content}'")
+	LOG.LOGGER.debug(f"(msg edits before) {before.channel.name} - {before.author.display_name}: '{before.content}'")
+	LOG.LOGGER.debug(f"(msg edits after)  {after.channel.name} - {after.author.display_name}: '{after.content}'")
 
 	changes     = abs(len(after.content) - len(before.content))
 	attachments = len(after.attachments) - len(before.attachments)
 	words       = len(re.sub(" +", " ", after.content).split(" ")) - len(re.sub(" +", " ", before.content).split(" "))
 	letters     = len(after.content) - len(before.content)
-
-	if author.id == BOTINFO.ID:
-		LOG.LOGGER.error(f"Bot edited a message: {changes=}, {attachments=}, {words=}, {letters=}")
 
 	updateGuildData({
 		"edits": (1, "add")
