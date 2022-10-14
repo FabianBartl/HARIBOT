@@ -72,6 +72,7 @@ class DIR:
 	MAIN      = ".."
 	TEMP      = os.path.abspath(f"{MAIN}/tmp")
 	DATA      = os.path.abspath(f"{MAIN}/data")
+	PGP       = os.path.abspath(f"{DATA}/pgpKeys")
 	APPS      = os.path.abspath(f"{MAIN}/apps")
 	ASSETS    = os.path.abspath(f"{MAIN}/assets")
 	CONFIGS   = os.path.abspath(f"{ASSETS}/configs")
