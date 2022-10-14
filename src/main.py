@@ -211,8 +211,7 @@ async def cc_pgpset(message: Message):
     # TODO: update to set
     updateUserData({"e-mail": (email, "ins")}, member_id)
     with open(os.path.join(DIR.PGP, f"{email}.asc"), "w+") as file:
-        pgp_key_lines = pgp_key.split("\n")
-        file.writelines(pgp_key_lines)
+        file.write(pgp_key)
 
 
 async def resolve_command(message: Message):
