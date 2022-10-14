@@ -212,6 +212,8 @@ async def cc_pgpset(message: Message):
     updateUserData({"e-mail": (email, "ins")}, member_id)
     with open(os.path.join(DIR.PGP, f"{email}.asc"), "w+") as file:
         file.write(pgp_key)
+    embed = Embed(color=int(HARIBO.SUCCESS), title="Your pgp-key ist stored successfully")
+    await channel.send(embed=embed, delete_after=20)
 
 
 async def resolve_command(message: Message):
@@ -688,7 +690,15 @@ async def sc_whatIf(
                                             ephemeral=CONFIG.EPHEMERAL)
 
 
-@bot.slash_command(name="pgp-get", description="Returns ")
+@bot.slash_command(name="pgp-set", description="To set a pgp-Key write: !pgp-set {email} {upload public pgp key}")
+async def sc_pgpSet(interaction: Interaction):
+    LOG.LOGGER.debug(f"(command sent) pgp-set")
+
+    await interaction.response.send_message("To set a pgp-Key write: !pgp-set {email} {upload public pgp key}",
+                                            ephemeral=True)
+
+
+@bot.slash_command(name="pgp-get", description="Returns the pgp to the given e-mail address.")
 async def sc_pgpGet(interaction: Interaction, email: str = SlashOption(required=True)):
     LOG.LOGGER.debug(f"(command sent) pgp-get: {email=}")
     pgp_path = os.path.join(DIR.PGP, f"{email}.asc")
@@ -704,7 +714,7 @@ async def sc_pgpGet(interaction: Interaction, email: str = SlashOption(required=
                                             ephemeral=CONFIG.EPHEMERAL)
 
 
-@bot.slash_command(name="pgp-delete", description="Returns ")
+@bot.slash_command(name="pgp-delete", description="Deletes the given email and it's pgp-key out of your account.")
 async def sc_pgpDelete(interaction: Interaction, email: str = SlashOption(required=True)):
     LOG.LOGGER.debug(f"(command sent) pgp-delete: {email=}")
 
@@ -729,6 +739,7 @@ async def sc_pgpDelete(interaction: Interaction, email: str = SlashOption(requir
     updateUserData({"e-mail": (email, "rem")}, user.id)
     await interaction.response.send_message(f"Your pgp key for {email} and your e-mail is deleted from your profile",
                                             ephemeral=CONFIG.EPHEMERAL)
+
 
 # ---------#
 # execute #
