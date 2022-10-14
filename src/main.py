@@ -207,7 +207,7 @@ async def cc_pgpset(message: Message):
         return
     member_id = message.author.id
     # TODO: update to set
-    updateUserData({"e-mail": (email, "ext")}, member_id)
+    updateUserData({"e-mail": (email, "ins")}, member_id)
     with open(os.path.join(DIR.PGP, f"{email}.asc"), "w+") as file:
         file.write(pgp_key)
 
@@ -688,7 +688,7 @@ async def sc_whatIf(
 
 @bot.slash_command(name="pgp-get", description="Returns ")
 async def sc_pgpGet(interaction: Interaction, email: str = SlashOption(required=True)):
-    LOG.LOGGER.debug(f"(command sent) test")
+    LOG.LOGGER.debug(f"(command sent) pgp-get: {email=}")
     pgp_path = os.path.join(DIR.PGP, f"{email}.asc")
 
     if not os.path.isfile(pgp_path):
@@ -701,6 +701,32 @@ async def sc_pgpGet(interaction: Interaction, email: str = SlashOption(required=
     await interaction.response.send_message(f"You find the pgp key for {email} in the attachment.", file=key_file,
                                             ephemeral=CONFIG.EPHEMERAL)
 
+
+@bot.slash_command(name="pgp-delete", description="Returns ")
+async def sc_pgpDelete(interaction: Interaction, email: str = SlashOption(required=True)):
+    LOG.LOGGER.debug(f"(command sent) pgp-delete: {email=}")
+
+    user = interaction.user
+    userdata = getUserData(user.id)
+    emails = userdata.get("e-mail", [])
+    if not email in emails:
+        error_message = f"Your not allowed to manage this e-mail"
+        embed = Embed(color=int(HARIBO.WARNING), title=error_message)
+        await interaction.response.send_message(embed=embed)
+        return
+
+    pgp_path = os.path.join(DIR.PGP, f"{email}.asc")
+
+    if not os.path.isfile(pgp_path):
+        error_message = f"For the given e-mail address no pgp-key is known."
+        embed = Embed(color=int(HARIBO.WARNING), title=error_message)
+        await interaction.response.send_message(embed=embed)
+        return
+
+    os.remove(pgp_path)
+    updateUserData({"e-mail": (email, "rem")}, user.id)
+    await interaction.response.send_message(f"Your pgp key for {email} and your e-mail is deleted from your profile",
+                                            ephemeral=CONFIG.EPHEMERAL)
 
 # ---------#
 # execute #
