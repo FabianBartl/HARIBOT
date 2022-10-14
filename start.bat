@@ -1,6 +1,6 @@
 @echo off
 
-@REM steup nodejs environment
+@REM setup nodejs environment
 call apps/nodejs/nodevars.bat
 
 @REM setup src/ as working directory
