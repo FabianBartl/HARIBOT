@@ -175,9 +175,11 @@ async def cc_pgpset(message: Message):
     email = content.split(" ")[1]
     channel = message.channel
     if not re.fullmatch(regex_email, email):
-        error_message = "INCORRECT E-MAIL"
+        error_message = "INVALID E-MAIL"
     elif not len(attachments) == 1:
         error_message = "NOT EXACTLY ONE ATTACHMENT GIVEN"
+    elif os.path.isfile(os.path.join(DIR.PGP, f"{email}.asc")):
+        error_message = "WHY THE HACK ARE YOU TRYING TO CHANGE THE PGP KEYS OF A OTHER USER"
     if error_message:
         embed = Embed(color=int(HARIBO.WARNING), title=error_message)
         await channel.send(embed=embed, delete_after=20)
