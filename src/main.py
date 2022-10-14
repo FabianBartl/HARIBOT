@@ -56,7 +56,7 @@ async def on_close():
 async def on_disconnect():
 	LOG.LOGGER.warning("bot was disconnected")
 	LOG.LOGGER.info("will be reconnected after 5 seconds (now with reconnect flag)")
-	time.sleep(5)
+	await asyncio.sleep(5)
 	await bot.connect(reconnect=True)
 
 #-----#
