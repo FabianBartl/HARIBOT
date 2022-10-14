@@ -6,7 +6,7 @@ from nextcord.errors import NotFound
 from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, VoiceState
 from nextcord import RawReactionActionEvent
 
-import time, json, os, sys, logging, requests, random, asyncio
+import time, json, os, sys, logging, requests, random, asyncio, re
 from bs4 import BeautifulSoup
 from datetime import datetime
 from urllib.request import urlopen
@@ -160,6 +160,58 @@ async def on_reaction_clear_emoji(reaction: Reaction):
 
 #-----#
 
+
+async def cc_pgpset(message: Message):
+	regex_email = re.compile(r'([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+')
+	error_message = False
+	content = re.sub(" +", " ", message.content)
+	attachments = message.attachments
+	email = content.split(" ")[1]
+	channel = message.channel
+	if not re.fullmatch(regex_email, email):
+		error_message = "INCORRECT E-MAIL"
+	elif not len(attachments) == 1:
+		error_message = "NOT EXACTLY ONE ATTACHMENT GIVEN"
+	if error_message:
+		embed = Embed(color=int(HARIBO.WARNING), title=error_message)
+		await channel.send(embed=embed, delete_after=20)
+		return
+
+	attachment = attachments[0]
+	attachment_url = attachment.url
+	mediaType = attachment.content_type
+	if not mediaType.startswith("text"):
+		error_message = "YOUR ATTACHMENT IS NOT A TEXT FILE"
+		embed = Embed(color=int(HARIBO.WARNING), title=error_message)
+		await channel.send(embed=embed, delete_after=20)
+		return
+
+	file_request = requests.get(attachment_url)
+	file = file_request.content
+	pgp_key = file.decode("ascii")
+	if pgp_key.startswith("-----BEGIN PGP PRIVATE KEY BLOCK-----"):
+		error_message = "YOU ARE AN IDIOT. IMMEDIATELY DEPRECATE THIS KEY AND CREATE A NEW PAIR."
+		embed = Embed(color=int(HARIBO.DANGER), title=error_message)
+		await channel.send(embed=embed, delete_after=20)
+		return
+	if not pgp_key.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
+		error_message = "YOUR ATTACHMENT IS NOT A PGP PUBLIC KEY"
+		embed = Embed(color=int(HARIBO.WARNING), title=error_message)
+		await channel.send(embed=embed, delete_after=20)
+		return
+	member_id = message.author.id
+	#TODO: update to set
+	updateUserData({"e-mail": (email, "ext")}, member_id)
+	with open(os.path.join(DIR.PGP,f"{email}.asc"), "w+") as file:
+		file.write(pgp_key)
+
+
+async def resolve_command(message: Message):
+	content = message.content
+	if content.startswith("!pgp-set"):
+		await cc_pgpset(message)
+
+
 @bot.event
 async def on_message(message: Message):
 	attachments = message.attachments
@@ -196,6 +248,8 @@ async def on_message(message: Message):
 		, "xp": (xp, "set")
 		, "last_message": (last_message, "set" if XP.COOLDOWN_ELAPSED(last_message_before, last_message) else "ign")
 	}, author.id)
+
+	await resolve_command(message)
 
 
 @bot.event

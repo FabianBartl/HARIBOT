@@ -8,4 +8,5 @@ mkdir log
 cd data
 mkdir guilds
 mkdir useres
+mkdir pgpKeys
 cd ..
