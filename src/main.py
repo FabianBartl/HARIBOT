@@ -384,7 +384,7 @@ async def sc_ping(interaction: Interaction):
 #-----#
 
 @bot.slash_command(name="score", description="Get the score of a mentioned member.")
-async def sc_memberInfo(
+async def sc_score(
 	interaction: Interaction
 	, member: Member = SlashOption(required=False)
 	, formatID: int = SlashOption(required=False, choices={"SVG": 0, "PNG": 1}, default=1, name="format")
