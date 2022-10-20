@@ -1,42 +1,46 @@
 {
     "4fda574a-5f5a-4c58-a606-759fd7439f26": {
-        "name": "xp"
-        , "ignore": true
-    }
-    , "a9082c0f-32d1-41d1-8a42-d6cd38f24ae7": {
-        "name": "words-per-message"
-        , "ignore": true
-    }
-    , "b6966c55-5827-4595-81c9-ad8f1878bbd6": {
-        "name": "voice-minutes"
-        , "ignore": true
-    }
-    , "29d957ac-7a21-4af3-8d25-41b0ae4f65c6": {
-        "name": "reactions_given"
-        , "type": "svg"
-    }
-    , "9f2489d6-b001-455a-88e7-ca82c4765ac5": {
-        "name": "reactions_received"
-        , "type": "svg"
-    }
-    , "de85827c-835e-4fa6-b913-d1663efd954f": {
-        "name": "commands"
-        , "type": "svg"
-    }
-    , "751e1b69-d623-47d9-ab29-71eced6b9be8": {
-        "name": "attachments"
-        , "type": "svg"
-    }
-    , "2f5b8d71-62aa-4e8a-876d-2a802d691439": {
-        "name": "edits"
-        , "type": "svg"
-    }
-    , "d7730679-bf3d-4a7c-ab2a-827421a81a7f": {
-        "name": "words"
-        , "type": "svg"
-    }
-    , "9e94ef09-d903-4304-ad4a-aba1f5b86d2e": {
-        "name": "deleted"
-        , "ignore": true
+        "name": "xp",
+        "ignore": true
+    },
+    "a9082c0f-32d1-41d1-8a42-d6cd38f24ae7": {
+        "name": "words-per-message",
+        "ignore": true
+    },
+    "b6966c55-5827-4595-81c9-ad8f1878bbd6": {
+        "name": "voice-minutes",
+        "ignore": true
+    },
+    "29d957ac-7a21-4af3-8d25-41b0ae4f65c6": {
+        "name": "reactions_given",
+        "type": "svg"
+    },
+    "9f2489d6-b001-455a-88e7-ca82c4765ac5": {
+        "name": "reactions_received",
+        "type": "svg"
+    },
+    "de85827c-835e-4fa6-b913-d1663efd954f": {
+        "name": "commands",
+        "type": "svg"
+    },
+    "751e1b69-d623-47d9-ab29-71eced6b9be8": {
+        "name": "attachments",
+        "type": "svg"
+    },
+    "2f5b8d71-62aa-4e8a-876d-2a802d691439": {
+        "name": "edits",
+        "type": "svg"
+    },
+    "d7730679-bf3d-4a7c-ab2a-827421a81a7f": {
+        "name": "words",
+        "type": "svg"
+    },
+    "4c1ea5f7-e19d-4c0a-98f2-37b4738ad725": {
+        "name": "events_created",
+        "type": "svg"
+    },
+    "9e94ef09-d903-4304-ad4a-aba1f5b86d2e": {
+        "name": "deleted",
+        "ignore": true
     }
 }
