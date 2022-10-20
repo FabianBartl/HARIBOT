@@ -1,29 +1,31 @@
 
-# libs
+
+# ================= LIBRARIES ================================================
+
+# ------- nextcord lib -------------------------------------------------------
+
 import nextcord
 from nextcord import Member
+
+# ------- other libs ---------------------------------------------------------
 
 import os, json, re, logging, time
 from math import floor
 
+# ------- own 'libs'  --------------------------------------------------------
+
 from structs import DISCORD, TOKEN, LOG, DIR, HARIBO, DISCORD, XP
 import custom_logger
 
-#----------------#
-# format numbers #
-#----------------#
+# ================= helper functions =========================================
 
-def formatNum(num: int, step: int=1000, base_unit: str="") -> str:
+def formatNum(num: int, base_unit: str="", step: int=1_000) -> str:
 	for unit in " KMGT":
 		if num < step: break
 		num /= step
-	return f"{num:3.2f} {unit}{base_unit}"
+	return f"{num:.2f} {unit}{base_unit}"
 
-def formatBytes(num: int, step: int=1000) -> str: return formatNum(num, step, "B")
-
-#----------------#
-# help functions #
-#----------------#
+def formatBytes(num: int) -> str: return formatNum(num, "B")
 
 def svg2png(svgFile: str, pngFile: str, scale: int) -> int:
 	return os.system(f"svgexport {os.path.abspath(svgFile)} {os.path.abspath(pngFile)} {scale}x")
@@ -34,9 +36,11 @@ def sortDictByValue(dictionary: dict, descending: bool=False):
 def sortDictByKey(dictionary: dict, descending: bool=False):
 	return sorted(dictionary.items(), key=lambda x:x[0], reverse=descending)
 
-#-------------#
-# update data #
-#-------------#
+def checkOwner(checkID: int) -> bool: return checkID == TOKEN.OWNER_ID
+
+# ================= data files ===============================================
+
+# ------- update guild, user, reaction data ----------------------------------
 
 def updateDataFile(newData: dict[str: tuple[int, str], ], dataPath: str, fileID: int) -> None:
 	filePath = os.path.abspath(os.path.join(DIR.DATA, dataPath, f"{fileID}.json"))
@@ -87,9 +91,7 @@ def updateGuildData   (newData: dict[str: tuple[int, str], ], fileID: int) -> No
 def updateUserData    (newData: dict[str: tuple[int, str], ], fileID: int) -> None: updateDataFile(newData, "users",     fileID)
 def updateReactionData(newData: dict[str: tuple[int, str], ], fileID: int) -> None: updateDataFile(newData, "reactions", fileID)
 
-#----------#
-# get data #
-#----------#
+# ------- get guild, user, reaction data -------------------------------------
 
 def getDataFile(dataPath: str, fileID: int) -> dict[str: int, ]:
 	filePath = os.path.abspath(os.path.join(DIR.DATA, dataPath, f"{fileID}.json"))
@@ -102,15 +104,7 @@ def getGuildData   (fileID: int) -> dict[str: tuple[int, str], ]: return getData
 def getUserData    (fileID: int) -> dict[str: tuple[int, str], ]: return getDataFile("users",     fileID)
 def getReactionData(fileID: int) -> dict[str: tuple[int, str], ]: return getDataFile("reactions", fileID)
 
-#------------------#
-# check permissons #
-#------------------#
-
-def checkOwner(checkID: int) -> bool: return checkID == TOKEN.OWNER_ID
-
-#------------------------#
-# manage logging (files) #
-#------------------------#
+# ================= logging ==================================================
 
 def setupLogger(colored: bool=False, level: int=logging.INFO):
 	LOG.LOGGER = custom_logger.getLogger(init=True, level=level, fmt=LOG.FMT, date_fmt=LOG.DATE_FMT, path=LOG.PATH, colored=colored)
@@ -172,9 +166,7 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 	LOG.LOGGER.info(f"log file backuped at {dstPath}")
 	return log_code, destSize
 
-#-------------------------------------------#
-# score / level / ranking / badge functions #
-#-------------------------------------------#
+# ================= score, ranking ===========================================
 
 def getRankings(member: Member) -> dict[str: dict[int, int]]:
 	users_data = dict()
@@ -279,11 +271,11 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 		, BC = "}"
 	)
 
-	score_card_file = lambda ext: os.path.abspath(f"{os.path.join(DIR.TEMP, f'score-card_{member.id}')}.{ext}")
-	with open(score_card_file("svg"), "w+") as fobj: fobj.write(scoreCard_generated)
+	score_card_file_func = lambda ext: os.path.abspath(f"{os.path.join(DIR.TEMP, f'score-card_{member.id}')}.{ext}")
+	with open(score_card_file_func("svg"), "w+") as fobj: fobj.write(scoreCard_generated)
 	
-	error = svg2png(score_card_file("svg"), score_card_file("png"), 3)
+	error = svg2png(score_card_file_func("svg"), score_card_file_func("png"), 3)
 	msg = f"svg2png returned error code `{error}`"
 	LOG.LOGGER.debug(msg) if error == 0 else LOG.LOGGER.error(msg)
 
-	return score_card_file
+	return score_card_file_func
