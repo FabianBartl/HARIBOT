@@ -7,7 +7,7 @@ import nextcord
 from nextcord.ext.commands import Bot
 from nextcord.errors import NotFound
 from nextcord import Member, User, Guild, Message, Interaction, SlashOption, File, Embed, Permissions, Role, Reaction, VoiceState
-from nextcord import RawReactionActionEvent
+from nextcord import RawReactionActionEvent, ScheduledEvent, ScheduledEventUser
 
 # ------- other libs ---------------------------------------------------------
 
@@ -247,6 +247,46 @@ async def on_message_delete(message: Message):
         , "letters": (letters, "sub")
         , "attachments": (attachments, "sub")
     }, author.id)
+
+# ------- scheduled event create, delete, user add, user remove --------------
+
+@bot.event
+async def on_guild_scheduled_event_create(event: ScheduledEvent):
+    creator = event.creator
+    name    = event.name
+    guild   = event.guild
+    LOG.LOGGER.debug(f"(scheduled event created) '{name}' created by {creator.display_name}")
+
+    updateGuildData({"events_created": (1, "add")}, guild.id)
+    updateUserData({"events_created": (1, "add")}, creator.id)
+
+@bot.event
+async def on_guild_scheduled_event_delete(event: ScheduledEvent):
+    creator = event.creator
+    name    = event.name
+    guild   = event.guild
+    LOG.LOGGER.debug(f"(scheduled event deleted) '{name}' deleted by {creator.display_name}")
+
+    updateGuildData({"events_created": (1, "sub")}, guild.id)
+    updateUserData({"events_created": (1, "sub")}, creator.id)
+
+@bot.event
+async def on_guild_scheduled_event_user_add(event: ScheduledEvent, user: ScheduledEventUser):
+    name  = event.name
+    guild = event.guild
+    LOG.LOGGER.debug(f"(scheduled event user joined) {user.display_name} joined '{name}'")
+
+    updateGuildData({"events_joined": (1, "add")}, guild.id)
+    updateUserData({"events_joined": (1, "add")}, user.id)
+
+@bot.event
+async def on_guild_scheduled_event_user_remove(event: ScheduledEvent, user: ScheduledEventUser):
+    name  = event.name
+    guild = event.guild
+    LOG.LOGGER.debug(f"(scheduled event user leaved) {user.display_name} leaved '{name}'")
+
+    updateGuildData({"events_joined": (1, "sub")}, guild.id)
+    updateUserData({"events_joined": (1, "sub")}, user.id)
 
 # ------- presence, user, voice state update ---------------------------------
 
