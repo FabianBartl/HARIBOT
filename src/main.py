@@ -252,26 +252,23 @@ async def on_message_delete(message: Message):
 
 @bot.event
 async def on_guild_scheduled_event_create(event: ScheduledEvent):
-    creator = event.creator
     name    = event.name
     guild   = event.guild
-    LOG.LOGGER.debug(f"(scheduled event created) '{name}' created by {creator.display_name}")
+    LOG.LOGGER.debug(f"(scheduled event created) '{name}' created")
 
     updateGuildData({"events_created": (1, "add")}, guild.id)
-    updateUserData({"events_created": (1, "add")}, creator.id)
 
 @bot.event
 async def on_guild_scheduled_event_delete(event: ScheduledEvent):
-    creator = event.creator
-    name    = event.name
-    guild   = event.guild
-    LOG.LOGGER.debug(f"(scheduled event deleted) '{name}' deleted by {creator.display_name}")
+    name  = event.name
+    guild = event.guild
+    LOG.LOGGER.debug(f"(scheduled event deleted) '{name}' deleted")
 
-    updateGuildData({"events_created": (1, "sub")}, guild.id)
-    updateUserData({"events_created": (1, "sub")}, creator.id)
+    updateGuildData({"events_deleted": (1, "add")}, guild.id)
 
 @bot.event
-async def on_guild_scheduled_event_user_add(event: ScheduledEvent, user: ScheduledEventUser):
+async def on_guild_scheduled_event_user_add(event: ScheduledEvent, eventUser: ScheduledEventUser):
+    user  = eventUser.user
     name  = event.name
     guild = event.guild
     LOG.LOGGER.debug(f"(scheduled event user joined) {user.display_name} joined '{name}'")
@@ -280,7 +277,8 @@ async def on_guild_scheduled_event_user_add(event: ScheduledEvent, user: Schedul
     updateUserData({"events_joined": (1, "add")}, user.id)
 
 @bot.event
-async def on_guild_scheduled_event_user_remove(event: ScheduledEvent, user: ScheduledEventUser):
+async def on_guild_scheduled_event_user_remove(event: ScheduledEvent, eventUser: ScheduledEventUser):
+    user  = eventUser.user
     name  = event.name
     guild = event.guild
     LOG.LOGGER.debug(f"(scheduled event user leaved) {user.display_name} leaved '{name}'")
