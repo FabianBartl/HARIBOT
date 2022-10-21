@@ -251,18 +251,22 @@ async def on_message_delete(message: Message):
 # ------- scheduled event create, delete, user add, user remove --------------
 
 @bot.event
-async def on_guild_scheduled_event_create(event: ScheduledEvent):
+async def on_guild_scheduled_event_create(_event: ScheduledEvent):
+    event = await _event.guild.fetch_scheduled_event(_event.id)
+
     name    = event.name
+    creator = event.creator
     guild   = event.guild
-    LOG.LOGGER.debug(f"(scheduled event created) '{name}' created")
+    LOG.LOGGER.warning(f"(scheduled event created) '{name}' created by {creator.display_name}")
 
     updateGuildData({"events_created": (1, "add")}, guild.id)
+    updateUserData({"events_created": (1, "add")}, creator.id)
 
 @bot.event
 async def on_guild_scheduled_event_delete(event: ScheduledEvent):
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.debug(f"(scheduled event deleted) '{name}' deleted")
+    LOG.LOGGER.warning(f"(scheduled event deleted) '{name}' deleted")
 
     updateGuildData({"events_deleted": (1, "add")}, guild.id)
 
@@ -271,20 +275,20 @@ async def on_guild_scheduled_event_user_add(event: ScheduledEvent, eventUser: Sc
     user  = eventUser.user
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.debug(f"(scheduled event user joined) {user.display_name} joined '{name}'")
+    LOG.LOGGER.warning(f"(scheduled event user interested) {user.display_name} interested in '{name}'")
 
-    updateGuildData({"events_joined": (1, "add")}, guild.id)
-    updateUserData({"events_joined": (1, "add")}, user.id)
+    updateGuildData({"events_interested": (1, "add")}, guild.id)
+    updateUserData({"events_interested": (1, "add")}, user.id)
 
 @bot.event
 async def on_guild_scheduled_event_user_remove(event: ScheduledEvent, eventUser: ScheduledEventUser):
     user  = eventUser.user
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.debug(f"(scheduled event user leaved) {user.display_name} leaved '{name}'")
+    LOG.LOGGER.warning(f"(scheduled event user uninterested) {user.display_name} uninterested in '{name}'")
 
-    updateGuildData({"events_joined": (1, "sub")}, guild.id)
-    updateUserData({"events_joined": (1, "sub")}, user.id)
+    updateGuildData({"events_interested": (1, "sub")}, guild.id)
+    updateUserData({"events_interested": (1, "sub")}, user.id)
 
 # ------- presence, user, voice state update ---------------------------------
 
