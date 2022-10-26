@@ -1,6 +1,6 @@
 
 
-# ================= LIBRARIES ================================================
+# ================= LIBRARIES ========================================================================================
 
 # ------- nextcord lib -------------------------------------------------------
 
@@ -17,7 +17,7 @@ from math import floor
 from structs import DISCORD, TOKEN, LOG, DIR, HARIBO, DISCORD, XP
 import custom_logger
 
-# ================= helper functions =========================================
+# ================= helper functions =================================================================================
 
 def formatNum(num: int, base_unit: str="", step: int=1_000) -> str:
 	for unit in " KMGT":
@@ -38,7 +38,7 @@ def sortDictByKey(dictionary: dict, descending: bool=False):
 
 def checkOwner(checkID: int) -> bool: return checkID == TOKEN.OWNER_ID
 
-# ================= data files ===============================================
+# ================= data files =======================================================================================
 
 # ------- update guild, user, reaction data ----------------------------------
 
@@ -104,7 +104,7 @@ def getGuildData   (fileID: int) -> dict[str: tuple[int, str], ]: return getData
 def getUserData    (fileID: int) -> dict[str: tuple[int, str], ]: return getDataFile("users",     fileID)
 def getReactionData(fileID: int) -> dict[str: tuple[int, str], ]: return getDataFile("reactions", fileID)
 
-# ================= logging ==================================================
+# ================= logging ==========================================================================================
 
 def setupLogger(colored: bool=False, level: int=logging.INFO):
 	LOG.LOGGER = custom_logger.getLogger(init=True, level=level, fmt=LOG.FMT, date_fmt=LOG.DATE_FMT, path=LOG.PATH, colored=colored)

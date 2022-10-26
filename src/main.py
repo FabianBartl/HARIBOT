@@ -1,5 +1,5 @@
 
-# ================= LIBRARIES ================================================
+# ================= LIBRARIES ========================================================================================
 
 # ------- nextcord lib -------------------------------------------------------
 
@@ -21,7 +21,7 @@ from urllib.request import urlopen
 from structs import BOTINFO, TOKEN, HARIBO, CONFIG, LOG
 from functions import *
 
-# ================= SETUP ====================================================
+# ================= SETUP ============================================================================================
 
 bot = Bot(
     command_prefix=CONFIG.PREFIX
@@ -33,7 +33,7 @@ level = int(sys.argv[2]) if len(sys.argv) >= 3 and sys.argv[2].isdigit() else lo
 
 setupLogger(colored, level)
 
-# ================= EVENTS ===================================================
+# ================= EVENTS ===========================================================================================
 
 # ------- bot (dis)connect, ready, close -------------------------------------
 
@@ -304,7 +304,7 @@ async def on_user_update(before: User, after: User):
 async def on_voice_state_update(member: Member, before: VoiceState, after: VoiceState):
     pass
 
-# ================= SLASH COMMANDS ===========================================
+# ================= SLASH COMMANDS ===================================================================================
 
 # ------- help ---------------------------------------------------------------
 
@@ -320,7 +320,7 @@ async def sc_help(interaction: Interaction):
 
     embed = Embed(color=int(HARIBO.INFO), title="Command Overview")
     for command in commands:
-        embed.add_field(name=f"`{CONFIG.PREFIX}{command.qualified_name}`", value=command.description)
+        embed.add_field(name=f"`/{command.qualified_name}`", value=command.description)
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
@@ -680,7 +680,7 @@ async def sc_pgpDelete(interaction: Interaction, email: str = SlashOption(requir
     updateUserData({"e-mail": (email, "rem")}, user.id)
     await interaction.response.send_message(f"Your pgp key for {email} and your e-mail is deleted from your profile", ephemeral=CONFIG.EPHEMERAL)
 
-# ================= COMMANDS =================================================
+# ================= COMMANDS =========================================================================================
 
 # ------- pgp set ------------------------------------------------------------
 
@@ -732,7 +732,7 @@ async def cc_pgpSet(message: Message):
     embed = Embed(color=int(HARIBO.SUCCESS), title="Your pgp-key ist stored successfully")
     await channel.send(embed=embed, delete_after=20)
 
-# ================= FUNCTIONS ================================================
+# ================= FUNCTIONS ========================================================================================
 
 async def resolve_command(message: Message):
     prefix  = CONFIG.PREFIX
@@ -740,6 +740,6 @@ async def resolve_command(message: Message):
 
     if content.startswith(f"{prefix}pgp-set"): await cc_pgpSet(message)
 
-# ================= EXECUTE ==================================================
+# ================= EXECUTE ==========================================================================================
 
 if __name__ == "__main__": bot.run(TOKEN.DISCORD)
