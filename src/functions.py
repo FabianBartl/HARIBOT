@@ -14,7 +14,7 @@ from math import floor
 
 # ------- own 'libs'  --------------------------------------------------------
 
-from structs import DISCORD, TOKEN, LOG, DIR, HARIBO, DISCORD, XP
+from structs import DISCORD, TOKEN, LOG, DIR, HARIBO, DISCORD, XP, BOTINFO
 import custom_logger
 
 # ================= helper functions =================================================================================
@@ -36,7 +36,7 @@ def sortDictByValue(dictionary: dict, descending: bool=False):
 def sortDictByKey(dictionary: dict, descending: bool=False):
 	return sorted(dictionary.items(), key=lambda x:x[0], reverse=descending)
 
-def checkOwner(checkID: int) -> bool: return checkID == TOKEN.OWNER_ID
+def checkOwner(checkID: int) -> bool: return checkID == BOTINFO.OWNER
 
 # ================= data files =======================================================================================
 

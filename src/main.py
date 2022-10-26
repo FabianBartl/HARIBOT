@@ -61,7 +61,7 @@ async def on_disconnect():
     await asyncio.sleep(5)
     await bot.connect(reconnect=True)
 
-# ------- member join, remoce ------------------------------------------------
+# ------- member join, remove ------------------------------------------------
 
 @bot.event
 async def on_member_join(member: Member):
@@ -85,7 +85,7 @@ async def on_member_remove(member: Member):
     updateGuildData({f"{_type}s": (1, "sub")}, member.guild.id)
     updateUserData({"leave_timestamp": (time.time(), "set")}, member.id)
 
-# ------- guild join, remoce -------------------------------------------------
+# ------- guild join, remove -------------------------------------------------
 
 @bot.event
 async def on_guild_join(guild: Guild):
@@ -257,7 +257,7 @@ async def on_guild_scheduled_event_create(_event: ScheduledEvent):
     name    = event.name
     creator = event.creator
     guild   = event.guild
-    LOG.LOGGER.warning(f"(scheduled event created) '{name}' created by {creator.display_name}")
+    LOG.LOGGER.debug(f"(scheduled event created) '{name}' created by {creator.display_name}")
 
     updateGuildData({"events_created": (1, "add")}, guild.id)
     updateUserData({"events_created": (1, "add")}, creator.id)
@@ -266,7 +266,7 @@ async def on_guild_scheduled_event_create(_event: ScheduledEvent):
 async def on_guild_scheduled_event_delete(event: ScheduledEvent):
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.warning(f"(scheduled event deleted) '{name}' deleted")
+    LOG.LOGGER.debug(f"(scheduled event deleted) '{name}' deleted")
 
     updateGuildData({"events_deleted": (1, "add")}, guild.id)
 
@@ -275,7 +275,7 @@ async def on_guild_scheduled_event_user_add(event: ScheduledEvent, eventUser: Sc
     user  = eventUser.user
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.warning(f"(scheduled event user interested) {user.display_name} interested in '{name}'")
+    LOG.LOGGER.debug(f"(scheduled event user interested) {user.display_name} interested in '{name}'")
 
     updateGuildData({"events_interested": (1, "add")}, guild.id)
     updateUserData({"events_interested": (1, "add")}, user.id)
@@ -285,7 +285,7 @@ async def on_guild_scheduled_event_user_remove(event: ScheduledEvent, eventUser:
     user  = eventUser.user
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.warning(f"(scheduled event user uninterested) {user.display_name} uninterested in '{name}'")
+    LOG.LOGGER.debug(f"(scheduled event user uninterested) {user.display_name} uninterested in '{name}'")
 
     updateGuildData({"events_interested": (1, "sub")}, guild.id)
     updateUserData({"events_interested": (1, "sub")}, user.id)

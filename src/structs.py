@@ -3,7 +3,7 @@
 
 # ------- other libs ---------------------------------------------------------
 
-import os, logging, random
+import os, logging, random, json
 from math import sqrt, floor
 
 # ================= OBJECTS, FUNCTION COLLECTIONS ====================================================================
@@ -51,11 +51,30 @@ class LOG:
 
 # ================= DATA CLASSES =====================================================================================
 
+# ------- directories --------------------------------------------------------
+
+class DIR:
+	MAIN      = ".."
+	TEMP      = os.path.abspath(f"{MAIN}/tmp")
+	DATA      = os.path.abspath(f"{MAIN}/data")
+	PGP       = os.path.abspath(f"{DATA}/pgpKeys")
+	APPS      = os.path.abspath(f"{MAIN}/apps")
+	ASSETS    = os.path.abspath(f"{MAIN}/assets")
+	CONFIGS   = os.path.abspath(f"{ASSETS}/configs")
+	FONTS     = os.path.abspath(f"{ASSETS}/fonts")
+	IMGAGES   = os.path.abspath(f"{ASSETS}/imgs")
+	TEMPLATES = os.path.abspath(f"{ASSETS}/templates")
+
 # ------- secret values ------------------------------------------------------
 
+tmpFile = os.path.abspath(os.path.join(DIR.MAIN, "tokens.json"))
+with open(tmpFile, "r") as fobj: tmpJSON = json.load(fobj)
+
 class TOKEN:
-	DISCORD  = open(os.path.abspath(r"../discord.token"), "r").readlines()[0].strip()
-	OWNER_ID = int(open(os.path.abspath(r"../discord.owner"), "r").readlines()[0].strip())
+	DISCORD = tmpJSON.get("discord")
+	TEAMUP  = tmpJSON.get("teamup")
+
+del tmpFile, tmpJSON
 
 # ------- colors -------------------------------------------------------------
 
@@ -99,8 +118,8 @@ class DISCORD:
 # ------- basic config, info -------------------------------------------------
 
 class CONFIG:
-	PREFIX       = "!"
-	EPHEMERAL    = False
+	PREFIX    = "!"
+	EPHEMERAL = False
 
 class BOTINFO:
 	ID          = 1024235031037759500
@@ -109,17 +128,5 @@ class BOTINFO:
 	INVITE      = f"https://discord.com/oauth2/authorize?client_id={ID}&permissions=8&scope=bot"
 	REPOSITORY  = "FabianBartl/HARIBOT"
 	CREATOR     = "Fabian Bartl"
+	OWNER       = 386249332711620608
 
-# ------- directories --------------------------------------------------------
-
-class DIR:
-	MAIN      = ".."
-	TEMP      = os.path.abspath(f"{MAIN}/tmp")
-	DATA      = os.path.abspath(f"{MAIN}/data")
-	PGP       = os.path.abspath(f"{DATA}/pgpKeys")
-	APPS      = os.path.abspath(f"{MAIN}/apps")
-	ASSETS    = os.path.abspath(f"{MAIN}/assets")
-	CONFIGS   = os.path.abspath(f"{ASSETS}/configs")
-	FONTS     = os.path.abspath(f"{ASSETS}/fonts")
-	IMGAGES   = os.path.abspath(f"{ASSETS}/imgs")
-	TEMPLATES = os.path.abspath(f"{ASSETS}/templates")
