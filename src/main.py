@@ -13,7 +13,7 @@ from nextcord import RawReactionActionEvent, ScheduledEvent, ScheduledEventUser
 
 import time, json, os, sys, logging, requests, random, asyncio, re
 from bs4 import BeautifulSoup
-from datetime import datetime
+from datetime import datetime, timedelta
 from urllib.request import urlopen
 
 # ------- own 'libs'  --------------------------------------------------------
@@ -333,15 +333,17 @@ async def sc_test(interaction: Interaction):
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
 
+    endDate = (datetime.today() + timedelta(weeks=4)).strftime(r"%Y-%m-%d")
     url = f"https://api.teamup.com/{BOTINFO.TEAMUP}/events"
-    header = {"Teamup-Token": TOKEN.TEAMUP}
-    response = requests.get(url, headers=header)
+    headers = {"Teamup-Token": TOKEN.TEAMUP}
+    params = {"format": "markdown", "endDate": "2022-10-31"}
+    response = requests.get(url, headers=headers, params=params)
     LOG.LOGGER.warning(response.text)
 
     response_dict = response.json()
     msg = ""
     for event in response_dict.get("events", []):
-        msg += f"{event['title']} at {event['start_dt']} by {event['who']}\n"
+        msg += f"**{event['title']}** at *{event['start_dt']}* by {event['who']}\n"
 
     await interaction.response.send_message(msg, ephemeral=True)
 
