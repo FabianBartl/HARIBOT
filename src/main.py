@@ -310,7 +310,7 @@ async def on_voice_state_update(member: Member, before: VoiceState, after: Voice
 
 @bot.slash_command(name="help", description="Overview of all commands.")
 async def sc_help(interaction: Interaction):
-    LOG.LOGGER.debug(f"(command sent) help")
+    LOG.LOGGER.debug(f"(slash command sent) help")
 
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
@@ -328,7 +328,7 @@ async def sc_help(interaction: Interaction):
 
 @bot.slash_command(name="test", description="Test some new stuff.", default_member_permissions=Permissions(administrator=True))
 async def sc_test(interaction: Interaction):
-    LOG.LOGGER.debug(f"(command sent) test")
+    LOG.LOGGER.debug(f"(slash command sent) test")
 
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
@@ -342,7 +342,7 @@ async def sc_log(
         interaction: Interaction
         , action: int = SlashOption(required=True, choices={"backup": 0, "save": 1, "get": 2, "clear": 3, "reset": 4, "list": 5})
 ):
-    LOG.LOGGER.debug(f"(command sent) log: {action=}")
+    LOG.LOGGER.debug(f"(slash command sent) log: {action=}")
 
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
@@ -409,7 +409,7 @@ async def sc_log(
 
 @bot.slash_command(name="ping", description="Test bot response.")
 async def sc_ping(interaction: Interaction):
-    LOG.LOGGER.debug(f"(command sent) ping")
+    LOG.LOGGER.debug(f"(slash command sent) ping")
 
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
@@ -430,20 +430,21 @@ async def sc_score(
         , formatID: int = SlashOption(required=False, choices={"SVG": 0, "PNG": 1}, default=1, name="format")
         , private: bool = SlashOption(required=False, default=CONFIG.EPHEMERAL)
 ):
-    LOG.LOGGER.debug(f"(command sent) score: {member=}")
+    LOG.LOGGER.debug(f"(slash command sent) score: {member=}")
 
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
 
     if type(member) is not Member: member = interaction.user
-    format = ["svg", "png"][formatID]
+    formats = ["svg", "png"]
+    format = formats[formatID]
 
     await interaction.response.defer(ephemeral=private)
     score_card_file_func = createScoreCard(member)
     await interaction.followup.send(file=File(score_card_file_func(format)), ephemeral=private)
     
     await asyncio.sleep(1)
-    os.system(f"del {score_card_file_func('*')}")
+    for format in formats: os.remove(score_card_file_func(format))
     LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file_func('*')}`")
 
 # ------- member, server, bot info -------------------------------------------
@@ -453,7 +454,7 @@ async def sc_memberInfo(
         interaction: Interaction
         , member: Member = SlashOption(required=False)
 ):
-    LOG.LOGGER.debug(f"(command sent) member-info: {member=}")
+    LOG.LOGGER.debug(f"(slash command sent) member-info: {member=}")
 
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
@@ -472,14 +473,14 @@ async def sc_memberInfo(
     embed.add_field(name="Words/Message", value=round(userData.get("words", 0) / userData.get("messages", 1), 2))
 
     embed.add_field(name="Roles", value=" ".join([role.mention for role in member.roles[1:]]), inline=False)
-    embed.add_field(name="PGP-Mails", value=", ".join(userData.get("e-mail", ["no e-Mails"])), inline=False)
+    embed.add_field(name="PGP-Emails", value=", ".join(userData.get("emails", ["*no emails deposited*"])), inline=False)
     embed.set_footer(text=f"Member ID: {member.id}")
 
     await interaction.response.send_message(embed=embed, ephemeral=CONFIG.EPHEMERAL)
 
 @bot.slash_command(name="server-info", description="Get information about this server.")
 async def sc_serverInfo(interaction: Interaction):
-    LOG.LOGGER.debug(f"(command sent) server-info")
+    LOG.LOGGER.debug(f"(slash command sent) server-info")
 
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
@@ -502,7 +503,7 @@ async def sc_serverInfo(interaction: Interaction):
 
 @bot.slash_command(name="bot-info", description="Get information about this bot.")
 async def sc_botInfo(interaction: Interaction):
-    LOG.LOGGER.debug(f"(command sent) bot-info")
+    LOG.LOGGER.debug(f"(slash command sent) bot-info")
 
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
@@ -564,7 +565,7 @@ async def sc_autoRole(
 ):
     guild = interaction.guild
     _type = "bot" if _type == 1 else "user"
-    LOG.LOGGER.debug(f"(command sent) auto-role: {action=}, {_type=}, {role=}")
+    LOG.LOGGER.debug(f"(slash command sent) auto-role: {action=}, {_type=}, {role=}")
 
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
@@ -602,7 +603,7 @@ async def sc_reactionRole(
         , emoji: int = SlashOption(required=True)
         , role: Role = SlashOption(required=True)
 ):
-    LOG.LOGGER.debug(f"(command sent) reaction-role add: {action=}, {messageID=}, {emoji=}, {role=}")
+    LOG.LOGGER.debug(f"(slash command sent) reaction-role add: {action=}, {messageID=}, {emoji=}, {role=}")
 
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
@@ -616,7 +617,7 @@ async def sc_whatIf(
         interaction: Interaction
         , num: int = SlashOption(required=False, default=-1)
 ):
-    LOG.LOGGER.debug(f"(command sent) what-if: {num=}")
+    LOG.LOGGER.debug(f"(slash command sent) what-if: {num=}")
 
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
@@ -636,101 +637,112 @@ async def sc_whatIf(
 
 # ------- pgp set (help), get, delete ----------------------------------------
 
-@bot.slash_command(name="pgp-set", description="To set a pgp-Key write: !pgp-set {email} {upload public pgp key}")
+@bot.slash_command(name="pgp-set", description=f"Just the help to set a pgp-key with `{CONFIG.PREFIX}pgp-set`.")
 async def sc_pgpSet(interaction: Interaction):
-    LOG.LOGGER.debug(f"(command sent) pgp-set")
-    await interaction.response.send_message("To set a pgp-Key write: !pgp-set {email} {upload public pgp key}", ephemeral=True)
+    LOG.LOGGER.debug(f"(slash command sent) pgp-set")
+    
+    embed = Embed(color=int(HARIBO.INFO), title=f"Help for `{CONFIG.PREFIX}pgp-set [email]`")
+    embed.add_field(name="`[email]`", value="The corresponding email to the pgp-key.", inline=False)
+    embed.add_field(name="`[keyfile]`", value="The pgp-keyfile as message attachment.", inline=False)
+    
+    await interaction.response.send_message(embed=embed, ephemeral=True)
 
-@bot.slash_command(name="pgp-get", description="Returns the pgp to the given e-mail address.")
-async def sc_pgpGet(interaction: Interaction, email: str = SlashOption(required=True)):
-    LOG.LOGGER.debug(f"(command sent) pgp-get: {email=}")
-    pgp_path = os.path.join(DIR.PGP, f"{email}.asc")
+@bot.slash_command(name="pgp-get", description="Returns the pgp-key to the given email address.")
+async def sc_pgpGet(interaction: Interaction, email: str=SlashOption(required=True)):
+    LOG.LOGGER.debug(f"(slash command sent) pgp-get: {email=}")
+    
+    response_kwargs = dict()
+    pgp_path = os.path.abspath(os.path.join(DIR.PGP, f"{email}.asc"))
 
     if not os.path.isfile(pgp_path):
-        error_message = f"For the given e-mail address: {email}, no pgp-key is known."
-        embed = Embed(color=int(HARIBO.WARNING), title=error_message)
-        await interaction.response.send_message(embed=embed)
-        return
+        response_kwargs["embed"] = Embed(color=int(HARIBO.WARNING), title=f"For the given email address `{email}`, no pgp-key is known.")
+    else:
+        response_kwargs["content"] = f"PGP-Key for `{email}`:"
+        response_kwargs["file"] = File(pgp_path)
 
-    key_file = File(os.path.join(pgp_path))
-    await interaction.response.send_message(f"You find the pgp key for {email} in the attachment.", file=key_file, ephemeral=CONFIG.EPHEMERAL)
+    await interaction.response.send_message(**response_kwargs, ephemeral=CONFIG.EPHEMERAL)
 
-@bot.slash_command(name="pgp-delete", description="Deletes the given email and it's pgp-key out of your account.")
+@bot.slash_command(name="pgp-delete", description="Deletes the given email and it's pgp-key out of your user data.")
 async def sc_pgpDelete(interaction: Interaction, email: str = SlashOption(required=True)):
-    LOG.LOGGER.debug(f"(command sent) pgp-delete: {email=}")
+    userID   = interaction.user.id
+    userData = getUserData(userID)
+    LOG.LOGGER.debug(f"(slash command sent) pgp-delete: {email=}")
 
-    user = interaction.user
-    userdata = getUserData(user.id)
-    emails = userdata.get("e-mail", [])
-    if not email in emails:
-        error_message = f"Your not allowed to manage this e-mail"
-        embed = Embed(color=int(HARIBO.WARNING), title=error_message)
+    emails = set(userData.get("emails", []))
+    if email not in emails:
+        embed = Embed(color=int(HARIBO.WARNING), title=f"You are not allowed to delete this email.")
         await interaction.response.send_message(embed=embed)
         return
 
-    pgp_path = os.path.join(DIR.PGP, f"{email}.asc")
+    pgp_path = os.path.abspath(os.path.join(DIR.PGP, f"{email}.asc"))
 
     if not os.path.isfile(pgp_path):
-        error_message = f"For the given e-mail address no pgp-key is known."
-        embed = Embed(color=int(HARIBO.WARNING), title=error_message)
+        embed = Embed(color=int(HARIBO.WARNING), title=f"For the given email address no pgp-key is known.")
         await interaction.response.send_message(embed=embed)
         return
 
     os.remove(pgp_path)
-    updateUserData({"e-mail": (email, "rem")}, user.id)
-    await interaction.response.send_message(f"Your pgp key for {email} and your e-mail is deleted from your profile", ephemeral=CONFIG.EPHEMERAL)
+    updateUserData({"emails": (email, "rem")}, userID)
+    await interaction.response.send_message(f"Your email `{email}` and the corresponding pgp-key were deleted from your user data.", ephemeral=CONFIG.EPHEMERAL)
 
 # ================= COMMANDS =========================================================================================
 
 # ------- pgp set ------------------------------------------------------------
 
-async def cc_pgpSet(message: Message):
-    regex_email = re.compile(r"([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+")
+async def mc_pgpSet(message: Message):
+    attachments  = message.attachments
+    channel      = message.channel
+    command_args = re.sub(r" +", " ", message.content).split(" ")
+    LOG.LOGGER.debug(f"(message command sent) pgp-set: {command_args=}")
+
     error_message = False
-    content = re.sub(" +", " ", message.content)
-    attachments = message.attachments
-    email = content.split(" ")[1]
-    channel = message.channel
+    error_ttl = 10
+
+    if len(command_args) < 2:
+        embed = Embed(color=int(HARIBO.WARNING), title="no email given")
+        await channel.send(embed=embed, delete_after=error_ttl)
+        return
+
+    regex_email = re.compile(r"([A-Za-z0-9]+[.-_])*[A-Za-z0-9]+@[A-Za-z0-9-]+(\.[A-Z|a-z]{2,})+")
+    email = command_args[1]
     if not re.fullmatch(regex_email, email):
-        error_message = "INVALID E-MAIL"
+        error_message = "Invalid email."
     elif not len(attachments) == 1:
-        error_message = "NOT EXACTLY ONE ATTACHMENT GIVEN"
+        error_message = "Please attach one file only."
     elif os.path.isfile(os.path.join(DIR.PGP, f"{email}.asc")):
-        error_message = "WHY THE HACK ARE YOU TRYING TO CHANGE THE PGP KEYS OF A OTHER USER"
+        error_message = "This email is already registered."
+
     if error_message:
         embed = Embed(color=int(HARIBO.WARNING), title=error_message)
-        await channel.send(embed=embed, delete_after=20)
+        await channel.send(embed=embed, delete_after=error_ttl)
         return
 
-    attachment = attachments[0]
-    attachment_url = attachment.url
-    mediaType = attachment.content_type
-    if not mediaType.startswith("text"):
-        error_message = "YOUR ATTACHMENT IS NOT A TEXT FILE"
-        embed = Embed(color=int(HARIBO.WARNING), title=error_message)
-        await channel.send(embed=embed, delete_after=20)
+    keyfile_attachment = attachments[0]
+    if not keyfile_attachment.content_type.startswith("text"):
+        embed = Embed(color=int(HARIBO.WARNING), title="The keyfile must be of the `text` content type.")
+        await channel.send(embed=embed, delete_after=error_ttl)
         return
 
-    file_request = requests.get(attachment_url)
-    file = file_request.content
-    pgp_key = file.decode("ascii")
+    keyfile = requests.get(keyfile_attachment.url)
+    pgp_key = keyfile.content.decode("ascii")
     if pgp_key.startswith("-----BEGIN PGP PRIVATE KEY BLOCK-----"):
-        error_message = "YOU ARE AN IDIOT. IMMEDIATELY DEPRECATE THIS KEY AND CREATE A NEW PAIR."
-        embed = Embed(color=int(HARIBO.DANGER), title=error_message)
-        await channel.send(embed=embed, delete_after=20)
+        LOG.LOGGER.warning(f"{message.author.display_name} uploaded a private pgp-key")
+        error_message = "YOU ARE AN IDIOT. YOU UPLOADED YOUR PRIVATE KEY.\nIMMEDIATELY DEPRECATE AND REVOKE THIS KEY AND CREATE A NEW PAIR."
+        color = HARIBO.DANGER
+    elif not pgp_key.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
+        error_message = "The attachment must be a public pgp-key."
+        color = HARIBO.WARNING
+    
+    if error_message:
+        embed = Embed(color=int(color), title=error_message)
+        await channel.send(embed=embed, delete_after=error_ttl)
         return
-    if not pgp_key.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
-        error_message = "YOUR ATTACHMENT IS NOT A PGP PUBLIC KEY"
-        embed = Embed(color=int(HARIBO.WARNING), title=error_message)
-        await channel.send(embed=embed, delete_after=20)
-        return
-    member_id = message.author.id
-    # TODO: update to set
-    updateUserData({"e-mail": (email, "ins")}, member_id)
-    with open(os.path.join(DIR.PGP, f"{email}.asc"), "w+") as file:
-        file.write(pgp_key)
-    embed = Embed(color=int(HARIBO.SUCCESS), title="Your pgp-key ist stored successfully")
-    await channel.send(embed=embed, delete_after=20)
+    
+    updateUserData({"emails": (email, "ins")}, message.author.id)
+    with open(os.path.join(DIR.PGP, f"{email}.asc"), "w+") as fobj: fobj.write(pgp_key)
+
+    embed = Embed(color=int(HARIBO.SUCCESS), title="Your pgp-key is stored successfully.")
+    await channel.send(embed=embed, delete_after=error_ttl)
 
 # ================= FUNCTIONS ========================================================================================
 
@@ -738,7 +750,7 @@ async def resolve_command(message: Message):
     prefix  = CONFIG.PREFIX
     content = message.content
 
-    if content.startswith(f"{prefix}pgp-set"): await cc_pgpSet(message)
+    if content.startswith(f"{prefix}pgp-set"): await mc_pgpSet(message)
 
 # ================= EXECUTE ==========================================================================================
 
