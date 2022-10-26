@@ -129,4 +129,4 @@ class BOTINFO:
 	REPOSITORY  = "FabianBartl/HARIBOT"
 	CREATOR     = "Fabian Bartl"
 	OWNER       = 386249332711620608
-
+	TEAMUP      = "ksk1ntkcyqqzov4169"

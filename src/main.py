@@ -333,7 +333,17 @@ async def sc_test(interaction: Interaction):
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
 
-    await interaction.response.send_message(f"nothing tested", ephemeral=True)
+    url = f"https://api.teamup.com/{BOTINFO.TEAMUP}/events"
+    header = {"Teamup-Token": TOKEN.TEAMUP}
+    response = requests.get(url, headers=header)
+    LOG.LOGGER.warning(response.text)
+
+    response_dict = response.json()
+    msg = ""
+    for event in response_dict.get("events", []):
+        msg += f"{event['title']} at {event['start_dt']} by {event['who']}\n"
+
+    await interaction.response.send_message(msg, ephemeral=True)
 
 # ------- log ----------------------------------------------------------------
 
@@ -496,7 +506,7 @@ async def sc_serverInfo(interaction: Interaction):
     embed.add_field(name="Bots", value=guildData.get("bots", 0))
     embed.add_field(name="Messages", value=guildData.get("messages", 0))
 
-    embed.add_field(name="Event Overview", value=f"[Teamup Calender](https://teamup.com/ks7yff4qzz9avhm6aa)", inline=False)
+    embed.add_field(name="Event Overview", value=f"[Teamup Calender](https://teamup.com/{BOTINFO.TEAMUP})", inline=False)
     embed.add_field(name="Invite", value=f"[open](https://discord.gg/GVs3hmCmmJ) or copy invite:\n```\nhttps://discord.gg/GVs3hmCmmJ\n```", inline=False)
     embed.set_footer(text=f"Server ID: {guild.id}")
 
