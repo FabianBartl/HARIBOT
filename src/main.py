@@ -496,6 +496,7 @@ async def sc_serverInfo(interaction: Interaction):
     embed.add_field(name="Bots", value=guildData.get("bots", 0))
     embed.add_field(name="Messages", value=guildData.get("messages", 0))
 
+    embed.add_field(name="Event Overview", value=f"[Teamup Calender](https://teamup.com/ks7yff4qzz9avhm6aa)", inline=False)
     embed.add_field(name="Invite", value=f"[open](https://discord.gg/GVs3hmCmmJ) or copy invite:\n```\nhttps://discord.gg/GVs3hmCmmJ\n```", inline=False)
     embed.set_footer(text=f"Server ID: {guild.id}")
 
