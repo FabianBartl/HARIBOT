@@ -336,16 +336,14 @@ async def sc_test(interaction: Interaction):
     endDate = (datetime.today() + timedelta(weeks=4)).strftime(r"%Y-%m-%d")
     url = f"https://api.teamup.com/{BOTINFO.TEAMUP}/events"
     headers = {"Teamup-Token": TOKEN.TEAMUP}
-    params = {"format": "markdown", "endDate": "2022-10-31"}
+    params = {"format": "markdown", "endDate": endDate}
     response = requests.get(url, headers=headers, params=params)
     LOG.LOGGER.warning(response.text)
 
     response_dict = response.json()
-    msg = ""
-    for event in response_dict.get("events", []):
-        msg += f"**{event['title']}** at *{event['start_dt']}* by {event['who']}\n"
+    msg_lines = [ f"**{event['title']}** at *{event['start_dt']}* by {event['who']}" for event in response_dict.get("events", []) ]
 
-    await interaction.response.send_message(msg, ephemeral=True)
+    await interaction.response.send_message("\n".join(msg_lines), ephemeral=True)
 
 # ------- log ----------------------------------------------------------------
 
@@ -359,7 +357,7 @@ async def sc_log(
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
 
-    dstFile = f"log_{datetime.today().strftime('%Y-%m-%d_%H-%M-%S')}.dat"
+    dstFile = f"log_{datetime.today().strftime(r'%Y-%m-%d_%H-%M-%S')}.dat"
     dstPath = os.path.abspath(os.path.join(LOG.DIR, dstFile))
 
     response_kwargs = dict()
@@ -409,7 +407,7 @@ async def sc_log(
         color = HARIBO.INFO
         logFiles = os.scandir(LOG.DIR)
         value  = "```cmd\n"
-        value += "\n".join([f"{formatBytes(file.stat().st_size):>10} | {file.name}" for file in logFiles])
+        value += "\n".join([ f"{formatBytes(file.stat().st_size):>10} | {file.name}" for file in logFiles ])
         value += "\n```"
 
     response_kwargs["embed"] = Embed(color=int(color), title="Logging Manager")
