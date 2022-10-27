@@ -1,4 +1,4 @@
 cd src
-echo "Give logging level"
+echo "Logging level"
 read -r LOGGING_LEVEL
-python main.py colourd LOGGING_LEVEL
+python main.py colored LOGGING_LEVEL
