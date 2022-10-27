@@ -18,7 +18,7 @@ from urllib.request import urlopen
 
 # ------- own 'libs'  --------------------------------------------------------
 
-from structs import BOTINFO, TOKEN, HARIBO, CONFIG, LOG
+from structs import INFO, TOKEN, COLOR, CONFIG, LOG
 from functions import *
 
 # ================= SETUP ============================================================================================
@@ -176,7 +176,7 @@ async def on_message(message: Message):
     xp = user_data.get("xp", 0)
 
     xp += XP.DEFAULT if xp < XP.DEFAULT else 0
-    xp += XP.GENERATE(last_message_before, last_message) if author.id != BOTINFO.ID else XP.RANGE_MULTIPLIER
+    xp += XP.GENERATE(last_message_before, last_message) if author.id != INFO.BOT.ID else XP.RANGE_MULTIPLIER
     LOG.LOGGER.debug(f"(xp earned) {author.display_name}: {xp}")
 
     updateGuildData({
@@ -318,7 +318,7 @@ async def sc_help(interaction: Interaction):
     commands = bot.get_all_application_commands()
     commands = sorted(commands, key=lambda x: x.qualified_name)
 
-    embed = Embed(color=int(HARIBO.INFO), title="Command Overview")
+    embed = Embed(color=int(COLOR.HARIBO.INFO), title="Command Overview")
     for command in commands:
         embed.add_field(name=f"`/{command.qualified_name}`", value=command.description)
 
@@ -334,7 +334,7 @@ async def sc_test(interaction: Interaction):
     updateUserData({"commands": (1, "add")}, interaction.user.id)
 
     endDate = (datetime.today() + timedelta(weeks=4)).strftime(r"%Y-%m-%d")
-    url = f"https://api.teamup.com/{BOTINFO.TEAMUP}/events"
+    url = f"https://api.teamup.com/{INFO.SERVER.TEAMUP}/events"
     headers = {"Teamup-Token": TOKEN.TEAMUP}
     params = {"format": "markdown", "endDate": endDate}
     response = requests.get(url, headers=headers, params=params)
@@ -364,20 +364,20 @@ async def sc_log(
 
     if action == 0: # backup: save, get, clear
         name = "Backup current log: *save - get - clear*"
-        color = HARIBO.SUCCESS
+        color = COLOR.HARIBO.SUCCESS
         log_code, dstSize = backupLogFile(dstPath)
         value = f"log of size `{formatBytes(dstSize)}` backuped as `{dstFile}`"
         response_kwargs["file"] = File(dstPath, filename=dstFile)
 
     elif action == 1: # save
         name = "Save current log"
-        color = HARIBO.SUCCESS
+        color = COLOR.HARIBO.SUCCESS
         dstSize = saveLogFile(dstPath)
         value = f"log of size `{formatBytes(dstSize)}` saved as `{dstFile}`"
 
     elif action == 2: # get
         name = "Get last lines of current log"
-        color = HARIBO.INFO
+        color = COLOR.HARIBO.INFO
         log_code = getLogFile(max_chars=1020).replace("`", "'")
         value = f"```cmd\n...\n{log_code}\n```"
         response_kwargs["file"] = File(LOG.PATH, filename=dstFile)
@@ -385,30 +385,28 @@ async def sc_log(
     elif action == 3: # clear
         name = "Clear current log"
         if checkOwner(interaction.user.id):
-            color = HARIBO.WARNING
+            color = COLOR.HARIBO.WARNING
             clearLogFile()
             value = f"log file cleared"
         else:
-            color = HARIBO.DANGER
+            color = COLOR.HARIBO.DANGER
             value = f"no permission to use"
 
     elif action == 4: # reset
         name = "Reset complete log"
         if checkOwner(interaction.user.id):
-            color = HARIBO.WARNING
+            color = COLOR.HARIBO.WARNING
             logFiles = resetLogFiles()
             value = f"all {len(logFiles)} log file(s) deleted / cleared"
         else:
-            color = HARIBO.DANGER
+            color = COLOR.HARIBO.DANGER
             value = f"no permission to use"
 
     elif action == 5: # list
         name = "List all log files"
-        color = HARIBO.INFO
+        color = COLOR.HARIBO.INFO
         logFiles = os.scandir(LOG.DIR)
-        value  = "```cmd\n"
-        value += "\n".join([ f"{formatBytes(file.stat().st_size):>10} | {file.name}" for file in logFiles ])
-        value += "\n```"
+        value = "```cmd\n" + "\n".join([ f"{formatBytes(file.stat().st_size):>10} | {file.name}" for file in logFiles ]) + "\n```"
 
     response_kwargs["embed"] = Embed(color=int(color), title="Logging Manager")
     response_kwargs["embed"].add_field(name=name, value=value)
@@ -472,13 +470,13 @@ async def sc_memberInfo(
     if type(member) is not Member: member = interaction.user
     userData = getUserData(member.id)
 
-    embed = Embed(color=int(HARIBO.SUCCESS), title="Member Info")
+    embed = Embed(color=int(COLOR.HARIBO.SUCCESS), title="Member Info")
     embed.set_thumbnail(url=member.display_avatar.url)
     embed.add_field(name="Username", value=f"{member.name}#{member.discriminator}")
     embed.add_field(name="Nickname", value=member.display_name)
     embed.add_field(name="Is a Bot", value="Yes" if member.bot else "No")
 
-    embed.add_field(name="Joined at", value=member.joined_at.strftime("%d.%m.%Y %H:%M"))
+    embed.add_field(name="Joined at", value=member.joined_at.strftime(r"%d.%m.%Y %H:%M"))
     embed.add_field(name="Messages", value=userData.get("messages", 0))
     embed.add_field(name="Words/Message", value=round(userData.get("words", 0) / userData.get("messages", 1), 2))
 
@@ -498,7 +496,7 @@ async def sc_serverInfo(interaction: Interaction):
     guild = interaction.guild
     guildData = getGuildData(guild.id)
 
-    embed = Embed(color=int(HARIBO.SUCCESS), title="Server Info", description=guild.description)
+    embed = Embed(color=int(COLOR.HARIBO.SUCCESS), title="Server Info", description=guild.description)
     embed.set_thumbnail(url=guild.icon.url)
     embed.add_field(name="Name", value=guild.name, inline=False)
 
@@ -506,8 +504,8 @@ async def sc_serverInfo(interaction: Interaction):
     embed.add_field(name="Bots", value=guildData.get("bots", 0))
     embed.add_field(name="Messages", value=guildData.get("messages", 0))
 
-    embed.add_field(name="Event Overview", value=f"[Teamup Calender](https://teamup.com/{BOTINFO.TEAMUP})", inline=False)
-    embed.add_field(name="Invite", value=f"[open](https://discord.gg/GVs3hmCmmJ) or copy invite:\n```\nhttps://discord.gg/GVs3hmCmmJ\n```", inline=False)
+    embed.add_field(name="Event Overview", value=f"[Teamup Calender](https://teamup.com/{INFO.SERVER.TEAMUP})", inline=False)
+    embed.add_field(name="Invite", value=f"[open](https://discord.gg/{INFO.SERVER.INVITE}) or copy invite:\n```\nhttps://discord.gg/{INFO.SERVER.INVITE}\n```", inline=False)
     embed.set_footer(text=f"Server ID: {guild.id}")
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -519,12 +517,12 @@ async def sc_botInfo(interaction: Interaction):
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
 
-    app = await interaction.guild.fetch_member(BOTINFO.ID)
+    app = await interaction.guild.fetch_member(INFO.BOT.ID)
 
-    embed = Embed(color=int(HARIBO.SUCCESS), title="Bot Info", description=BOTINFO.DESCRIPTION)
+    embed = Embed(color=int(COLOR.HARIBO.SUCCESS), title="Bot Info", description=INFO.BOT.DESCRIPTION)
     embed.set_thumbnail(url=app.display_avatar.url)
     embed.add_field(name="Name", value=app.name)
-    embed.add_field(name="Creator", value=BOTINFO.CREATOR)
+    embed.add_field(name="Creator", value=INFO.BOT.CREATOR)
     embed.add_field(name="Joined at", value=app.joined_at.strftime("%d.%m.%Y %H:%M"))
 
     try:
@@ -541,7 +539,7 @@ async def sc_botInfo(interaction: Interaction):
                 labels_dict[label["name"]] = labels_dict.get(label["name"], 0) + 1
 
         issues_value = ", ".join([f"{label}: {labels_dict[label]}" for label in labels_dict]).title()
-        issues_value += f"\n*see: [planned functions](https://github.com/{BOTINFO.REPOSITORY}/issues/20) & [all issues](https://github.com/{BOTINFO.REPOSITORY}/issues)*"
+        issues_value += f"\n*see: [planned functions](https://github.com/{INFO.BOT.REPOSITORY}/issues/20) & [all issues](https://github.com/{INFO.BOT.REPOSITORY}/issues)*"
         embed.add_field(name=f"Issue Tracker", value=issues_value, inline=False)
 
     except Exception as e:
@@ -559,8 +557,8 @@ async def sc_botInfo(interaction: Interaction):
     except Exception as e:
         LOG.LOGGER.error(e)
 
-    embed.add_field(name="GitHub", value=f"[{BOTINFO.REPOSITORY}](https://github.com/{BOTINFO.REPOSITORY})")
-    embed.add_field(name="Invite", value=f"[private invite]({BOTINFO.INVITE})")
+    embed.add_field(name="GitHub", value=f"[{INFO.BOT.REPOSITORY}](https://github.com/{INFO.BOT.REPOSITORY})")
+    embed.add_field(name="Invite", value=f"[private invite]({INFO.BOT.INVITE})")
     embed.set_footer(text=f"Bot ID: {app.id}")
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -652,7 +650,7 @@ async def sc_whatIf(
 async def sc_pgpSet(interaction: Interaction):
     LOG.LOGGER.debug(f"(slash command sent) pgp-set")
     
-    embed = Embed(color=int(HARIBO.INFO), title=f"Help for `{CONFIG.PREFIX}pgp-set [email]`")
+    embed = Embed(color=int(COLOR.HARIBO.INFO), title=f"Help for `{CONFIG.PREFIX}pgp-set [email]`")
     embed.add_field(name="`[email]`", value="The corresponding email to the pgp-key.", inline=False)
     embed.add_field(name="`[keyfile]`", value="The pgp-keyfile as message attachment.", inline=False)
     
@@ -666,7 +664,7 @@ async def sc_pgpGet(interaction: Interaction, email: str=SlashOption(required=Tr
     pgp_path = os.path.abspath(os.path.join(DIR.PGP, f"{email}.asc"))
 
     if not os.path.isfile(pgp_path):
-        response_kwargs["embed"] = Embed(color=int(HARIBO.WARNING), title=f"For the given email address `{email}`, no pgp-key is known.")
+        response_kwargs["embed"] = Embed(color=int(COLOR.HARIBO.WARNING), title=f"For the given email address `{email}`, no pgp-key is known.")
     else:
         response_kwargs["content"] = f"PGP-Key for `{email}`:"
         response_kwargs["file"] = File(pgp_path)
@@ -681,14 +679,14 @@ async def sc_pgpDelete(interaction: Interaction, email: str = SlashOption(requir
 
     emails = set(userData.get("emails", []))
     if email not in emails:
-        embed = Embed(color=int(HARIBO.WARNING), title=f"You are not allowed to delete this email.")
+        embed = Embed(color=int(COLOR.HARIBO.WARNING), title=f"You are not allowed to delete this email.")
         await interaction.response.send_message(embed=embed)
         return
 
     pgp_path = os.path.abspath(os.path.join(DIR.PGP, f"{email}.asc"))
 
     if not os.path.isfile(pgp_path):
-        embed = Embed(color=int(HARIBO.WARNING), title=f"For the given email address no pgp-key is known.")
+        embed = Embed(color=int(COLOR.HARIBO.WARNING), title=f"For the given email address no pgp-key is known.")
         await interaction.response.send_message(embed=embed)
         return
 
@@ -710,7 +708,7 @@ async def mc_pgpSet(message: Message):
     error_ttl = 10
 
     if len(command_args) < 2:
-        embed = Embed(color=int(HARIBO.WARNING), title="no email given")
+        embed = Embed(color=int(COLOR.HARIBO.WARNING), title="no email given")
         await channel.send(embed=embed, delete_after=error_ttl)
         return
 
@@ -724,13 +722,13 @@ async def mc_pgpSet(message: Message):
         error_message = "This email is already registered."
 
     if error_message:
-        embed = Embed(color=int(HARIBO.WARNING), title=error_message)
+        embed = Embed(color=int(COLOR.HARIBO.WARNING), title=error_message)
         await channel.send(embed=embed, delete_after=error_ttl)
         return
 
     keyfile_attachment = attachments[0]
     if not keyfile_attachment.content_type.startswith("text"):
-        embed = Embed(color=int(HARIBO.WARNING), title="The keyfile must be of the `text` content type.")
+        embed = Embed(color=int(COLOR.HARIBO.WARNING), title="The keyfile must be of the `text` content type.")
         await channel.send(embed=embed, delete_after=error_ttl)
         return
 
@@ -739,10 +737,10 @@ async def mc_pgpSet(message: Message):
     if pgp_key.startswith("-----BEGIN PGP PRIVATE KEY BLOCK-----"):
         LOG.LOGGER.warning(f"{message.author.display_name} uploaded a private pgp-key")
         error_message = "YOU ARE AN IDIOT. YOU UPLOADED YOUR PRIVATE KEY.\nIMMEDIATELY DEPRECATE AND REVOKE THIS KEY AND CREATE A NEW PAIR."
-        color = HARIBO.DANGER
+        color = COLOR.HARIBO.DANGER
     elif not pgp_key.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
         error_message = "The attachment must be a public pgp-key."
-        color = HARIBO.WARNING
+        color = COLOR.HARIBO.WARNING
     
     if error_message:
         embed = Embed(color=int(color), title=error_message)
@@ -752,7 +750,7 @@ async def mc_pgpSet(message: Message):
     updateUserData({"emails": (email, "ins")}, message.author.id)
     with open(os.path.join(DIR.PGP, f"{email}.asc"), "w+") as fobj: fobj.write(pgp_key)
 
-    embed = Embed(color=int(HARIBO.SUCCESS), title="Your pgp-key is stored successfully.")
+    embed = Embed(color=int(COLOR.HARIBO.SUCCESS), title="Your pgp-key is stored successfully.")
     await channel.send(embed=embed, delete_after=error_ttl)
 
 # ================= FUNCTIONS ========================================================================================

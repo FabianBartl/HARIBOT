@@ -14,7 +14,7 @@ from math import floor
 
 # ------- own 'libs'  --------------------------------------------------------
 
-from structs import DISCORD, TOKEN, LOG, DIR, HARIBO, DISCORD, XP, BOTINFO
+from structs import TOKEN, LOG, DIR, COLOR, XP, INFO
 import custom_logger
 
 # ================= helper functions =================================================================================
@@ -36,7 +36,7 @@ def sortDictByValue(dictionary: dict, descending: bool=False):
 def sortDictByKey(dictionary: dict, descending: bool=False):
 	return sorted(dictionary.items(), key=lambda x:x[0], reverse=descending)
 
-def checkOwner(checkID: int) -> bool: return checkID == BOTINFO.OWNER
+def checkOwner(checkID: int) -> bool: return checkID == INFO.BOT.OWNER
 
 # ================= data files =======================================================================================
 
@@ -226,7 +226,7 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 		num += 1
 
 		badges_generated += badge_template.format(
-			cell_color = f"{DISCORD.BLACK:#}"
+			cell_color = f"{COLOR.DISCORD.BLACK:#}"
 			
 			, rank = rankings[badge]["rank"]
 			, icon = f"https://raw.githubusercontent.com/FabianBartl/HARIBOT/main/assets/imgs/badges/{badge_config['name']}.{badge_config['type']}"
@@ -240,30 +240,30 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 		GillSansMTStd_Medium_base64 = font_base64
 
 		, background_color = "transparent"
-		, cell_border_color = f"{DISCORD.CHAT_BG:#}"
-		, cell_color = f"{DISCORD.BLACK:#}"
+		, cell_border_color = f"{COLOR.DISCORD.CHAT_BG:#}"
+		, cell_color = f"{COLOR.DISCORD.BLACK:#}"
 
 		, avatar_img = member.display_avatar.url
 		, status = member.status.__str__()
 
-		, nickname_color = f"{HARIBO.LIGHT:#}"
+		, nickname_color = f"{COLOR.HARIBO.LIGHT:#}"
 		, username = member.display_name
 		
-		, score_bar_color = f"{HARIBO.SUCCESS:#}"
-		, score_progress_color = f"{HARIBO.INFO:#}"
-		, score_rating_color = f"{HARIBO.LIGHT:#}"
+		, score_bar_color = f"{COLOR.HARIBO.SUCCESS:#}"
+		, score_progress_color = f"{COLOR.HARIBO.INFO:#}"
+		, score_rating_color = f"{COLOR.HARIBO.LIGHT:#}"
 		, score_progress_border = 20 + score_progress + 2
 		, score_progress = 20 + score_progress
 
-		, current_xp_color = f"{HARIBO.LIGHT:#}"
-		, required_xp_color = f"{HARIBO.LIGHT:#}"
+		, current_xp_color = f"{COLOR.HARIBO.LIGHT:#}"
+		, required_xp_color = f"{COLOR.HARIBO.LIGHT:#}"
 		, current_xp = formatNum(xp_current)
 		, required_xp = formatNum(xp_required)
 
 		, badges = badges_generated
 
-		, ranking_color = f"{HARIBO.LIGHT:#}"
-		, level_color = f"{HARIBO.LIGHT:#}"
+		, ranking_color = f"{COLOR.HARIBO.LIGHT:#}"
+		, level_color = f"{COLOR.HARIBO.LIGHT:#}"
 		, rank = xp_ranking
 		, level = level_current
 
