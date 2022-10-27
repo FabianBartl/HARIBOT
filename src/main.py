@@ -248,7 +248,7 @@ async def on_message_delete(message: Message):
         , "attachments": (attachments, "sub")
     }, author.id)
 
-# ------- scheduled event create, delete, user add, user remove --------------
+# ------- scheduled event create, delete, update, user add, user remove ------
 
 @bot.event
 async def on_guild_scheduled_event_create(_event: ScheduledEvent):
@@ -257,38 +257,84 @@ async def on_guild_scheduled_event_create(_event: ScheduledEvent):
     name    = event.name
     creator = event.creator
     guild   = event.guild
-    LOG.LOGGER.debug(f"(scheduled event created) '{name}' created by {creator.display_name}")
+    LOG.LOGGER.debug(f"(scheduled event) `{name}` created by {creator.display_name}")
 
     updateGuildData({"events_created": (1, "add")}, guild.id)
     updateUserData({"events_created": (1, "add")}, creator.id)
+
+    roleName = f"Event:{event.name[:10]}:{event.id}"
+    await guild.create_role(name=roleName, reason=f"event {event.id} created", mentionable=True)
 
 @bot.event
 async def on_guild_scheduled_event_delete(event: ScheduledEvent):
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.debug(f"(scheduled event deleted) '{name}' deleted")
+    LOG.LOGGER.debug(f"(scheduled event) `{name}` deleted")
 
     updateGuildData({"events_deleted": (1, "add")}, guild.id)
+    
+    roleName = f"Event:{event.name[:10]}:{event.id}"
+    roles = await guild.fetch_roles()
+    if role := findRole(roleName, roles): await role.delete(reason=f"event {event.id} deleted")
+
+@bot.event
+async def on_guild_scheduled_event_update(before: ScheduledEvent, after: ScheduledEvent):
+    name  = event.name
+    guild = event.guild
+    LOG.LOGGER.debug(f"(scheduled event) `{after.name}` updated")
+
+    updateGuildData({"events_updated": (1, "add")}, guild.id)
+    
+    roleNameBefore = f"Event:{before.event.name[:10]}:{event.id}"
+    roleNameAfter = f"Event:{after.event.name[:10]}:{event.id}"
+    roles = await guild.fetch_roles()
+    if role := findRole(roleNameBefore, roles): await role.edit(name=roleNameAfter, reason=f"event `{event.id}` updated")
+    else: await guild.create_role(name=roleName, reason=f"event `{event.id}` updated", mentionable=True)
 
 @bot.event
 async def on_guild_scheduled_event_user_add(event: ScheduledEvent, eventUser: ScheduledEventUser):
     user  = eventUser.user
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.debug(f"(scheduled event user interested) {user.display_name} interested in '{name}'")
+    LOG.LOGGER.debug(f"(scheduled event) {user.display_name} interested in `{name}`")
 
     updateGuildData({"events_interested": (1, "add")}, guild.id)
     updateUserData({"events_interested": (1, "add")}, user.id)
+
+    roleName = f"Event:{event.name[:10]}:{event.id}"
+    member = await guild.fetch_member(user.id)
+    roles = await guild.fetch_roles()
+    if role := findRole(roleName, roles): await member.add_roles(role, reason=f"interested in event `{event.id}`")
+    else: await guild.create_role(name=roleName, reason=f"event `{event.id}` created", mentionable=True)
 
 @bot.event
 async def on_guild_scheduled_event_user_remove(event: ScheduledEvent, eventUser: ScheduledEventUser):
     user  = eventUser.user
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.debug(f"(scheduled event user uninterested) {user.display_name} uninterested in '{name}'")
+    LOG.LOGGER.debug(f"(scheduled event) {user.display_name} uninterested in `{name}`")
 
     updateGuildData({"events_interested": (1, "sub")}, guild.id)
     updateUserData({"events_interested": (1, "sub")}, user.id)
+
+    roleName = f"Event:{event.name[:10]}:{event.id}"
+    member = await guild.fetch_member(user.id)
+    roles = await guild.fetch_roles()
+    if role := findRole(roleName, roles): await member.remove_roles(role, reason=f"uninterested in event `{event.id}`")
+
+# ------- role create, delete, update ----------------------------------------
+
+@bot.event
+async def on_guild_role_create(role: Role):
+    LOG.LOGGER.debug(f"role '{role.name}' created")
+
+@bot.event
+async def on_guild_role_delete(role: Role):
+    LOG.LOGGER.debug(f"role '{role.name}' deleted")
+
+@bot.event
+async def on_guild_role_update(before: Role, after: Role):
+    pass
 
 # ------- presence, user, voice state update ---------------------------------
 

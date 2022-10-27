@@ -5,12 +5,11 @@
 # ------- nextcord lib -------------------------------------------------------
 
 import nextcord
-from nextcord import Member
+from nextcord import Member, Role
 
 # ------- other libs ---------------------------------------------------------
 
-import os, json, re, logging, time
-from math import floor
+import os, json, re, logging
 
 # ------- own 'libs'  --------------------------------------------------------
 
@@ -37,6 +36,11 @@ def sortDictByKey(dictionary: dict, descending: bool=False):
 	return sorted(dictionary.items(), key=lambda x:x[0], reverse=descending)
 
 def checkOwner(checkID: int) -> bool: return checkID == INFO.BOT.OWNER
+
+def findRole(roleName: str, roles: list[Role, ]) -> Role:
+	for role in roles:
+		if role.name == roleName:
+			return role
 
 # ================= data files =======================================================================================
 
