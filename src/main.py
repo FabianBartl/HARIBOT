@@ -677,13 +677,13 @@ async def sc_whatIf(
     updateGuildData({"commands": (1, "add")}, interaction.guild.id)
     updateUserData({"commands": (1, "add")}, interaction.user.id)
 
-    htmlDoc = BeautifulSoup(requests.get("https://xkcd.com/archive/").text, "lxml")
+    htmlDoc = BeautifulSoup(requests.get("https://xkcd.com/archive/").text, "html.parser")
     image_count = int(htmlDoc.select_one("#middleContainer > a:nth-child(5)")["href"][1:-1])
     LOG.LOGGER.debug(f"{image_count=}, {htmlDoc=}")
 
     num = random.randint(0, image_count) if num < 0 else image_count
 
-    htmlDoc = BeautifulSoup(requests.get(f"https://xkcd.com/{num}/").text, "lxml")
+    htmlDoc = BeautifulSoup(requests.get(f"https://xkcd.com/{num}/").text, "html.parser")
     image_title = htmlDoc.select_one("#ctitle").text
     image_url = htmlDoc.select_one("#middleContainer > a:nth-child(8)")["href"]
     LOG.LOGGER.debug(f"{image_title=}, {image_url=}, {htmlDoc=}")
