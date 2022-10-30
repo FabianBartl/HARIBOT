@@ -279,17 +279,16 @@ async def on_guild_scheduled_event_delete(event: ScheduledEvent):
 
 @bot.event
 async def on_guild_scheduled_event_update(before: ScheduledEvent, after: ScheduledEvent):
-    name  = event.name
-    guild = event.guild
+    guild = before.guild
     LOG.LOGGER.debug(f"(scheduled event) `{after.name}` updated")
 
     updateGuildData({"events_updated": (1, "add")}, guild.id)
     
-    roleNameBefore = f"Event:{before.event.name[:10]}:{event.id}"
-    roleNameAfter = f"Event:{after.event.name[:10]}:{event.id}"
+    roleNameBefore = f"Event:{before.event.name[:10]}:{before.id}"
+    roleNameAfter = f"Event:{after.event.name[:10]}:{after.id}"
     roles = await guild.fetch_roles()
-    if role := findRole(roleNameBefore, roles): await role.edit(name=roleNameAfter, reason=f"event `{event.id}` updated")
-    else: await guild.create_role(name=roleName, reason=f"event `{event.id}` updated", mentionable=True)
+    if role := findRole(roleNameBefore, roles): await role.edit(name=roleNameAfter, reason=f"event `{after.id}` updated")
+    else: await guild.create_role(name=roleNameAfter, reason=f"event `{before.id}` updated", mentionable=True)
 
 @bot.event
 async def on_guild_scheduled_event_user_add(event: ScheduledEvent, eventUser: ScheduledEventUser):
