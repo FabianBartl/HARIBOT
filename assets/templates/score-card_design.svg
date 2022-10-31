@@ -57,11 +57,11 @@
             .place2 { fill: #C0C0C0; }
             .place3 { fill: #CD7F32; }
 
-            #status.online    { fill: #57f287; }
-            #status.offline   { fill: #23272a; }
-            #status.invisible { fill: #23272a; }
-            #status.idle      { fill: #fee75c; }
-            #status.dnd       { fill: #ed4245; }
+            #status.online    { fill: #44b37f; }
+            #status.offline   { fill: #747f8d; }
+            #status.invisible { fill: #747f8d; }
+            #status.idle      { fill: #faa51b; }
+            #status.dnd       { fill: #f04848; }
             
             .hidden { display: none !important; }
             @font-face {

@@ -41,11 +41,11 @@
             .place2 {BO} fill: #C0C0C0; {BC}
             .place3 {BO} fill: #CD7F32; {BC}
 
-            #status.online    {BO} fill: #57f287; {BC}
-            #status.offline   {BO} fill: #23272a; {BC}
-            #status.invisible {BO} fill: #23272a; {BC}
-            #status.idle      {BO} fill: #fee75c; {BC}
-            #status.dnd       {BO} fill: #ed4245; {BC}
+            #status.online    {BO} fill: #44b37f; {BC}
+            #status.offline   {BO} fill: #747f8d; {BC}
+            #status.invisible {BO} fill: #747f8d; {BC}
+            #status.idle      {BO} fill: #faa51b; {BC}
+            #status.dnd       {BO} fill: #f04848; {BC}
             
             .hidden {BO} display: none !important; {BC}
 
