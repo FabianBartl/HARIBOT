@@ -39,6 +39,14 @@
         "name": "events_created",
         "type": "svg"
     },
+    "87806589-77d2-472c-8f83-6c869a0a1a61": {
+        "name": "events_joined",
+        "ignore": true
+    },
+    "30922604-d120-4661-b840-e897740c130c": {
+        "name": "events_interested",
+        "ignore": true
+    },
     "9e94ef09-d903-4304-ad4a-aba1f5b86d2e": {
         "name": "deleted",
         "ignore": true
