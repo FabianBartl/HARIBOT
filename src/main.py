@@ -284,8 +284,8 @@ async def on_guild_scheduled_event_update(before: ScheduledEvent, after: Schedul
 
     updateGuildData({"events_updated": (1, "add")}, guild.id)
     
-    roleNameBefore = f"Event:{before.event.name[:10]}:{before.id}"
-    roleNameAfter = f"Event:{after.event.name[:10]}:{after.id}"
+    roleNameBefore = f"Event:{before.name[:10]}:{before.id}"
+    roleNameAfter = f"Event:{after.name[:10]}:{after.id}"
     roles = await guild.fetch_roles()
     if role := findRole(roleNameBefore, roles): await role.edit(name=roleNameAfter, reason=f"event `{after.id}` updated")
     else: await guild.create_role(name=roleNameAfter, reason=f"event `{before.id}` updated", mentionable=True)
