@@ -172,7 +172,7 @@ def backupLogFile(dstPath: str, srcPath: str=LOG.PATH, *args) -> tuple[str, int]
 
 # ================= score, ranking ===========================================
 
-def getRankings(member: Member) -> dict[str: dict[int, int]]:
+def getRankings(member: Member) -> dict[str: dict[int, int], ]:
 	users_data = dict()
 	path = os.path.join(DIR.DATA, "users")
 	for filename in os.listdir(path):
