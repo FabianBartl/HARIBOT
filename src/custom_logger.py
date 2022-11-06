@@ -17,7 +17,7 @@ class CustomFormatter(logging.Formatter):
         self.error_color    = Fore.RED+Style.BRIGHT
         self.critical_color = Fore.WHITE+Back.RED
         self.reset_color    = Fore.RESET+Back.RESET+Style.RESET_ALL
-
+		
         super().__init__()
         self.fmt = fmt
         if colored:
@@ -44,7 +44,7 @@ def setBasicConfig(level: int, fmt: str, date_fmt: str, path: str, colored: bool
     stdout_handler.setFormatter(CustomFormatter(fmt, colored))
 
     # Create file handler for logging to a file
-    file_handler = logging.FileHandler(path)
+    file_handler = logging.FileHandler(path, encoding="utf-8")
     file_handler.setLevel(level)
     file_handler.setFormatter(logging.Formatter(fmt))
 
