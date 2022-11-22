@@ -51,7 +51,7 @@ def updateDataFile(newData: dict[str: tuple[int, str], ], dataPath: str, fileID:
 
 	if not os.path.exists(filePath): fileData = {}
 	else:
-		with open(filePath, "r") as fobj: fileData = json.load(fobj)
+		with open(filePath, "r", encoding="utf-8") as fobj: fileData = json.load(fobj)
 	
 	for key in newData:
 		value, mode = newData[key]
@@ -88,7 +88,7 @@ def updateDataFile(newData: dict[str: tuple[int, str], ], dataPath: str, fileID:
 			elif mode == "del": pass
 			elif mode == "ign": pass
 	
-	with open(filePath, "w+") as fobj: json.dump(fileData, fobj)
+	with open(filePath, "w+", encoding="utf-8") as fobj: json.dump(fileData, fobj)
 	LOG.LOGGER.debug(f"{dataPath}/{fileID} data updated: {fileData}")
 
 def updateGuildData   (newData: dict[str: tuple[int, str], ], fileID: int) -> None: updateDataFile(newData, "guilds",    fileID)
@@ -100,7 +100,7 @@ def updateReactionData(newData: dict[str: tuple[int, str], ], fileID: int) -> No
 def getDataFile(dataPath: str, fileID: int) -> dict[str: int, ]:
 	filePath = os.path.abspath(os.path.join(DIR.DATA, dataPath, f"{fileID}.json"))
 	if not os.path.exists(filePath): return dict()
-	with open(filePath, "r") as fobj: data = json.load(fobj)
+	with open(filePath, "r", encoding="utf-8") as fobj: data = json.load(fobj)
 	LOG.LOGGER.debug(f"{dataPath}/{fileID} data read")
 	return data
 
@@ -115,7 +115,7 @@ def setupLogger(colored: bool=False, level: int=logging.INFO):
 	return LOG.LOGGER
 
 def getLogFile(srcPath: str=LOG.PATH, rows: int=21, max_chars: int=1_900) -> str:
-	with open(LOG.PATH, "r") as fobj: lines = fobj.readlines()
+	with open(LOG.PATH, "r", encoding="utf-8") as fobj: lines = fobj.readlines()
 	
 	length = max_chars // rows
 	log_data = list()
@@ -137,8 +137,8 @@ def getLogFile(srcPath: str=LOG.PATH, rows: int=21, max_chars: int=1_900) -> str
 	return "".join(log_data)[:max_chars]
 
 def saveLogFile(dstPath: str, srcPath: str=LOG.PATH) -> int:
-	with open(srcPath, "r") as fsrc:
-		with open(dstPath, "w+") as fdst:
+	with open(srcPath, "r", encoding="utf-8") as fsrc:
+		with open(dstPath, "w+", encoding="utf-8") as fdst:
 			destLines = fsrc.readlines()
 			destSize = len("\n".join(destLines))
 			fdst.writelines(destLines)
@@ -146,7 +146,7 @@ def saveLogFile(dstPath: str, srcPath: str=LOG.PATH) -> int:
 	return destSize
 
 def clearLogFile(srcPath: str=LOG.PATH) -> None:
-	with open(srcPath, "w+") as fobj: pass
+	with open(srcPath, "w+", encoding="utf-8") as fobj: pass
 	LOG.LOGGER.info(f"file `{srcPath}` cleared")
 
 def resetLogFiles(logDir: str=LOG.DIR, logPath: str=LOG.PATH) -> list[str, ]:
@@ -176,11 +176,11 @@ def getRankings(member: Member) -> dict[str: dict[int, int], ]:
 	users_data = dict()
 	path = os.path.join(DIR.DATA, "users")
 	for filename in os.listdir(path):
-		with open(os.path.join(path, filename), "r") as fobj: data = json.load(fobj)
+		with open(os.path.join(path, filename), "r", encoding="utf-8") as fobj: data = json.load(fobj)
 		last_user = filename.split(".")[0]
 		users_data[last_user] = data
 	
-	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r") as fobj: badges_config = json.load(fobj)
+	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r", encoding="utf-8") as fobj: badges_config = json.load(fobj)
 
 	rankings = dict()
 	for badgeID in badges_config:
@@ -209,10 +209,10 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 	
 	score_progress = (230 / xp_difference) * xp_collected
 	
-	with open(os.path.join(DIR.TEMPLATES, "score-card_template.svg"), "r") as fobj: scoreCard_template = fobj.read()
-	with open(os.path.join(DIR.TEMPLATES, "badge_template.svg"), "r") as fobj: badge_template = fobj.read()
-	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r") as fobj: font_base64 = fobj.read()
-	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r") as fobj: badges_config = json.load(fobj)
+	with open(os.path.join(DIR.TEMPLATES, "score-card_template.svg"), "r", encoding="utf-8") as fobj: scoreCard_template = fobj.read()
+	with open(os.path.join(DIR.TEMPLATES, "badge_template.svg"), "r", encoding="utf-8") as fobj: badge_template = fobj.read()
+	with open(os.path.join(DIR.FONTS, "GillSansMTStd_Medium.base64"), "r", encoding="utf-8") as fobj: font_base64 = fobj.read()
+	with open(os.path.join(DIR.CONFIGS, "badges.json"), "r", encoding="utf-8") as fobj: badges_config = json.load(fobj)
 	
 	rankings = getRankings(member)
 	xp_ranking = rankings.pop("4fda574a-5f5a-4c58-a606-759fd7439f26")["rank"]
@@ -276,7 +276,7 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 	)
 
 	score_card_file_func = lambda ext: os.path.abspath(f"{os.path.join(DIR.TEMP, f'score-card_{member.id}')}.{ext}")
-	with open(score_card_file_func("svg"), "w+") as fobj: fobj.write(scoreCard_generated)
+	with open(score_card_file_func("svg"), "w+", encoding="utf-8") as fobj: fobj.write(scoreCard_generated)
 	
 	error = svg2png(score_card_file_func("svg"), score_card_file_func("png"), 3)
 	msg = f"svg2png returned error code `{error}`"
