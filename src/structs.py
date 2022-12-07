@@ -136,3 +136,9 @@ class INFO:
 	class SERVER:
 		INVITE = "GVs3hmCmmJ"
 		TEAMUP = "ks7yff4qzz9avhm6aa"
+
+# ------- (format string) templates ------------------------------------------
+
+class TEMPLATE:
+	EVENT_ROLENAME = lambda event_name, event_id: f"Ev:{event_name[:25]}:{event_id}"
+

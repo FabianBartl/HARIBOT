@@ -280,6 +280,6 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 	
 	error = svg2png(score_card_file_func("svg"), score_card_file_func("png"), 3)
 	msg = f"svg2png returned error code `{error}`"
-	LOG.LOGGER.debug(msg) if error == 0 else LOG.LOGGER.error(msg)
+	LOG.LOGGER.debug(msg) if not error else LOG.LOGGER.error(msg)
 
 	return score_card_file_func

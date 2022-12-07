@@ -18,7 +18,7 @@ from urllib.request import urlopen
 
 # ------- own 'libs'  --------------------------------------------------------
 
-from structs import INFO, TOKEN, COLOR, CONFIG, LOG
+from structs import INFO, TOKEN, COLOR, CONFIG, LOG, TEMPLATE
 from functions import *
 
 # ================= SETUP ============================================================================================
@@ -257,35 +257,35 @@ async def on_guild_scheduled_event_create(_event: ScheduledEvent):
     name    = event.name
     creator = event.creator
     guild   = event.guild
-    LOG.LOGGER.debug(f"(scheduled event) `{name}` created by {creator.display_name}")
+    LOG.LOGGER.warning(f"(scheduled event) `{name}` created by {creator.display_name}")
 
     updateGuildData({"events_created": (1, "add")}, guild.id)
     updateUserData({"events_created": (1, "add")}, creator.id)
 
-    roleName = f"Event:{event.name[:10]}:{event.id}"
+    roleName = TEMPLATE.EVENT_ROLENAME(event_name=event.name, event_id=event.id)
     await guild.create_role(name=roleName, reason=f"event {event.id} created", mentionable=True)
 
 @bot.event
 async def on_guild_scheduled_event_delete(event: ScheduledEvent):
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.debug(f"(scheduled event) `{name}` deleted")
+    LOG.LOGGER.warning(f"(scheduled event) `{name}` deleted")
 
     updateGuildData({"events_deleted": (1, "add")}, guild.id)
     
-    roleName = f"Event:{event.name[:10]}:{event.id}"
+    roleName = TEMPLATE.EVENT_ROLENAME(event_name=event.name, event_id=event.id)
     roles = await guild.fetch_roles()
     if role := findRole(roleName, roles): await role.delete(reason=f"event {event.id} deleted")
 
 @bot.event
 async def on_guild_scheduled_event_update(before: ScheduledEvent, after: ScheduledEvent):
     guild = before.guild
-    LOG.LOGGER.debug(f"(scheduled event) `{after.name}` updated")
+    LOG.LOGGER.warning(f"(scheduled event) `{after.name}` updated")
 
     updateGuildData({"events_updated": (1, "add")}, guild.id)
     
-    roleNameBefore = f"Event:{before.name[:10]}:{before.id}"
-    roleNameAfter = f"Event:{after.name[:10]}:{after.id}"
+    roleNameBefore = TEMPLATE.EVENT_ROLENAME(event_name=before.name, event_id=before.id)
+    roleNameAfter = TEMPLATE.EVENT_ROLENAME(event_name=after.name, event_id=after.id)
     roles = await guild.fetch_roles()
     if role := findRole(roleNameBefore, roles): await role.edit(name=roleNameAfter, reason=f"event `{after.id}` updated")
     else: await guild.create_role(name=roleNameAfter, reason=f"event `{before.id}` updated", mentionable=True)
@@ -295,12 +295,12 @@ async def on_guild_scheduled_event_user_add(event: ScheduledEvent, eventUser: Sc
     user  = eventUser.user
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.debug(f"(scheduled event) {user.display_name} interested in `{name}`")
+    LOG.LOGGER.warning(f"(scheduled event) {user.display_name} interested in `{name}`")
 
     updateGuildData({"events_interested": (1, "add")}, guild.id)
     updateUserData({"events_interested": (1, "add")}, user.id)
 
-    roleName = f"Event:{event.name[:10]}:{event.id}"
+    roleName = TEMPLATE.EVENT_ROLENAME(event_name=event.name, event_id=event.id)
     member = await guild.fetch_member(user.id)
     roles = await guild.fetch_roles()
     if role := findRole(roleName, roles): await member.add_roles(role, reason=f"interested in event `{event.id}`")
@@ -311,12 +311,12 @@ async def on_guild_scheduled_event_user_remove(event: ScheduledEvent, eventUser:
     user  = eventUser.user
     name  = event.name
     guild = event.guild
-    LOG.LOGGER.debug(f"(scheduled event) {user.display_name} uninterested in `{name}`")
+    LOG.LOGGER.warning(f"(scheduled event) {user.display_name} uninterested in `{name}`")
 
     updateGuildData({"events_interested": (1, "sub")}, guild.id)
     updateUserData({"events_interested": (1, "sub")}, user.id)
 
-    roleName = f"Event:{event.name[:10]}:{event.id}"
+    roleName = TEMPLATE.EVENT_ROLENAME(event_name=event.name, event_id=event.id)
     member = await guild.fetch_member(user.id)
     roles = await guild.fetch_roles()
     if role := findRole(roleName, roles): await member.remove_roles(role, reason=f"uninterested in event `{event.id}`")
