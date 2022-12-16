@@ -1,4 +1,2 @@
 cd src
-echo "Logging level"
-read -r LOGGING_LEVEL
-python main.py colored LOGGING_LEVEL
+sudo nohup python3 main.py colored 20 & disown
