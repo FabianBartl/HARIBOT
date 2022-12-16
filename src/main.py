@@ -604,6 +604,12 @@ async def sc_botInfo(interaction: Interaction):
 
     embed.add_field(name="GitHub", value=f"[{INFO.BOT.REPOSITORY}](https://github.com/{INFO.BOT.REPOSITORY})")
     embed.add_field(name="Invite", value=f"[private invite]({INFO.BOT.INVITE})")
+
+    uptime_seconds = time.time() - INFO.BOT.START_TIME
+    uptime_days = uptime_seconds / 60 / 60 / 24
+    uptime_hours = datetime.fromtimestamp(uptime_seconds)
+
+    embed.add_field(name="Uptime", value=f"{uptime_days:.0f}:{uptime_hours.strftime('%H:%M:%S')} days", inline=False)
     embed.set_footer(text=f"Bot ID: {app.id}")
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
