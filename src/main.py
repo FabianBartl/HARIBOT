@@ -480,7 +480,7 @@ async def sc_ping(interaction: Interaction):
 async def sc_score(
         interaction: Interaction
         , member: Member = SlashOption(required=False)
-        , formatID: int = SlashOption(required=False, choices={"SVG": 0, "PNG": 1}, default=1, name="format")
+#        , formatID: int = SlashOption(required=False, choices={"SVG": 0, "PNG": 1, "TXT": 2}, default=2, name="format")
         , private: bool = SlashOption(required=False, default=CONFIG.EPHEMERAL)
 ):
     LOG.LOGGER.debug(f"(slash command sent) score: {member=}")
@@ -489,16 +489,18 @@ async def sc_score(
     updateUserData({"commands": (1, "add")}, interaction.user.id)
 
     if type(member) is not Member: member = interaction.user
-    formats = ["svg", "png"]
-    format = formats[formatID]
+    #formats = ["svg", "png", "txt"]
+    #format = formats[formatID]
 
-    await interaction.response.defer(ephemeral=private)
-    score_card_file_func = createScoreCard(member)
-    await interaction.followup.send(file=File(score_card_file_func(format)), ephemeral=private)
+    await interaction.response.send_message("```js\n" + createScoreCard(member) + "\n```", ephemeral=private)
+
+    #await interaction.response.defer(ephemeral=private)
+    #score_card_file_func = createScoreCard(member)
+    #await interaction.followup.send(file=File(score_card_file_func(format)), ephemeral=private)
     
-    await asyncio.sleep(1)
-    for format in formats: os.remove(score_card_file_func(format))
-    LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file_func('*')}`")
+    #await asyncio.sleep(1)
+    #for format in formats: os.remove(score_card_file_func(format))
+    #LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file_func('*')}`")
 
 # ------- member, server, bot info -------------------------------------------
 
@@ -609,7 +611,7 @@ async def sc_botInfo(interaction: Interaction):
     uptime_days = uptime_seconds / 60 / 60 / 24
     uptime_hours = datetime.fromtimestamp(uptime_seconds)
 
-    embed.add_field(name="Uptime", value=f"{uptime_days:.0f}:{uptime_hours.strftime('%H:%M:%S')} days", inline=False)
+    embed.add_field(name="Uptime", value=f"`{uptime_days:.0f}:{uptime_hours.strftime('%H:%M:%S')} days`", inline=False)
     embed.set_footer(text=f"Bot ID: {app.id}")
 
     await interaction.response.send_message(embed=embed, ephemeral=True)
@@ -814,4 +816,16 @@ async def resolve_command(message: Message):
 
 # ================= EXECUTE ==========================================================================================
 
-if __name__ == "__main__": bot.run(TOKEN.DISCORD)
+if __name__ == "__main__":
+    errorCounter = 0
+    while True:
+        if errorCounter > 10:
+            os.system("sudo nohup bash restart.sh & disown")
+            exit(-1)
+
+        try:
+            bot.run(TOKEN.DISCORD)
+        except Exception as exc:
+            errorCounter += 1
+            LOG.LOGGER.error(f"Exception: {exc}")
+            time.sleep(5)

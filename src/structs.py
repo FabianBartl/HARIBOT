@@ -3,7 +3,7 @@
 
 # ------- other libs ---------------------------------------------------------
 
-import os, logging, random, json, time
+import os, logging, random, json, time, psutil
 from math import sqrt, floor
 
 # ================= OBJECTS, FUNCTION COLLECTIONS, DATA CLASSES ======================================================
@@ -132,7 +132,8 @@ class INFO:
 		REPOSITORY  = "FabianBartl/HARIBOT"
 		CREATOR     = "Fabian Bartl"
 		OWNER       = 386249332711620608
-		START_TIME  = time.time()
+		# The bot have problems to run continuously on my raspberry pi, so it restarts after some hours. So the uptime displayed by time.time() won't be larger than some hours. The only task of my raspberry pi is, to host the bot, so its bootime is about the start time of th bot.
+		START_TIME  = psutil.boot_time()
 
 	class SERVER:
 		INVITE = "GVs3hmCmmJ"

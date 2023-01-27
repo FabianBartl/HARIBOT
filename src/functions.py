@@ -239,6 +239,45 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 			, x_background = x
 			, x_img = x + 2.5
 		)
+	if not member.is_on_mobile():
+		scoreCard_generated_ascii = """╔═══════════════════════════════════════════╗
+║ {NAME}  RANK #{RANK}  LEVEL {LEVEL} ║
+║                                           ║
+║ {XP} ║
+║ [{PROGRESS}] ║
+║                                           ║
+╚═══════════════════════════════════════════╝"""
+
+		return scoreCard_generated_ascii.format(
+			NAME = member.display_name[:22].ljust(22),
+			RANK = int(xp_ranking),
+			LEVEL = int(level_current),
+			XP = f"{formatNum(xp_current)} / {formatNum(xp_required)}  XP".ljust(41),
+			PROGRESS = str((int(score_progress) // 39) * "■").ljust(39)
+		)
+
+	else:
+		scoreCard_generated_ascii = """╔══════════════════════╗
+║                      ║
+║ {NAME} ║
+║                      ║
+║ RANK #{RANK} ║
+║ LEVEL {LEVEL} ║
+║                      ║
+║ {XP} ║
+║ [{PROGRESS}] ║
+║                      ║
+╚══════════════════════╝"""
+		
+		return scoreCard_generated_ascii.format(
+			NAME = member.display_name[:20].ljust(20),
+			RANK = str(int(xp_ranking)).ljust(14),
+			LEVEL = str(int(level_current)).ljust(14),
+			XP = f"{formatNum(xp_current)} / {formatNum(xp_required)}  XP".ljust(20),
+			PROGRESS = str((int(score_progress) // 18Es gibt jetzt eine Handy Version von der ASCII Score Card, die sollte auch auf ganz schmalen Displays nicht umbrechen.) * "■").ljust(18)
+		)
+
+	#######################
 
 	scoreCard_generated = scoreCard_template.format(
 		GillSansMTStd_Medium_base64 = font_base64
