@@ -274,7 +274,7 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 			RANK = str(int(xp_ranking)).ljust(14),
 			LEVEL = str(int(level_current)).ljust(14),
 			XP = f"{formatNum(xp_current)} / {formatNum(xp_required)}  XP".ljust(20),
-			PROGRESS = str((int(score_progress) // 18Es gibt jetzt eine Handy Version von der ASCII Score Card, die sollte auch auf ganz schmalen Displays nicht umbrechen.) * "■").ljust(18)
+			PROGRESS = str((int(score_progress) // 18) * "■").ljust(18)
 		)
 
 	#######################
