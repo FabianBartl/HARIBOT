@@ -249,9 +249,9 @@ def createScoreCard(member: Member) -> object: # -> lambda-function
 ╚═══════════════════════════════════════════╝"""
 
 		return scoreCard_generated_ascii.format(
-			NAME = member.display_name[:22].ljust(22),
-			RANK = int(xp_ranking),
-			LEVEL = int(level_current),
+			NAME = member.display_name[:19].ljust(19),
+			RANK = str(int(xp_ranking)).ljust(3),
+			LEVEL = str(int(level_current)).ljust(3),
 			XP = f"{formatNum(xp_current)} / {formatNum(xp_required)}  XP".ljust(41),
 			PROGRESS = str((int(score_progress) // 39) * "■").ljust(39)
 		)
