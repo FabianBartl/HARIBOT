@@ -20,6 +20,8 @@ from urllib.request import urlopen
 
 from structs import INFO, TOKEN, COLOR, CONFIG, LOG, TEMPLATE
 from functions import *
+from calendar_manager import CalendarManager
+calendar_manager = CalendarManager()
 
 # ================= SETUP ============================================================================================
 
@@ -95,7 +97,7 @@ async def on_guild_join(guild: Guild):
     for member in guild.members:
         if member.bot: bots  += 1
         else:          users += 1
-    
+
     updateGuildData({
         "bots": (bots, "add")
         , "users": (users, "add")
@@ -265,6 +267,8 @@ async def on_guild_scheduled_event_create(_event: ScheduledEvent):
     roleName = TEMPLATE.EVENT_ROLENAME(event_name=event.name, event_id=event.id)
     await guild.create_role(name=roleName, reason=f"event {event.id} created", mentionable=True)
 
+    calendar_manager.create_calendar_entry(guild.id, _event.id, name, event.description, event.start_time, event.end_time)
+
 @bot.event
 async def on_guild_scheduled_event_delete(event: ScheduledEvent):
     name  = event.name
@@ -272,23 +276,29 @@ async def on_guild_scheduled_event_delete(event: ScheduledEvent):
     LOG.LOGGER.warning(f"(scheduled event) `{name}` deleted")
 
     updateGuildData({"events_deleted": (1, "add")}, guild.id)
-    
+
     roleName = TEMPLATE.EVENT_ROLENAME(event_name=event.name, event_id=event.id)
     roles = await guild.fetch_roles()
     if role := findRole(roleName, roles): await role.delete(reason=f"event {event.id} deleted")
 
+    calendar_manager.delete_calendar_entry(guild.id, event.id)
+
 @bot.event
 async def on_guild_scheduled_event_update(before: ScheduledEvent, after: ScheduledEvent):
+    name = after.name
     guild = before.guild
     LOG.LOGGER.warning(f"(scheduled event) `{after.name}` updated")
 
     updateGuildData({"events_updated": (1, "add")}, guild.id)
-    
+
     roleNameBefore = TEMPLATE.EVENT_ROLENAME(event_name=before.name, event_id=before.id)
     roleNameAfter = TEMPLATE.EVENT_ROLENAME(event_name=after.name, event_id=after.id)
     roles = await guild.fetch_roles()
     if role := findRole(roleNameBefore, roles): await role.edit(name=roleNameAfter, reason=f"event `{after.id}` updated")
     else: await guild.create_role(name=roleNameAfter, reason=f"event `{before.id}` updated", mentionable=True)
+
+    calendar_manager.update_calendar_entry(guild.id, before.id, name, after.description, after.start_time,
+                                           after.end_time)
 
 @bot.event
 async def on_guild_scheduled_event_user_add(event: ScheduledEvent, eventUser: ScheduledEventUser):
@@ -497,7 +507,7 @@ async def sc_score(
     #await interaction.response.defer(ephemeral=private)
     #score_card_file_func = createScoreCard(member)
     #await interaction.followup.send(file=File(score_card_file_func(format)), ephemeral=private)
-    
+
     #await asyncio.sleep(1)
     #for format in formats: os.remove(score_card_file_func(format))
     #LOG.LOGGER.warning(f"deleted temp score card files `{score_card_file_func('*')}`")
@@ -702,17 +712,17 @@ async def sc_whatIf(
 @bot.slash_command(name="pgp-set", description=f"Just the help to set a pgp-key with `{CONFIG.PREFIX}pgp-set`.")
 async def sc_pgpSet(interaction: Interaction):
     LOG.LOGGER.debug(f"(slash command sent) pgp-set")
-    
+
     embed = Embed(color=int(COLOR.HARIBO.INFO), title=f"Help for `{CONFIG.PREFIX}pgp-set [email]`")
     embed.add_field(name="`[email]`", value="The corresponding email to the pgp-key.", inline=False)
     embed.add_field(name="`[keyfile]`", value="The pgp-keyfile as message attachment.", inline=False)
-    
+
     await interaction.response.send_message(embed=embed, ephemeral=True)
 
 @bot.slash_command(name="pgp-get", description="Returns the pgp-key to the given email address.")
 async def sc_pgpGet(interaction: Interaction, email: str=SlashOption(required=True)):
     LOG.LOGGER.debug(f"(slash command sent) pgp-get: {email=}")
-    
+
     response_kwargs = dict()
     pgp_path = os.path.abspath(os.path.join(DIR.PGP, f"{email}.asc"))
 
@@ -746,6 +756,45 @@ async def sc_pgpDelete(interaction: Interaction, email: str = SlashOption(requir
     os.remove(pgp_path)
     updateUserData({"emails": (email, "rem")}, userID)
     await interaction.response.send_message(f"Your email `{email}` and the corresponding pgp-key were deleted from your user data.", ephemeral=CONFIG.EPHEMERAL)
+
+@bot.slash_command(name="calendar_add", description="Add a Google calendar connection to this Server to sync Events automatically")
+async def sc_calendarAdd(interaction: Interaction):
+    guildID = interaction.guild.id
+    LOG.LOGGER.debug(f"(slash command sent) calendar_add")
+
+    sign_up_link = calendar_manager.create_sign_up_link(guildID)
+
+    if sign_up_link is None:
+        await interaction.response.send_message(f"There is already a calendar linked to this server."
+                                                f" Use /calendar_delete first, if you want to change the calendar.", ephemeral=CONFIG.EPHEMERAL)
+    else:
+        await interaction.response.send_message(f"Please use the link below and confirm the connection, by returning"
+                                                f" the acquired code with /calendar_confirm {sign_up_link}", ephemeral=CONFIG.EPHEMERAL)
+
+@bot.slash_command(name="calendar_confirm", description="Link a google calendar")
+async def sc_calendarConfirm(interaction: Interaction, code: str = SlashOption(required=True)):
+    guildID = interaction.guild.id
+    LOG.LOGGER.debug(f"(slash command sent) calendar_confirm: {code=}")
+
+    successful = calendar_manager.save_sign_up_code(guildID, code)
+
+    if successful:
+        await interaction.response.send_message(f"Calendar successfully added.", ephemeral=CONFIG.EPHEMERAL)
+    else:
+        await interaction.response.send_message(f"Code invalid, please try again.", ephemeral=CONFIG.EPHEMERAL)
+
+
+@bot.slash_command(name="calendar_delete", description="Link a google calendar")
+async def sc_calendarDelete(interaction: Interaction):
+    guildID = interaction.guild.id
+    LOG.LOGGER.debug(f"(slash command sent) calendar_delete")
+
+    successful = calendar_manager.delete_credentials(guildID)
+
+    if successful:
+        await interaction.response.send_message(f"Calendar Credentials were deleted.", ephemeral=CONFIG.EPHEMERAL)
+    else:
+        await interaction.response.send_message(f"There is no calendar linked.", ephemeral=CONFIG.EPHEMERAL)
 
 # ================= COMMANDS =========================================================================================
 
@@ -794,12 +843,12 @@ async def mc_pgpSet(message: Message):
     elif not pgp_key.startswith("-----BEGIN PGP PUBLIC KEY BLOCK-----"):
         error_message = "The attachment must be a public pgp-key."
         color = COLOR.HARIBO.WARNING
-    
+
     if error_message:
         embed = Embed(color=int(color), title=error_message)
         await channel.send(embed=embed, delete_after=error_ttl)
         return
-    
+
     updateUserData({"emails": (email, "ins")}, message.author.id)
     with open(os.path.join(DIR.PGP, f"{email}.asc"), "w+") as fobj: fobj.write(pgp_key)
 
