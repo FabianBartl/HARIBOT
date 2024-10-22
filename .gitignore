@@ -1,5 +1,10 @@
+# python library cache
+__pycache__*
+# collected data
+data*
+# logging files
+logs*
+*.log
+# credentials and tokens
 tokens.json
 google_api_credentials.json
-data*
-__pycache__*
-log*
