@@ -82,10 +82,10 @@ class Group__scheduled_event_role_management:
         LOGGER.info(f"event {event} created")
         # create role, fetch event for caching and add creator
         event_role = await event.guild.create_role(name=create_event_role_name(event), reason=f"event {event} created", mentionable=True)
-        # if creator := event.guild.get_member(event.creator.id):
-            # await creator.add_roles(event_role, reason=f"creator of event {event}")
+        if creator := event.guild.get_member(event.creator.id):
+            await creator.add_roles(event_role, reason=f"creator of event {event}")
         # store in database
-        # discord_event = DiscordEvent(event, event_role).insert_into_database(DBCONN)
+        discord_event = DiscordEvent(event, event_role).insert_into_database(DBCONN)
         print(DiscordEvent(DBCONN))
         # TODO: calender integration
 
