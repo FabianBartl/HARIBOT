@@ -1,25 +1,30 @@
 
 # define and parse cli arguments
 import argparse
+import logging
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-l", "--log-level", type=int, help="The minimal logging level", required=True)
+parser.add_argument("-l", "--log-level", type=int, default=logging.INFO, help="The minimal logging level")
 parser.add_argument("-nc", "--no-color", action="store_true", help="No colored console output")
 ARGS = parser.parse_args()
 
 # setup custom logger
-import logging
 import os
 from datetime import datetime
 import custom_logger as clog
 
 log_level = ARGS.log_level
-log_file = datetime.strftime(datetime.now(), f"%Y-%m-%d_%H-%M-%S_{os.path.basename(__file__)}.log")
+log_file = "{time}_{name}.log".format(time=datetime.strftime(datetime.now(), "%Y-%m-%d_%H-%M-%S"), name=os.path.basename(__file__))
 log_path = os.path.join("logs", log_file)
 log_color = not ARGS.no_color
 clog.setBasicConfig(log_level, "%(asctime)s | %(levelname)8s | %(message)s", "%Y-%m-%d %H:%M:%S", log_path, use_color=log_color)
 LOGGER = clog.getLogger()
 
+# open database connection
+import sqlite3
+db_path = os.path.join("data", "haribot-db.db")
+DBCONN = sqlite3.connect(db_path)
+DBCURSER = DBCONN.cursor()
 
 import sys
 import json
@@ -31,8 +36,8 @@ from nextcord import Interaction, VoiceState, VoiceChannel
 from nextcord import Member, User, Role, Intents
 from nextcord.ext.commands import Bot
 
-# import all outsourced functions and init the bot
-from functions import *
+# setup the nextcoord bot and load outsourced functions
+from custom_functions import *
 BOT = Bot(intents=Intents.all())
 
 
@@ -67,16 +72,21 @@ TODO:
 class Group__scheduled_event_role_management:
     @BOT.event
     async def on_guild_scheduled_event_create(event: ScheduledEvent):
-        global LOGGER
+        global LOGGER, DBCURSER
         """
         - create role for scheduled event containing name and id
         - give scheduled event creator this role
+        - store the event in the local database
         - add event to calender by @noeppi-noeppi
         """
         LOGGER.info(f"event {event} created")
+        # create role, fetch event for caching and add creator
         event_role = await event.guild.create_role(name=create_event_role_name(event), reason=f"event {event} created", mentionable=True)
-        if creator := event.guild.get_member(event.creator.id):
-            await creator.add_roles(event_role, reason=f"creator of event {event}")
+        # if creator := event.guild.get_member(event.creator.id):
+            # await creator.add_roles(event_role, reason=f"creator of event {event}")
+        # store in database
+        # discord_event = DiscordEvent(event, event_role).insert_into_database(DBCONN)
+        print(DiscordEvent(DBCONN))
         # TODO: calender integration
 
     @BOT.event
@@ -86,7 +96,7 @@ class Group__scheduled_event_role_management:
         - find the associated scheduled event role and delete it
         """
         LOGGER.info(f"event {event} deleted")
-        if event_role := await get_role_for_event(event):
+        if event_role := get_role_for_event(event):
             await event_role.delete(reason=f"event {event} deleted")
 
     @BOT.event
@@ -98,7 +108,7 @@ class Group__scheduled_event_role_management:
             - find the associated scheduled event role and update its name
             """
             LOGGER.info(f"event {event_before} updated to {event_after}")
-            if event_after_role := await get_role_for_event(event_after):
+            if event_after_role := get_role_for_event(event_after):
                 await event_after_role.edit(name=create_event_role_name(event_after), reason=f"event {event_after} updated")
 
     @BOT.event
@@ -106,7 +116,7 @@ class Group__scheduled_event_role_management:
         """
         - give interested user the associated role
         """
-        if event_role := await get_role_for_event(event):
+        if event_role := get_role_for_event(event):
             if member := event.guild.get_member(user.id):
                 await member.add_roles(event_role, reason=f"interested in event {event}")
 
@@ -115,7 +125,7 @@ class Group__scheduled_event_role_management:
         """
         - remove associated role from uninterested user
         """
-        if event_role := await get_role_for_event(event):
+        if event_role := get_role_for_event(event):
             if member := event.guild.get_member(user.id):
                 await member.remove_roles(event_role, reason=f"uninterested in event {event}")
 
@@ -126,7 +136,7 @@ class Group__scheduled_event_role_management:
             """
             - update scheduled event state
             """
-            planned_events = await get_events_for_voice_channel(state_after.channel)
+            planned_events = get_events_for_voice_channel(state_after.channel)
             for event in planned_events:
                 await update_scheduled_event_state(event)
         
@@ -135,7 +145,7 @@ class Group__scheduled_event_role_management:
             """
             - update scheduled event state
             """
-            planned_events = await get_events_for_voice_channel(state_before.channel)
+            planned_events = get_events_for_voice_channel(state_before.channel)
             for event in planned_events:
                 await update_scheduled_event_state(event)
         
