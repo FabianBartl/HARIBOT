@@ -5,6 +5,6 @@
 ![Python 3](https://img.shields.io/badge/python-3-blue)&nbsp;
 ![MIT license](https://img.shields.io/badge/license-MIT-green)&nbsp;
 
-A discord bot specialized for the **Dr. Hans Riegel - Stiftung** community discord server.
+A discord bot specialized for the semi-private **MINT TANK Community** discord server.
 
 ## Planned functions: see [#20](https://github.com/FabianBartl/HARIBOT/issues/20)
