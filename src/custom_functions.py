@@ -1,9 +1,10 @@
 
-import sqlite3
-from sqlite3 import Connection
 import json
+import sqlite3
+import datetime
+from sqlite3 import Connection
 from ast import literal_eval
-from datetime import datetime, timezone
+from typing import Any
 
 import nextcord
 from nextcord import ScheduledEvent, ScheduledEventUser, ScheduledEventStatus
@@ -12,45 +13,16 @@ from nextcord import Member, User, Role
 
 
 class DiscordEvent:
-    def __init__(self, *, scheduled_event: ScheduledEvent=None, notifier_role: Role=None) -> None:
-        """
-        TODO:
-         - overload __init__ or else to support creation from scheduled event and loading from database
-        """
-        # base attributes of the scheduled event
-        self.event_id: int    = scheduled_event.id
-        self.title: str       = scheduled_event.name
-        self.description: str = scheduled_event.description
-        self.image_url: str   = scheduled_event.image.url if scheduled_event.image else ""
-        self.creator_id: int  = scheduled_event.creator.id
-        self.channel_id: int  = scheduled_event.channel_id
-        
-        # start and end datetime, with current scheduled event status
-        self.start_timestamp: int         = int(scheduled_event.start_time.timestamp())
-        self.end_timestamp: int|None      = int(scheduled_event.end_time.timestamp()) if scheduled_event.end_time else None
-        self.timezone: timezone           = timezone.utc
-        self.status: ScheduledEventStatus = ScheduledEventStatus.scheduled
-        
-        # list of users that are interested, were interested and participated in the scheduled event
-        self.interested_user_ids: set[int]     = { user.id for user in scheduled_event.users }
-        self.dis_interested_user_ids: set[int] = {}
-        self.participated_user_ids: set[int]   = {}
-        
-        # notifier role and its usage counter
-        if not notifier_role:
-            notifier_role = get_role_for_event(scheduled_event)
-        self.notifier_role_id: int   = notifier_role.id
-        self.notifier_role_used: int = 0
-
+    def __init__(self, connection: Connection) -> None:
+        self.connection = connection
         # the database table scheme for discord events
-        self.__table_name = "discord_events"
-        __sql_create_table = f"""
-        CREATE TABLE `{self.__table_name}` (
+        f"""
+        CREATE TABLE `{self.__sql_table_name()}` (
             "id"          INTEGER NOT NULL UNIQUE,
             "title"       TEXT NOT NULL,
             "description" TEXT DEFAULT '',
             "image_url"   INTEGER DEFAULT '',
-            "creator_id"  INTEGER NOT NULL,
+            "creator_id"  INTEGER DEFAULT NULL,
             "channel_id"  INTEGER NOT NULL,
             
             "start_timestamp" INTEGER NOT NULL,
@@ -68,42 +40,110 @@ class DiscordEvent:
             PRIMARY KEY("id"));
         """
     
+    def __sql_table_name(self) -> str:
+        return "discord_events"
     
-    @classmethod
-    def fetch_from_database(cls, *, connection: Connection) -> None:
-        print(connection)
+    def __sql_table_coloumns(self) -> tuple[str]:
+        return ("id", "title", "description", "image_url", "creator_id", "channel_id", "start_timestamp", "end_timestamp", "timezone", "status", "interested_user_ids", "dis_interested_user_ids", "participated_user_ids", "notifier_role_id", "notifier_role_used")
     
-    
-    def __convert_to_database_query_types(self) -> tuple[str|int|None]:
-        sql_data = (
-            int(self.event_id),
-            str(self.title)[:64],
-            str(self.description)[:512],
-            str(self.image_url),
-            int(self.creator_id),
-            int(self.channel_id),
-            
-            int(self.start_timestamp),
-            int(self.end_timestamp) if self.end_timestamp else None,
-            str(self.timezone),
-            str(self.status).rsplit(".", 1)[-1],
-            
-            json.dumps(list(self.interested_user_ids)),
-            json.dumps(list(self.dis_interested_user_ids)),
-            json.dumps(list(self.participated_user_ids)),
-            
-            int(self.notifier_role_id),
-            int(self.notifier_role_used),
-        )
-        return sql_data
+    def __sql_coloumns_str(self) -> str:
+        return "("+", ".join([ f"`{coloumn}`" for coloumn in self.__sql_table_coloumns() ])+")"
 
+
+    def insert(self, scheduled_event: ScheduledEvent, notifier_role: Role|None) -> None:
+        """
+        - fill table coloumns with properties from the scheduled event and defaults
+        - insert into table 
+        """
+        sql_data = (
+            # base attributes of the scheduled event
+            int(scheduled_event.id),                                                # id
+            str(scheduled_event.name)[:128],                                        # title
+            str(scheduled_event.description)[:512],                                 # description
+            str(scheduled_event.image.url) if scheduled_event.image else "",        # image_url
+            int(scheduled_event.creator.id) if scheduled_event.creator else None,   # creator_id
+            int(scheduled_event.channel_id),                                        # channel_id
+            
+            # start and end datetime, with current scheduled event status
+            int(scheduled_event.start_time.timestamp()),                                        # start_timestamp
+            int(scheduled_event.end_time.timestamp()) if scheduled_event.end_time else None,    # end_timestamp
+            str(datetime.timezone.utc),                                                         # timezone
+            str(ScheduledEventStatus.scheduled).rsplit(".", 1)[-1],                             # status
+            
+            # list of users that are interested, were interested and participated in the scheduled event
+            json.dumps(list({ user.id for user in scheduled_event.users })),    # interested_user_ids
+            "[]",                                                               # dis_interested_user_ids
+            "[]",                                                               # participated_user_ids
+                        
+            # notifier role and its usage counter
+            int(notifier_role.id) if notifier_role else None,   # notifier_role_id
+            0                                                   # notifier_role_used
+        )
+        
+        # insert discord event data into database table
+        sql_insert_into = "INSERT INTO `{table}` {coloumns} VALUES {values};".format(
+            table=self.__sql_table_name(),
+            coloumns=self.__sql_coloumns_str(),
+            values="("+",".join(["?"]*len(self.__sql_table_coloumns))+")"
+        )
+        self.connection.cursor().execute(sql_insert_into, sql_data)
+        self.connection.commit()
+
+
+    def select(self, event_id: int, coloumn: str) -> str|int|None:
+        event_id = int(event_id)
+        coloumn = str(coloumn)
+        """
+        - check if coloumn exists in table
+        - select single coloumn of table entry by unique event id and return its value
+        """
+        if not coloumn in self.__sql_table_coloumns():
+            raise KeyError(f"coloumn `{coloumn}` does not exist in database table `{self.__sql_table_name()}`")
+
+        sql_select = "SELECT ? FROM `{table}` WHERE `id` = ?".format(table=self.__sql_table_name())
+        row = self.connection.cursor().execute(sql_select, (coloumn, event_id)).fetchone()
+        return row[0]
+
+
+    def select_all(self, event_id: int) -> dict[str: str|int|None]:
+        event_id = int(event_id)
+        """
+        - select table entry by unique event id
+        - zip entry tuple with table coloumn names and return as dictionary
+        """
+        sql_select = "SELECT * FROM `{table}` WHERE `id` = ?".format(table=self.__sql_table_name())
+        table_row = self.connection.cursor().execute(sql_select, (event_id,)).fetchone()
+        discord_event = { coloumn: value for (coloumn, value) in zip(self.__sql_table_coloumns(), table_row) }
+        return discord_event
+
+
+    def update(self, event_id: int, coloumn: str, value: str|int|None) -> None:
+        event_id = int(event_id)
+        coloumn = str(coloumn)
+        """
+        - check if coloumn exists in table
+        - update single coloumn value of an event
+        """
+        if not coloumn in self.__sql_table_coloumns():
+            raise KeyError(f"coloumn `{coloumn}` does not exist in database table `{self.__sql_table_name()}`")
+        
+        sql_update = "UPDATE `{table}` SET ? = ? WHERE `id` = ?".format(table=self.__sql_table_name())
+        self.connection.cursor().execute(sql_update, (coloumn, value, event_id))
     
-    def insert_into_database(self, connection: Connection) -> None:
-        self.__sql_insert_into = f"INSERT INTO `{self.__table_name}` (`id`, `title`, `description`, `image_url`, `creator_id`, `channel_id`, `start_datetime`, `end_datetime`, `timezone`, `status`, `interested_user_ids`, `dis_interested_user_ids`, `participated_user_ids`, `notifier_role_id`, `notifier_role_used`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);"
-        # convert data into sql readable types and commit insert
-        sql_data = self.__convert_to_database_query_types()
-        connection.cursor().execute(self.__sql_insert_into, sql_data)
-        connection.commit()
+    
+    def update_many(self, event_id: int, coloumn_values: dict[str: str|int|None]) -> None:
+        event_id = int(event_id)
+        for coloumn, value in coloumn_values.items():
+            self.update(event_id, coloumn, value)
+    
+    
+    def delete(self, event_id: int) -> None:
+        event_id = int(event_id)
+        """
+        - deletes the event entry
+        """
+        sql_delete = "DELETE FROM `{table}` WHERE `id` = ?".format(table=self.__sql_table_name())
+        self.connection.cursor().execute(sql_delete, (event_id,))
 
 
 
