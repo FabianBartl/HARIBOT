@@ -17,7 +17,7 @@ log_level = ARGS.log_level
 log_file = "{time}_{name}.log".format(time=datetime.strftime(datetime.now(), "%Y-%m-%d_%H-%M-%S"), name=os.path.basename(__file__))
 log_path = os.path.join("logs", log_file)
 log_color = not ARGS.no_color
-clog.setBasicConfig(log_level, "%(asctime)s | %(levelname)8s | %(message)s", "%Y-%m-%d %H:%M:%S", log_path, use_color=log_color)
+# clog.setBasicConfig(log_level, "%(asctime)s | %(levelname)8s | %(message)s", "%Y-%m-%d %H:%M:%S", log_path, use_color=log_color)
 LOGGER = clog.getLogger()
 
 # open database connection
@@ -28,7 +28,7 @@ DBCURSER = DBCONN.cursor()
 
 import sys
 import json
-from pprint import pprint
+from pprint import pprint, pformat
 from typing import Optional
 
 import nextcord
@@ -166,34 +166,36 @@ class Group__slash_commands:
     
     @BOT.slash_command(name="test", description="Temporary command to test specific something", default_member_permissions=Permissions(8))
     async def sc_test(interaction: Interaction):
+        await interaction.response.defer()
         global BOT, LOGGER
         LOGGER.info("slash command used: /test")
         
-        var = DiscordEvent().fetch_from_database(1299067248828485653, DBCONN)
-        print(var, type(var))
+        var = DiscordEvent(DBCONN).select_all(1299043942318477394)
+        print(var)
         
-        await interaction.send(f"pong with {int(BOT.latency*1000)} ms latency")
+        await interaction.followup.send(pformat(var))
     
     @BOT.slash_command(name="create-test-event", description="Create an scheduled event for testing purposes", default_member_permissions=Permissions(8))
     async def sc_create_test_event(interaction: Interaction):
+        await interaction.response.defer()
         event = await interaction.guild.create_scheduled_event(
             entity_type=nextcord.ScheduledEventEntityType.voice,
-            name=f"Test Event [{int(datetime.now().timestamp())}]",
-            description="Lorem Ipsum dolor sit amet.",
-            start_time=datetime.now(),
+            name=f"Test Event [{int(datetime.datetime.now().timestamp())}]",
+            start_time=datetime.datetime.now(),
             channel=interaction.guild.get_channel(1023618467171139674),
             reason="Event for testing purposes"
         )
-        await interaction.send(f"event {event} created")
+        await interaction.followup.send(f"event {event} created")
 
     @BOT.slash_command(name="clear-test-events", description="Delete all test events", default_member_permissions=Permissions(8))
     async def sc_clear_test_events(interaction: Interaction):
+        await interaction.response.defer()
         message = ""
         for event in interaction.guild.scheduled_events:
             if event.name.startswith("Test Event ["):
                 await interaction.guild.get_scheduled_event(event.id).delete()
                 message += f"event {event} deleted\n"
-        await interaction.send(message)
+        await interaction.followup.send(message)
 
 
 # get tokens and start bot

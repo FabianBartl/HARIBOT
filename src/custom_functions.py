@@ -21,7 +21,7 @@ class DiscordEvent:
             "id"          INTEGER NOT NULL UNIQUE,
             "title"       TEXT NOT NULL,
             "description" TEXT DEFAULT '',
-            "image_url"   INTEGER DEFAULT '',
+            "image_url"   TEXT DEFAULT '',
             "creator_id"  INTEGER DEFAULT NULL,
             "channel_id"  INTEGER NOT NULL,
             
@@ -57,12 +57,12 @@ class DiscordEvent:
         """
         sql_data = (
             # base attributes of the scheduled event
-            int(scheduled_event.id),                                                # id
-            str(scheduled_event.name)[:128],                                        # title
-            str(scheduled_event.description)[:512],                                 # description
-            str(scheduled_event.image.url) if scheduled_event.image else "",        # image_url
-            int(scheduled_event.creator.id) if scheduled_event.creator else None,   # creator_id
-            int(scheduled_event.channel_id),                                        # channel_id
+            int(scheduled_event.id),                                                        # id
+            str(scheduled_event.name)[:128],                                                # title
+            str(scheduled_event.description)[:512] if scheduled_event.description else "",  # description
+            str(scheduled_event.image.url) if scheduled_event.image else "",                # image_url
+            int(scheduled_event.creator.id) if scheduled_event.creator else None,           # creator_id
+            int(scheduled_event.channel_id),                                                # channel_id
             
             # start and end datetime, with current scheduled event status
             int(scheduled_event.start_time.timestamp()),                                        # start_timestamp
@@ -84,7 +84,7 @@ class DiscordEvent:
         sql_insert_into = "INSERT INTO `{table}` {coloumns} VALUES {values};".format(
             table=self.__sql_table_name(),
             coloumns=self.__sql_coloumns_str(),
-            values="("+",".join(["?"]*len(self.__sql_table_coloumns))+")"
+            values="("+",".join(["?"]*len(self.__sql_table_coloumns()))+")"
         )
         self.connection.cursor().execute(sql_insert_into, sql_data)
         self.connection.commit()
