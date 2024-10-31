@@ -21,8 +21,8 @@ logger = getLogger()
 import logging
 from colorama import Fore, Back, Style
 
-# own debug log level above default debug
-MY_DEBUG = 15
+# own debug log level between default debug and info
+MY_DEBUG = int(logging.DEBUG) + 5
 
 class CustomFormatter(logging.Formatter):
     def __init__(self, format:str, *, use_color:bool=True) -> None:
@@ -83,6 +83,20 @@ def setBasicConfig(level:int, format:str, date_format:str, path:str, *, use_colo
 def getLogger() -> logging.Logger:
     return logging.getLogger(__name__)
 
-def debug(message:str) -> None:
+
+def debug(message:str, *args, **kwargs) -> None:
     global MY_DEBUG
-    getLogger().log(MY_DEBUG, message)
+    getLogger().log(MY_DEBUG, message, *args, **kwargs)
+
+
+def info(message:str, *args, **kwargs) -> None:
+    getLogger().info(message, *args, **kwargs)
+
+def warning(message:str, *args, **kwargs) -> None:
+    getLogger().warning(message, *args, **kwargs)
+
+def error(message:str, *args, **kwargs) -> None:
+    getLogger().error(message, *args, **kwargs)
+
+def critical(message:str, *args, **kwargs) -> None:
+    getLogger().critical(message, *args, **kwargs)
