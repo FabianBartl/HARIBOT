@@ -1,11 +1,11 @@
 
 import json
-import sqlite3
 import time
 import datetime
-from sqlite3 import Connection
-from ast import literal_eval
-from typing import Any
+import sqlite3
+import sqlite3.dbapi2
+from sqlite3 import Connection, Cursor
+from typing import Any, Iterable, Optional, Union
 
 import nextcord
 from nextcord import ScheduledEvent, ScheduledEventUser, ScheduledEventStatus
@@ -42,7 +42,39 @@ class DiscordEvent:
             
             PRIMARY KEY("id"));
         """
+    
+    def sql_execute(self, sql_statement: str, sql_parameters: tuple=(), *, mode: str) -> Optional[Any]:
+        """
+        an wrapper for executing sql statements
+        - creates a new cursor every time and deletes it after use
+        - return fetched data ot commit changes
+        - rollback on database error
+        """
+        # create cursor and execute sql
+        cursor = self.connection.cursor()
+        try:
+            cursor.execute(sql_statement, sql_parameters)
+            
+            # mode: fetch data
+            if mode == "fetchall":
+                return cursor.fetchall()
+            elif mode == "fetchone":
+                return cursor.fetchone()
+            # mode: commit changes
+            elif mode == "commit":
+                self.connection.commit()
+                return None
+            else:
+                raise ValueError("Invalid mode. Use 'fetchall', 'fetchone' or 'commit'.")
 
+        except sqlite3.DatabaseError as error:
+            # rollback changes
+            self.connection.rollback()
+            raise error
+        
+        finally:
+            cursor.close()
+            
     
     @staticmethod
     def sql_table_name() -> str:
@@ -61,15 +93,15 @@ class DiscordEvent:
         return { coloumn: value for (coloumn, value) in zip(DiscordEvent.sql_table_coloumns(), table_row) }
 
     @staticmethod
-    def table_rows_to_dicts(table_rows: tuple[tuple]) -> tuple[dict]:
-        return tuple([ DiscordEvent.table_row_to_dict(table_row) for table_row in table_rows ])
+    def table_rows_to_dicts(table_rows: Iterable[tuple]) -> list[dict]:
+        return [ DiscordEvent.table_row_to_dict(table_row) for table_row in table_rows ]
 
     @staticmethod
     def time_now(plus_minutes: float=0) -> float:
         return time.time() + 60*plus_minutes
 
 
-    def insert(self, scheduled_event: ScheduledEvent, notifier_role: Role|None) -> None:
+    def insert(self, scheduled_event: ScheduledEvent, notifier_role: Optional[Role]) -> None:
         """
         - fill table coloumns with properties from the scheduled event and defaults
         - insert into table 
@@ -105,11 +137,10 @@ class DiscordEvent:
             coloumns=DiscordEvent.sql_coloumns_str(),
             values="("+",".join(["?"]*len(DiscordEvent.sql_table_coloumns()))+")"
         )
-        self.connection.cursor().execute(sql_insert_into, sql_data)
-        self.connection.commit()
+        self.sql_execute(sql_insert_into, sql_data, mode="commit")
 
 
-    def select(self, event_id: int, coloumn: str) -> str|int|None:
+    def select(self, event_id: int, coloumn: str) -> Any:
         event_id = int(event_id)
         coloumn = str(coloumn)
         """
@@ -120,23 +151,23 @@ class DiscordEvent:
             raise KeyError(f"coloumn `{coloumn}` does not exist in database table `{DiscordEvent.sql_table_name()}`")
 
         sql_select = "SELECT ? FROM `{table}` WHERE `id` = ?".format(table=DiscordEvent.sql_table_name())
-        row = self.connection.cursor().execute(sql_select, (coloumn, event_id)).fetchone()
+        row = self.sql_execute(sql_select, (coloumn, event_id), mode="fetchone")
         return row[0]
 
 
-    def select_all(self, event_id: int) -> dict[str: str|int|None]:
+    def select_all(self, event_id: int) -> dict[str: Any]:
         event_id = int(event_id)
         """
         - select table entry by unique event id
         - zip entry tuple with table coloumn names and return as dictionary
         """
         sql_select = "SELECT * FROM `{table}` WHERE `id` = ?".format(table=DiscordEvent.sql_table_name())
-        table_row = self.connection.cursor().execute(sql_select, (event_id,)).fetchone()
+        table_row = self.sql_execute(sql_select, (event_id,), mode="fetchone")
         discord_event = self.table_row_to_dict(table_row)
         return discord_event
 
 
-    def update(self, event_id: int, coloumn: str, value: str|int|None) -> None:
+    def update(self, event_id: int, coloumn: str, value: Any) -> None:
         event_id = int(event_id)
         coloumn = str(coloumn)
         """
@@ -147,34 +178,33 @@ class DiscordEvent:
             raise KeyError(f"coloumn `{coloumn}` does not exist in database table `{DiscordEvent.sql_table_name()}`")
         
         sql_update = "UPDATE `{table}` SET `{coloumn}` = ? WHERE `id` = ?".format(table=DiscordEvent.sql_table_name(), coloumn=coloumn)
-        self.connection.cursor().execute(sql_update, (value, event_id))
+        self.sql_execute(sql_update, (value, event_id), mode="commit")
     
 
-    def update_many(self, event_id: int, coloumn_values: dict[str: str|int|None]) -> None:
+    def update_many(self, event_id: int, coloumn_values: dict[str: Any]) -> None:
         # just calls .update() for every col-val pair
-        event_id = int(event_id)
         for coloumn, value in coloumn_values.items():
             self.update(event_id, coloumn, value)
     
 
     def delete(self, event_id: int) -> None:
         event_id = int(event_id)
-        """ [shouldn't be used, except for deleting testing events]
+        """ [shouldn't be used, except for deleting testing events; use update() instead]
         - deletes the event entry
         """
         sql_delete = "DELETE FROM `{table}` WHERE `id` = ?".format(table=DiscordEvent.sql_table_name())
-        self.connection.cursor().execute(sql_delete, (event_id,))
+        self.sql_execute(sql_delete, (event_id,), mode="commit")
 
 
 
-def create_event_role_name(event: ScheduledEvent, *, max_event_name_len:int=25) -> str:
+def create_event_role_name(event: ScheduledEvent, *, max_event_name_len: int = 25) -> str:
     """
     - create role for a scheduled event: with humen readable name at front and bot readable id at the end
     """
     return f"Ev:{event.name[:max_event_name_len]}:{event.id}"
 
 
-def get_role_for_event(event: ScheduledEvent) -> Role|None:
+def get_role_for_event(event: ScheduledEvent) -> Optional[Role]:
     """
     - find the role for a scheduled event by searching for the event id in the role name
     """
@@ -193,5 +223,11 @@ def get_events_for_voice_channel(channel: VoiceChannel) -> list[ScheduledEvent]:
     return channel_events
 
 
-def add_to_unique_list(unique_list:list, value:Any) -> list:
-    return list(set(unique_list) | {value})
+def add_many_to_unique_list(unique_list: list, values: set[Any]) -> list:
+    return list(set(unique_list) | values)
+
+def add_to_unique_list(unique_list: list, value: Any) -> list:
+    return add_many_to_unique_list(unique_list, {value})
+
+def remove_from_unique_list(unique_list: list, value: Any) -> list:
+    return list(set(unique_list) - {value})

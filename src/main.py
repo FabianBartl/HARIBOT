@@ -26,7 +26,6 @@ LOGGER = clog.getLogger()
 import sqlite3
 db_path = os.path.join("data", "haribot-db.db")
 DBCONN = sqlite3.connect(db_path)
-DBCURSER = DBCONN.cursor()
 
 
 import sys
@@ -53,7 +52,7 @@ class Group__before_and_after_connection:
     @staticmethod
     @BOT.event
     async def on_connect():
-        clog.info("bot connected")
+        clog.debug("bot connected")
 
     @staticmethod
     @BOT.event
@@ -82,15 +81,14 @@ class Group__scheduled_event_role_management:
     @BOT.event
     async def on_guild_scheduled_event_create(event: ScheduledEvent) -> None:
         global DBCURSER
-        clog.info("event %s created", event)
+        clog.debug("event %s created", event)
         """
         - create role for scheduled event containing name and id
-        - store the event in the local database
+        - insert event into database
         - add event to calender by @noeppi-noeppi
         """
-        # create role
+        # create role and insert event
         event_role = await event.guild.create_role(name=create_event_role_name(event), reason=f"event {event} created", mentionable=True)
-        # store event and role in database
         DiscordEvent(DBCONN).insert(event, event_role)
         # TODO: calender integration
 
@@ -98,7 +96,7 @@ class Group__scheduled_event_role_management:
     @staticmethod
     @BOT.event
     async def on_guild_scheduled_event_delete(event: ScheduledEvent) -> None:
-        clog.info("event %s deleted", event)
+        clog.debug("event %s deleted", event)
         """
         - find the associated scheduled event role and delete it
         - set discord event state in database to cancelled
@@ -111,38 +109,65 @@ class Group__scheduled_event_role_management:
     @staticmethod
     @BOT.event
     async def on_guild_scheduled_event_update(event_before: ScheduledEvent, event_after: ScheduledEvent) -> None:
-        # on: scheduled event name update
+        """
+        - rename notifier role to new event name if changed
+        - update changeable event attributes in database
+        """
+        # rename notifier role
         if event_before.name != event_after.name:
-            """
-            - find the associated scheduled event role and update its name
-            """
-            clog.info(f"event {event_before} updated to {event_after}")
-            if event_after_role := get_role_for_event(event_after):
-                await event_after_role.edit(name=create_event_role_name(event_after), reason=f"event {event_after} updated")
-        # TODO: update database entry
-        discord_event_before = DiscordEvent(DBCONN).select_all(event_before.id)
+            clog.debug("event name %s updated to %s", event_before.name, event_after.name)
+            if event_before_role := get_role_for_event(event_before):
+                await event_before_role.edit(name=create_event_role_name(event_after), reason=f"event name {event_before.name} updated to {event_after.name}")
+        # update event in database
+        DiscordEvent(DBCONN).update_many(event_before.id, {
+            "title": event_after.name,
+            "description": event_after.description,
+            "image_url": event_after.image.url if event_after.image else "",
+            "channel_id": event_after.channel_id,
+            "start_timestamp": int(event_after.start_time.timestamp()),
+        })
 
 
     @staticmethod
     @BOT.event
     async def on_guild_scheduled_event_user_add(event: ScheduledEvent, user: ScheduledEventUser) -> None:
         """
-        - give interested user the associated role
+        - give interested user the associated event role
+        - add user to interested users and remove from dis-interested ones in database
         """
+        # give role
         if event_role := get_role_for_event(event):
             if member := event.guild.get_member(user.id):
                 await member.add_roles(event_role, reason=f"interested in event {event}")
+        # update (dis) interested users list
+        discord_event = DiscordEvent(DBCONN).select_all(event.id)
+        interested_user_ids = add_to_unique_list(json.loads(discord_event["interested_user_ids"]), user.id)
+        dis_interested_user_ids = remove_from_unique_list(json.loads(discord_event["dis_interested_user_ids"]), user.id)
+        DiscordEvent(DBCONN).update_many(event.id, {
+            "interested_user_ids": interested_user_ids,
+            "dis_interested_user_ids": dis_interested_user_ids,
+        })
 
 
     @staticmethod
     @BOT.event
     async def on_guild_scheduled_event_user_remove(event: ScheduledEvent, user: ScheduledEventUser) -> None:
         """
-        - remove associated role from uninterested user
+        - remove associated event role from dis-interested user
+        - remove user from interested users and add to dis-interested ones in database
         """
+        # give role
         if event_role := get_role_for_event(event):
             if member := event.guild.get_member(user.id):
-                await member.remove_roles(event_role, reason=f"uninterested in event {event}")
+                await member.remove_roles(event_role, reason=f"dis-interested in event {event}")
+        # update (dis) interested users list
+        discord_event = DiscordEvent(DBCONN).select_all(event.id)
+        interested_user_ids = remove_from_unique_list(json.loads(discord_event["interested_user_ids"]), user.id)
+        dis_interested_user_ids = add_to_unique_list(json.loads(discord_event["dis_interested_user_ids"]), user.id)
+        DiscordEvent(DBCONN).update_many(event.id, {
+            "interested_user_ids": interested_user_ids,
+            "dis_interested_user_ids": dis_interested_user_ids,
+        })
 
 
 
@@ -152,14 +177,14 @@ class Group__scheduled_event_state_tracking:
     async def on_voice_state_update(member: Member, state_before: VoiceState, state_after: VoiceState) -> None:
         # on: member joined voice channel
         if not state_before.channel and state_after.channel:
-            await Group__scheduled_event_state_tracking.on_voice_member_joined(member, state_after.channel)
+            Group__scheduled_event_state_tracking.on_voice_member_joined(member, state_after.channel)
         # on: member left voice channel
         elif state_before.channel and not state_after.channel:
-            await Group__scheduled_event_state_tracking.on_voice_member_left(member, state_before.channel)
+            Group__scheduled_event_state_tracking.on_voice_member_left(member, state_before.channel)
         # on: member switched voice channel
         elif state_before.channel and state_after.channel and (state_before.channel.id != state_after.channel.id):
-            await Group__scheduled_event_state_tracking.on_voice_member_left(member, state_before.channel)
-            await Group__scheduled_event_state_tracking.on_voice_member_joined(member, state_after.channel)
+            Group__scheduled_event_state_tracking.on_voice_member_left(member, state_before.channel)
+            Group__scheduled_event_state_tracking.on_voice_member_joined(member, state_after.channel)
         
         # on: member voice state changed, e.g. member is muted
         else:
@@ -167,35 +192,70 @@ class Group__scheduled_event_state_tracking:
 
 
     @staticmethod
-    async def on_voice_member_joined(member: Member, channel: VoiceChannel) -> None:
+    def on_voice_member_joined(member: Member, channel: VoiceChannel) -> None:
         global DBCONN
         clog.debug("member %s joined voice channel %s", member, channel)
         """
-        - get latest (nearly) expired event for this channel from database
+        - get latest (nearly) expired scheduled/active event for this channel from database
+            - set found older events to completed
         - set state to active if scheduled
-        - if updated state is active, add joined member to participated users
+        - add joined member to participated users
         """
-        # get event from database as dict
-        sql_select = "SELECT * FROM `{table}` WHERE (`channel_id` = ? AND `start_timestamp` <= ?) ORDER BY `start_timestamp` DESC".format(table=DiscordEvent.sql_table_name())
-        if table_row := DBCONN.cursor().execute(sql_select, (channel.id, DiscordEvent.time_now(15))).fetchone():
-            discord_event = DiscordEvent.table_row_to_dict(table_row)
-            clog.debug("found expired event %s", discord_event)
+        # get events from database
+        sql_select = "SELECT * FROM `{table}` WHERE (`channel_id` = ? AND `start_timestamp` <= ? AND (`state` = 'scheduled' OR `state` = 'active')) ORDER BY `start_timestamp` DESC".format(table=DiscordEvent.sql_table_name())
+        table_rows = DiscordEvent(DBCONN).sql_execute(sql_select, (channel.id, DiscordEvent.time_now(15)), mode="fetchall")
+        if len(table_rows) > 0:
+            discord_events = DiscordEvent.table_rows_to_dicts(table_rows)
+            latest_discord_event = discord_events.pop(0)
+            clog.debug("found latest expired event %s", latest_discord_event["title"])
 
             # set active if scheduled
-            if discord_event["state"] == "scheduled":
-                DiscordEvent(DBCONN).update(discord_event["id"], "state", "active")
-                clog.debug("update event %s state from scheduled to active", discord_event["id"])
+            if latest_discord_event["state"] == "scheduled":
+                DiscordEvent(DBCONN).update(latest_discord_event["id"], "state", "active")
+                clog.debug("update event %s state from scheduled to active", latest_discord_event["id"])
 
             # add member to participated users
-            if discord_event["state"] in {"scheduled", "active"}:
-                participated_user_ids = add_to_unique_list(json.loads(discord_event["participated_user_ids"]), member.id)
-                DiscordEvent(DBCONN).update(discord_event["id"], "participated_user_ids", json.dumps(participated_user_ids))
-                clog.debug("add member %s to participated users", member)
-    
+            participated_user_ids = add_to_unique_list(json.loads(latest_discord_event["participated_user_ids"]), member.id)
+            DiscordEvent(DBCONN).update(latest_discord_event["id"], "participated_user_ids", json.dumps(participated_user_ids))
+            clog.debug("add member %s to participated users", member)
             
+            # set older events to completed
+            older_discord_event_ids = tuple([ discord_event["id"] for discord_event in discord_events ])
+            if len(older_discord_event_ids) > 0:
+                sql_update = "UPDATE `{table}` SET `state` = 'completed' WHERE `id` IN ({ids_placeholder})".format(
+                    table=DiscordEvent.sql_table_name(),
+                    ids_placeholder=("?,"*len(older_discord_event_ids))[:-1]
+                )
+                DiscordEvent(DBCONN).sql_execute(sql_update, older_discord_event_ids, mode="commit")
+
+
+
     @staticmethod
-    async def on_voice_member_left(member: Member, channel: VoiceChannel) -> None:
+    def on_voice_member_left(member: Member, channel: VoiceChannel) -> None:
+        global DBCONN
         clog.debug("member %s left voice channel %s", member, channel)
+        """
+        - was last user in channel:
+            - get latest active event for this channel from database
+            - update event state to completed if scheduled event not found
+            - add end timestamp to now
+        """
+        # was last user in channel?
+        if len(channel.members) == 0:
+            # get latest active event
+            sql_select = "SELECT * FROM `{table}` WHERE (`channel_id` = ? AND `state` = 'active') ORDER BY `start_timestamp` DESC".format(table=DiscordEvent.sql_table_name())
+            if table_row := DiscordEvent(DBCONN).sql_execute(sql_select, (channel.id,), mode="fetchone"):
+                discord_event = DiscordEvent.table_row_to_dict(table_row)
+                clog.debug("found active event %s", discord_event)
+
+                # can scheduled event be found?
+                if not channel.guild.get_scheduled_event(discord_event["id"]):
+                    # set state to completed and set end timestamp to now
+                    DiscordEvent(DBCONN).update_many(discord_event["id"], {
+                        "state": "completed",
+                        "end_timestamp": int( datetime.datetime.now(datetime.timezone.utc).timestamp() ),
+                    })
+                    clog.debug("update event %s state from active to completed, add end timestamp", discord_event["id"])
 
 
 
@@ -211,13 +271,7 @@ class Group__slash_commands:
     @staticmethod
     @BOT.slash_command(name="test", description="Temporary command to test specific something", default_member_permissions=Permissions(8))
     async def sc_test(interaction: Interaction) -> None:
-        global BOT
         clog.info("slash command used: /test")
-        
-        var = DiscordEvent(DBCONN).select_all(1299043942318477394)
-        print(var)
-        
-        await interaction.channel.send(pformat(var))
 
 
     @staticmethod
@@ -248,7 +302,15 @@ class Group__slash_commands:
 
 
 
-# get tokens and start bot
-with open("tokens.json", "r", encoding="utf-8") as file:
-    TOKENS = json.load(file)
-BOT.run(TOKENS["discord"])
+if __name__ == "__main__":
+    # get tokens
+    token_path = "tokens.json"
+    if not os.path.exists(token_path):
+        print(f"token file {token_path} not found")
+        exit()
+
+    with open("tokens.json", "r", encoding="utf-8") as file:
+        TOKENS = json.load(file)
+
+    # start bot
+    BOT.run(TOKENS["discord"])

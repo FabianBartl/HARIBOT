@@ -25,7 +25,7 @@ from colorama import Fore, Back, Style
 MY_DEBUG = int(logging.DEBUG) + 5
 
 class CustomFormatter(logging.Formatter):
-    def __init__(self, format:str, *, use_color:bool=True) -> None:
+    def __init__(self, format: str, *, use_color: bool = True) -> None:
         self.debug_color    = Style.DIM
         self.info_color     = Fore.CYAN
         self.warning_color  = Fore.YELLOW
@@ -55,13 +55,13 @@ class CustomFormatter(logging.Formatter):
                 logging.CRITICAL: f"{self.fmt}"
             }
 
-    def format(self, record:logging.LogRecord) -> str:
+    def format(self, record: logging.LogRecord) -> str:
         log_fmt = self.FORMATS.get(record.levelno)
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
 
 
-def setBasicConfig(level:int, format:str, date_format:str, path:str, *, use_color:bool=True) -> None:
+def setBasicConfig(level: int, format: str, date_format: str, path: str, *, use_color: bool = True) -> None:
     # create stdout handler for logging to the console
     stdout_handler = logging.StreamHandler()
     stdout_handler.setLevel(level)
@@ -84,19 +84,19 @@ def getLogger() -> logging.Logger:
     return logging.getLogger(__name__)
 
 
-def debug(message:str, *args, **kwargs) -> None:
+def debug(message: str, *args, **kwargs) -> None:
     global MY_DEBUG
     getLogger().log(MY_DEBUG, message, *args, **kwargs)
 
 
-def info(message:str, *args, **kwargs) -> None:
+def info(message: str, *args, **kwargs) -> None:
     getLogger().info(message, *args, **kwargs)
 
-def warning(message:str, *args, **kwargs) -> None:
+def warning(message: str, *args, **kwargs) -> None:
     getLogger().warning(message, *args, **kwargs)
 
-def error(message:str, *args, **kwargs) -> None:
+def error(message: str, *args, **kwargs) -> None:
     getLogger().error(message, *args, **kwargs)
 
-def critical(message:str, *args, **kwargs) -> None:
+def critical(message: str, *args, **kwargs) -> None:
     getLogger().critical(message, *args, **kwargs)
